@@ -22,9 +22,6 @@ int main(int argc, char *argv[])
     //    Widget w;
     //    w.show();
 
-        ServiceGraph sg;
-        sg.show();
-
     //    LineChart lc;
     //    lc.show();
 

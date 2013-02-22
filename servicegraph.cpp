@@ -12,7 +12,7 @@ ServiceGraph::ServiceGraph(QWidget *parent) :
 ServiceGraph::~ServiceGraph()
 {
     for (int i = 0; i < pointsName.size(); i++) {
-        delete graph[i];
+        delete[] graph[i];
     }
     delete[] graph;
 }

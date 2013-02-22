@@ -7,6 +7,10 @@
 #include <QDebug>
 #include "criticalpath.h"
 #include "businessevent.h"
+#include "servicegraph.h"
+#include <QApplication>
+#include <QTime>
+#include <QtGui>
 
 const QString start_filename = "data/business_start";
 const int start_member_size = 3;
@@ -16,9 +20,19 @@ BusinessSimulation::BusinessSimulation()
     init();
 }
 
+BusinessSimulation::~BusinessSimulation()
+{
+    delete sg;
+    for (int i = 0; i < workflowCount; i++) {
+        delete[] activities[i];
+    }
+    delete[] activities;
+}
+
 void BusinessSimulation::run()
 {
     qDebug() << "BusinessSimulation::run() begin...";
+    sg->show();
     std::vector<std::vector<int> > g = toGraph(activities[0]);
     CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
     cp.run();
@@ -76,6 +90,27 @@ void BusinessSimulation::timePassed(int t, Activity *startActivity, QSet<int> & 
     while (it.hasNext()) {
         runningActivity.remove(it.next());
     }
+
+    updatePainter(runningActivity, finishedActivity);
+}
+
+// ¸üÐÂÏÔÊ¾
+void BusinessSimulation::updatePainter(QSet<int> &runningActivity, QSet<int> &finishedActivity)
+{
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
+        if (finishedActivity.contains(i)) {
+            sg->colors[i].setRgb(0, 0, 255);
+        } else if (runningActivity.contains(i)) {
+            sg->colors[i].setRgb(255, 255, 0);
+        } else {
+
+        }
+    }
+    sg->update();
+    QTime dieTime = QTime::currentTime().addMSecs(100);
+    while( QTime::currentTime() < dieTime ) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
 }
 
 void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
@@ -86,6 +121,7 @@ void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
 bool BusinessSimulation::init()
 {
     qDebug() << "BusinessSimulation.init() begin...";
+    sg = new ServiceGraph();
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {

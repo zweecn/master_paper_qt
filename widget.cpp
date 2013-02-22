@@ -63,7 +63,7 @@ void Widget::paintEvent(QPaintEvent *)
     DrawGraph::DrawAll(this, points, pointsName, colors, graph, QString());
 
     for (int i = 0; i < pointsName.size(); i++) {
-        delete graph[i];
+        delete[] graph[i];
     }
     delete[] graph;
 
