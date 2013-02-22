@@ -64,19 +64,19 @@ bool WorkFlow::readGraphInfo()
 bool WorkFlow::initPrefixSuffix()
 {
     for (int i = 0; i < activitySize; i++) {
-        QList<int> prefixTempList;
-        QList<int> suffixTempList;
+        QSet<int> prefixTempSet;
+        QSet<int> suffixTempSet;
         for (int j = 0; j < activitySize; j++) {
             if (graph[i][j] == 1) {
-                suffixTempList.append(j);
+                suffixTempSet.insert(j);
             }
             if (graph[j][i] == 1) {
-                prefixTempList.append(j);
+                prefixTempSet.insert(j);
             }
         }
 
-        suffixMap[i] = suffixTempList;
-        prefixMap[i] = prefixTempList;
+        suffixMap[i] = suffixTempSet;
+        prefixMap[i] = prefixTempSet;
     }
     return true;
 }
@@ -165,4 +165,14 @@ int WorkFlow::getActivitySize()
 bool WorkFlow::hasEdge(int i, int j)
 {
     return (graph[i][j] == 1);
+}
+
+QSet<int> WorkFlow::getSuffixs(int x)
+{
+    return suffixMap[x];
+}
+
+QSet<int> WorkFlow::getPrefixs(int x)
+{
+    return prefixMap[x];
 }

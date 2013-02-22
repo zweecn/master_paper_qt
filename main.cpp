@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     BusinessSimulation bs;
     bs.run();
 
-    CriticalPath cp;
-    cp.runExample();
+//    CriticalPath cp;
+//    cp.runExample();
 
     return a.exec();
 }

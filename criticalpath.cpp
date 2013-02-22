@@ -48,12 +48,12 @@ void CriticalPath::run()
 {
     if (topSort())
     {
-        copy(seq.begin(), seq.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
+//        copy(seq.begin(), seq.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
         calculate();
-        copy(ec.begin(), ec.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
-        copy(lc.begin(), lc.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
-        copy(cp.begin(), cp.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
-        std::cout << "Latest time = " << getLatestTime() << std::endl;
+//        copy(ec.begin(), ec.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
+//        copy(lc.begin(), lc.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
+//        copy(cp.begin(), cp.end(), std::ostream_iterator<int>(std::cout, " ")); std::cout << std::endl;
+//        std::cout << "Latest time = " << getLatestTime() << std::endl;
     }
     else
     {

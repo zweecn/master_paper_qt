@@ -2,6 +2,7 @@
 #include "serviceinfotable.h"
 #include "atomservice.h"
 #include "workflow.h"
+#include <QList>
 
 //extern QList<AtomService> all_service;
 

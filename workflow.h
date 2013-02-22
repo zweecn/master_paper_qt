@@ -1,6 +1,7 @@
 #ifndef WORKFLOW_H
 #define WORKFLOW_H
 #include <QMap>
+#include <QSet>
 #include <QList>
 
 class AtomService;
@@ -20,6 +21,8 @@ public:
 
     int getActivitySize();
     bool hasEdge(int i, int j);
+    QSet<int> getSuffixs(int x);
+    QSet<int> getPrefixs(int x);
 
     QList<AtomService> all_service;
     QList<Resource> all_resource;
@@ -37,8 +40,8 @@ private:
     int** graph;
     int activitySize;
     int serviceSize;
-    QMap<int, QList<int> > prefixMap;
-    QMap<int, QList<int> > suffixMap;
+    QMap<int, QSet<int> > prefixMap;
+    QMap<int, QSet<int> > suffixMap;
 };
 
 #endif // WORKFLOW_H

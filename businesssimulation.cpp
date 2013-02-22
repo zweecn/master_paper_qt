@@ -18,16 +18,19 @@ BusinessSimulation::BusinessSimulation()
 
 void BusinessSimulation::run()
 {
+    qDebug() << "BusinessSimulation::run() begin...";
     std::vector<std::vector<int> > g = toGraph(activities[0]);
     CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
     cp.run();
 
     int t = 0;
-    Activity *a = activities[0];
-    QSet<Activity*> runningActivity;
-    runningActivity.insert(&a[0]);
-    while (runningActivity.isEmpty() && t++)
+    Activity *startActivity = activities[0];
+    QSet<int> runningActivity;
+    runningActivity.insert(0);
+    QSet<int> finishedActivity;
+    while (!runningActivity.isEmpty() && ++t)
     {
+        printCurrState(t, runningActivity);
         BusinessEvent e = BusinessEvent::random(t);
         if (e.type == 0) {
 
@@ -41,35 +44,48 @@ void BusinessSimulation::run()
             qDebug() << "t = " << t << " Normal event.";
         }
 
-        g = toGraph(activities[0]);
-        cp.reset(WorkFlow::Instance()->getActivitySize(), g);
-        cp.run();
-        QSetIterator<Activity*> it(runningActivity);
-        QSet<Activity*> finishedActivityTmp;
-        while (it.hasNext())
-        {
-            Activity *tmp = it.next();
-            tmp->x += 1.0/cp.getLatestTime();
-            if (tmp->x > 1) {
-                tmp->x = 1.1;
-                finishedActivityTmp.insert(tmp);
-                // 加入后续的活动
-                for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
-                {
-//                    if (a[i].x < 1 && )
+        timePassed(t, startActivity, runningActivity, finishedActivity);
+    }
+    qDebug() << "BusinessSimulation::run() finished.";
+}
+
+void BusinessSimulation::timePassed(int t, Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
+{
+    std::vector<std::vector<int> > g = toGraph(startActivity);
+    CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
+    cp.run();
+    QSetIterator<int> it(runningActivity);
+    while (it.hasNext())
+    {
+        int tmpNum = it.next();
+        Activity* tmp = &startActivity[tmpNum];
+        tmp->x += 1.0/cp.getLatestTime();
+        if (tmp->x >= 1.0) {
+            tmp->x = 1.0;
+            finishedActivity.insert(tmpNum);
+            // 加入后续的活动
+            for (int x = 0; x < WorkFlow::Instance()->getActivitySize(); x++) {
+                QSet<int> prefixs = WorkFlow::Instance()->getPrefixs(x);
+                if ((prefixs - finishedActivity).isEmpty()) {
+                    runningActivity.insert(x);
                 }
             }
         }
-        QSetIterator<Activity*> it2(finishedActivityTmp);
-        while (it2.hasNext()) {
-            runningActivity.remove(it2.next());
-        }
     }
+    it = finishedActivity;
+    while (it.hasNext()) {
+        runningActivity.remove(it.next());
+    }
+}
 
+void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
+{
+    qDebug() << "At " << t << ", running: " << runningActivity;
 }
 
 bool BusinessSimulation::init()
 {
+    qDebug() << "BusinessSimulation.init() begin...";
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
