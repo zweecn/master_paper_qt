@@ -32,7 +32,7 @@ void DrawGraph::DrawPoint(QPaintDevice *device, const QPoint &pos, const QString
 
     painter.end();
 
-    qDebug() << "Draw " << text << " finished.";
+//    qDebug() << "Draw " << text << " finished.";
 }
 
 
@@ -87,7 +87,7 @@ void DrawGraph::DrawEdge(QPaintDevice *device, const QPoint &src, const QPoint &
         painter.drawLine(-arrowSize * 2, arrowSize, 0, 0);
     }
 //    qDebug("%f", lineAngle);
-    qDebug() << "Draw line " << src << " -> " << dst << " finished.";
+//    qDebug() << "Draw line " << src << " -> " << dst << " finished.";
     //end paint
     painter.end();
 
@@ -110,7 +110,7 @@ void DrawGraph::DrawText(QPaintDevice *device, const QString &str)
         QString event("Event(t, a, Type)");
         QString op("OP(不作为/重试/替换/重组/终止)");
         QString info(planQos + "\n" + currQos + "\n" + event + "\n" + op);
-        qDebug() << info;
+//        qDebug() << info;
         painter.drawText(QPoint(20, 20), info);
     }
 

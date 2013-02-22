@@ -15,6 +15,8 @@
 const QString start_filename = "data/business_start";
 const int start_member_size = 3;
 
+//BusinessSimulation::BusinessSimulation(QWidget *parent) :
+//    QWidget(parent)
 BusinessSimulation::BusinessSimulation()
 {
     init();
@@ -32,38 +34,85 @@ BusinessSimulation::~BusinessSimulation()
 void BusinessSimulation::run()
 {
     qDebug() << "BusinessSimulation::run() begin...";
-    sg->show();
-    std::vector<std::vector<int> > g = toGraph(activities[0]);
-    CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
-    cp.run();
+    sg = new ServiceGraph[workflowCount];
+    QSet<int> *runningActivities = new QSet<int>[workflowCount];
+    QSet<int> *finishedActivities = new QSet<int>[workflowCount];
+    for (int i = 0; i < workflowCount; i++) {
+        runningActivities[i].insert(0);
+        qDebug() << runningActivities[i] << finishedActivities[i];
+        sg[i].show();
+    }
 
     int t = 0;
-    Activity *startActivity = activities[0];
-    QSet<int> runningActivity;
-    runningActivity.insert(0);
-    QSet<int> finishedActivity;
-    while (!runningActivity.isEmpty() && ++t)
+    while (true)
     {
-        printCurrState(t, runningActivity);
-        BusinessEvent e = BusinessEvent::random(t);
-        if (e.type == 0) {
-
-        } else if (e.type == 1) {
-
-        } else if (e.type == 2) {
-
-        } else if (e.type == 3) {
-
-        } else {
-            qDebug() << "t = " << t << " Normal event.";
+        qDebug() << "At t =" << t << " ...";
+        //  判断是否都执行结束
+        bool flag = true;
+        for (int i = 0; i < workflowCount; i++) {
+            if (!runningActivities[i].isEmpty()) {
+                flag = false;
+            }
+        }
+        if (flag) {
+            break;
         }
 
-        timePassed(t, startActivity, runningActivity, finishedActivity);
+        // event
+
+        // update show
+
+        // sleep a moment
+
+        // do sth
+
+        // update show
+
+        // sleep a moment & time passed & update show
+        sleepAMoment();
+        for (int i = 0; i < workflowCount; i++) {
+            timePassed(activities[i], runningActivities[i], finishedActivities[i]);
+            updatePainter(sg[i], runningActivities[i], finishedActivities[i]);
+            qDebug() << "Flow" << i << ", runningActivities =" << runningActivities[i]
+                     << "finishedActivities =" << finishedActivities[i];
+        }
+
+        // 下一秒
+        t++;
     }
     qDebug() << "BusinessSimulation::run() finished.";
 }
 
-void BusinessSimulation::timePassed(int t, Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
+//void BusinessSimulation::oneFlowProcess()
+//{
+//    int t = 0;
+//    Activity* startActivity = activities[0];
+//    QSet<int> runningActivity;
+//    QSet<int> finishedActivity;
+//    runningActivity.insert(0);
+//    while (!runningActivity.isEmpty() && ++t)
+//    {
+//        printCurrState(t, runningActivity);
+//        BusinessEvent e = BusinessEvent::random(t);
+//        if (e.type == 0) { // 资源不可用
+
+//        } else if (e.type == 1) { //需求增加
+
+//        } else if (e.type == 2) { // 需求减少
+
+//        } else if (e.type == 3) { // 需求取消
+
+//        } else {
+//            qDebug() << "t = " << t << " Normal event.";
+//        }
+
+//        timePassed(t, startActivity, runningActivity, finishedActivity);
+//        sleepAMoment();
+////        updatePainter(runningActivity, finishedActivity);
+//    }
+//}
+
+void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
 {
     std::vector<std::vector<int> > g = toGraph(startActivity);
     CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
@@ -90,27 +139,32 @@ void BusinessSimulation::timePassed(int t, Activity *startActivity, QSet<int> & 
     while (it.hasNext()) {
         runningActivity.remove(it.next());
     }
-
-    updatePainter(runningActivity, finishedActivity);
 }
 
-// 更新显示
-void BusinessSimulation::updatePainter(QSet<int> &runningActivity, QSet<int> &finishedActivity)
+void BusinessSimulation::sleepAMoment()
 {
-    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
-        if (finishedActivity.contains(i)) {
-            sg->colors[i].setRgb(0, 0, 255);
-        } else if (runningActivity.contains(i)) {
-            sg->colors[i].setRgb(255, 255, 0);
-        } else {
-
-        }
-    }
-    sg->update();
     QTime dieTime = QTime::currentTime().addMSecs(100);
     while( QTime::currentTime() < dieTime ) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
     }
+}
+
+// 更新显示
+void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActivity, QSet<int> &finishedActivity)
+{
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
+        if (finishedActivity.contains(i)) {
+//            sg->colors[i].setRgb(0, 0, 255);
+            sg.colors[i].setRgb(0, 0, 255);
+        } else if (runningActivity.contains(i)) {
+//            sg->colors[i].setRgb(255, 255, 0);
+            sg.colors[i].setRgb(255, 255, 0);
+        } else {
+
+        }
+    }
+//    sg->update();
+    sg.update();
 }
 
 void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
@@ -121,7 +175,7 @@ void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
 bool BusinessSimulation::init()
 {
     qDebug() << "BusinessSimulation.init() begin...";
-    sg = new ServiceGraph();
+//    connect(sg, SIGNAL(destroyed()), this, SLOT(deleteLater()));
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
