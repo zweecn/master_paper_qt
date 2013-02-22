@@ -22,14 +22,14 @@ int main(int argc, char *argv[])
     //    Widget w;
     //    w.show();
 
-    //    ServiceGraph sg;
-    //    sg.show();
+        ServiceGraph sg;
+        sg.show();
 
     //    LineChart lc;
     //    lc.show();
 
-    ServiceInfoTable sit;
-    sit.show();
+//    ServiceInfoTable sit;
+//    sit.show();
 
     BusinessSimulation bs;
     bs.run();
