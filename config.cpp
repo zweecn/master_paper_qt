@@ -50,3 +50,8 @@ int Config::getUCTypeCount()
 {
     return confMap["UC_TYPE_COUNT"].toInt();
 }
+
+int Config::getWorkflowCount()
+{
+    return confMap["WORKFLOW_COUNT"].toInt();
+}

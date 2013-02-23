@@ -16,6 +16,7 @@ public:
 
     int getResourceTypeCount();
     int getUCTypeCount();
+    int getWorkflowCount();
 
 protected:
     Config();

@@ -20,8 +20,9 @@ private:
     bool init();
     void printCurrState(int t, QSet<int> & runningActivity);
     void timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity);
-    void updatePainter(ServiceGraph & sg, QSet<int> & runningActivity, QSet<int> & finishedActivity);
-    void sleepAMoment();
+    void updatePainter(ServiceGraph & sg, QSet<int> & runningActivity, QSet<int> & finishedActivity,
+                       QSet<int> &bugActivity);
+    void sleepAMoment(int msec = 100);
 //    void oneFlowProcess();
 
     std::vector<std::vector<int> > toGraph(Activity* a);

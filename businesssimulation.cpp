@@ -37,6 +37,7 @@ void BusinessSimulation::run()
     sg = new ServiceGraph[workflowCount];
     QSet<int> *runningActivities = new QSet<int>[workflowCount];
     QSet<int> *finishedActivities = new QSet<int>[workflowCount];
+    QSet<int> *bugActivities = new QSet<int>[workflowCount];
     for (int i = 0; i < workflowCount; i++) {
         runningActivities[i].insert(0);
         qDebug() << runningActivities[i] << finishedActivities[i];
@@ -46,8 +47,8 @@ void BusinessSimulation::run()
     int t = 0;
     while (true)
     {
+        // [0] if is finished ?
         qDebug() << "At t =" << t << " ...";
-        //  判断是否都执行结束
         bool flag = true;
         for (int i = 0; i < workflowCount; i++) {
             if (!runningActivities[i].isEmpty()) {
@@ -58,59 +59,58 @@ void BusinessSimulation::run()
             break;
         }
 
-        // event
+        // [1] event
+        BusinessEvent e = BusinessEvent::random(t, activities, workflowCount);
 
-        // update show
+        // [2] update show
+        bugActivities[e.n].insert(e.a);
+        for (int i = 0; i < workflowCount; i++) {
+            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
+        }
 
-        // sleep a moment
+        // [3] sleep a moment
+        sleepAMoment(1000);
 
-        // do sth
+        // [4] do sth
+        if (e.type == 0) { // 资源不可用
 
-        // update show
+        } else if (e.type == 1) { //需求增加
 
-        // sleep a moment & time passed & update show
+        } else if (e.type == 2) { // 需求减少
+
+        } else if (e.type == 3) { // 需求取消
+
+        } else {
+            qDebug() << "t = " << t << " Normal event.";
+        }
+        for (int i = 0; i < workflowCount; i++) {
+            bugActivities[i].clear();
+        }
+
+        // [5] update show
+        for (int i = 0; i < workflowCount; i++) {
+            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
+        }
+
+        // [6] sleep a moment & time passed & update show
         sleepAMoment();
         for (int i = 0; i < workflowCount; i++) {
             timePassed(activities[i], runningActivities[i], finishedActivities[i]);
-            updatePainter(sg[i], runningActivities[i], finishedActivities[i]);
+            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
             qDebug() << "Flow" << i << ", runningActivities =" << runningActivities[i]
                      << "finishedActivities =" << finishedActivities[i];
         }
 
-        // 下一秒
+        // [7] next second
         t++;
     }
+
+    delete[] runningActivities;
+    delete[] finishedActivities;
+    delete[] bugActivities;
+
     qDebug() << "BusinessSimulation::run() finished.";
 }
-
-//void BusinessSimulation::oneFlowProcess()
-//{
-//    int t = 0;
-//    Activity* startActivity = activities[0];
-//    QSet<int> runningActivity;
-//    QSet<int> finishedActivity;
-//    runningActivity.insert(0);
-//    while (!runningActivity.isEmpty() && ++t)
-//    {
-//        printCurrState(t, runningActivity);
-//        BusinessEvent e = BusinessEvent::random(t);
-//        if (e.type == 0) { // 资源不可用
-
-//        } else if (e.type == 1) { //需求增加
-
-//        } else if (e.type == 2) { // 需求减少
-
-//        } else if (e.type == 3) { // 需求取消
-
-//        } else {
-//            qDebug() << "t = " << t << " Normal event.";
-//        }
-
-//        timePassed(t, startActivity, runningActivity, finishedActivity);
-//        sleepAMoment();
-////        updatePainter(runningActivity, finishedActivity);
-//    }
-//}
 
 void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
 {
@@ -141,16 +141,17 @@ void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & running
     }
 }
 
-void BusinessSimulation::sleepAMoment()
+void BusinessSimulation::sleepAMoment(int msec)
 {
-    QTime dieTime = QTime::currentTime().addMSecs(100);
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
     while( QTime::currentTime() < dieTime ) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
     }
 }
 
 // 更新显示
-void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActivity, QSet<int> &finishedActivity)
+void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActivity,
+                                       QSet<int> &finishedActivity, QSet<int> &bugActivity)
 {
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
@@ -159,8 +160,10 @@ void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActi
         } else if (runningActivity.contains(i)) {
 //            sg->colors[i].setRgb(255, 255, 0);
             sg.colors[i].setRgb(255, 255, 0);
+        } else if (bugActivity.contains(i)) {
+            sg.colors[i].setRgb(255, 0, 0);
         } else {
-
+            sg.colors[i].setRgb(0, 255, 0);
         }
     }
 //    sg->update();
@@ -254,3 +257,33 @@ std::vector<std::vector<int> > BusinessSimulation::toGraph(Activity* a)
 
     return g;
 }
+
+
+//void BusinessSimulation::oneFlowProcess()
+//{
+//    int t = 0;
+//    Activity* startActivity = activities[0];
+//    QSet<int> runningActivity;
+//    QSet<int> finishedActivity;
+//    runningActivity.insert(0);
+//    while (!runningActivity.isEmpty() && ++t)
+//    {
+//        printCurrState(t, runningActivity);
+//        BusinessEvent e = BusinessEvent::random(t);
+//        if (e.type == 0) { // 资源不可用
+
+//        } else if (e.type == 1) { //需求增加
+
+//        } else if (e.type == 2) { // 需求减少
+
+//        } else if (e.type == 3) { // 需求取消
+
+//        } else {
+//            qDebug() << "t = " << t << " Normal event.";
+//        }
+
+//        timePassed(t, startActivity, runningActivity, finishedActivity);
+//        sleepAMoment();
+////        updatePainter(runningActivity, finishedActivity);
+//    }
+//}
