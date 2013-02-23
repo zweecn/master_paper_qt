@@ -1,4 +1,5 @@
 #include "criticalpath.h"
+#include "activity.h"
 
 CriticalPath::CriticalPath()
 {
@@ -118,4 +119,34 @@ void CriticalPath::calculate()
 int CriticalPath::getLatestTime()
 {
     return lc[lc.size()-1];
+}
+
+int CriticalPath::getEarlyComplateTime(Activity* startActivity, int activityNumber)
+{
+    if (activityNumber == 0) {
+        return startActivity[0].blindService->execTime;
+    } else {
+        return ec[activityNumber] + startActivity[0].blindService->execTime;
+    }
+}
+
+int CriticalPath::getLateComplateTime(Activity* startActivity, int activityNumber)
+{
+    return lc[activityNumber] + startActivity[0].blindService->execTime;
+}
+
+int CriticalPath::getEarlyStartTime(Activity* startActivity, int activityNumber)
+{
+    if (activityNumber == 0) {
+        return 0;
+    } else {
+        return ec[activityNumber] - startActivity[activityNumber].blindService->execTime
+                + startActivity[0].blindService->execTime;
+    }
+}
+
+int CriticalPath::getLateStartTime(Activity* startActivity, int activityNumber)
+{
+    return lc[activityNumber] - startActivity[activityNumber].blindService->execTime
+            + startActivity[0].blindService->execTime;
 }

@@ -20,6 +20,7 @@ const int start_member_size = 3;
 BusinessSimulation::BusinessSimulation()
 {
     init();
+    initEarlyLateComplate();
 }
 
 BusinessSimulation::~BusinessSimulation()
@@ -69,16 +70,16 @@ void BusinessSimulation::run()
         }
 
         // [3] sleep a moment
-        sleepAMoment(1000);
+        sleepAMoment(100);
 
         // [4] do sth
-        if (e.type == 0) { // 资源不可用
+        if (e.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
 
-        } else if (e.type == 1) { //需求增加
+        } else if (e.type == BusinessEvent::NEED_ADD) { //需求增加
 
-        } else if (e.type == 2) { // 需求减少
+        } else if (e.type == BusinessEvent::NEED_REDUCE) { // 需求减少
 
-        } else if (e.type == 3) { // 需求取消
+        } else if (e.type == BusinessEvent::NEED_CANCEL) { // 需求取消
 
         } else {
             qDebug() << "t = " << t << " Normal event.";
@@ -125,6 +126,7 @@ void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & running
         tmp->x += 1.0/cp.getLatestTime();
         if (tmp->x >= 1.0) {
             tmp->x = 1.0;
+            tmp->state = Activity::FINISHED;
             finishedActivity.insert(tmpNum);
             // 加入后续的活动
             for (int x = 0; x < WorkFlow::Instance()->getActivitySize(); x++) {
@@ -155,10 +157,10 @@ void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActi
 {
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
-//            sg->colors[i].setRgb(0, 0, 255);
+            //            sg->colors[i].setRgb(0, 0, 255);
             sg.colors[i].setRgb(0, 0, 255);
         } else if (runningActivity.contains(i)) {
-//            sg->colors[i].setRgb(255, 255, 0);
+            //            sg->colors[i].setRgb(255, 255, 0);
             sg.colors[i].setRgb(255, 255, 0);
         } else if (bugActivity.contains(i)) {
             sg.colors[i].setRgb(255, 0, 0);
@@ -166,7 +168,7 @@ void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActi
             sg.colors[i].setRgb(0, 255, 0);
         }
     }
-//    sg->update();
+    //    sg->update();
     sg.update();
 }
 
@@ -178,7 +180,7 @@ void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
 bool BusinessSimulation::init()
 {
     qDebug() << "BusinessSimulation.init() begin...";
-//    connect(sg, SIGNAL(destroyed()), this, SLOT(deleteLater()));
+    //    connect(sg, SIGNAL(destroyed()), this, SLOT(deleteLater()));
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -236,6 +238,29 @@ bool BusinessSimulation::init()
     qDebug() << "BusinessSimulation.init() finised.";
     return true;
 
+}
+
+bool BusinessSimulation::initEarlyLateComplate()
+{
+    qDebug() << "BusinessSimulation::initEarlyLateComplate() begin..." << workflowCount;
+    for (int i = 0; i < workflowCount; i++)
+    {
+        Activity* startActivity = activities[i];
+        qDebug() << startActivity;
+        std::vector<std::vector<int> > g = toGraph(startActivity);
+        CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
+        cp.run();
+        for (int j = 0; j < WorkFlow::Instance()->getActivitySize(); j++)
+        {
+            startActivity[j].earlyStart = cp.getEarlyStartTime(startActivity, j);
+            startActivity[j].lateStart = cp.getLateStartTime(startActivity, j);
+            startActivity[j].earlyComplate = cp.getEarlyComplateTime(startActivity, j);
+            startActivity[j].lateComplate = cp.getLateComplateTime(startActivity, j);
+        }
+    }
+
+    qDebug() << "BusinessSimulation::initEarlyLateComplate() finished.";
+    return true;
 }
 
 std::vector<std::vector<int> > BusinessSimulation::toGraph(Activity* a)

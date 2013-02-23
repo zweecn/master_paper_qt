@@ -24,6 +24,8 @@
 #include <functional>
 #include <climits>
 
+class Activity;
+
 class CriticalPath
 {
 public:
@@ -33,6 +35,10 @@ public:
     void runExample();
     void run();
     int getLatestTime();
+    int getEarlyComplateTime(Activity* startActivity, int activityNumber);
+    int getLateComplateTime(Activity* startActivity, int activityNumber);
+    int getEarlyStartTime(Activity* startActivity, int activityNumber);
+    int getLateStartTime(Activity* startActivity, int activityNumber);
 
 private:
     int n;                        // n £º¶¥µã¸öÊý

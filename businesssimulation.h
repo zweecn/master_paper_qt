@@ -18,6 +18,7 @@ public:
     void run();
 private:
     bool init();
+    bool initEarlyLateComplate();
     void printCurrState(int t, QSet<int> & runningActivity);
     void timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity);
     void updatePainter(ServiceGraph & sg, QSet<int> & runningActivity, QSet<int> & finishedActivity,

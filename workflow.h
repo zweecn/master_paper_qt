@@ -24,6 +24,9 @@ public:
     QSet<int> getSuffixs(int x);
     QSet<int> getPrefixs(int x);
 
+    bool makeService();
+    bool makeResource();
+
     QList<AtomService> all_service;
     QList<Resource> all_resource;
 

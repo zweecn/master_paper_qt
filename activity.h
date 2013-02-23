@@ -10,6 +10,8 @@ class Activity
 public:
     Activity();
 
+    enum {FINISHED = -1};
+
     AtomService *blindService;
     Resource *resource;
 
@@ -18,6 +20,11 @@ public:
     int state;
     int redoCount;
     int replaceCount;
+
+    int earlyStart;
+    int lateStart;
+    int earlyComplate;
+    int lateComplate;
 };
 
 #endif // ACTIVITY_H

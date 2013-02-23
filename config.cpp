@@ -41,17 +41,72 @@ bool Config::init()
     return true;
 }
 
+//int Config::getUCTypeCount()
+//{
+//    return confMap["UC_TYPE_COUNT"].toInt();
+//}
+
+int Config::getWorkflowCount()
+{
+    return confMap["WORKFLOW_COUNT"].toInt();
+}
+
+int Config::getOneActivityServiceCount()
+{
+    return confMap["ONE_ACTIVITY_SERVICE_COUNT"].toInt();
+}
+
+int Config::getServiceMinPrice()
+{
+    return confMap["SERVICE_MIN_PRICE"].toInt();
+}
+
+int Config::getServiceMaxPrice()
+{
+    return confMap["SERVICE_MAX_PRICE"].toInt();
+}
+
+int Config::getServiceMinReliability()
+{
+    return confMap["SERVICE_MIN_RELIABILITY"].toInt();
+}
+
+int Config::getServiceMaxReliability()
+{
+    return confMap["SERVICE_MAX_RELIABILITY"].toInt();
+}
+
+int Config::getServiceMinExectime()
+{
+    return confMap["SERVICE_MIN_EXECTIME"].toInt();
+}
+
+int Config::getServiceMaxExectime()
+{
+    return confMap["SERVICE_MAX_EXECTIME"].toInt();
+}
+
+int Config::getResourceCount()
+{
+    return confMap["RESOURCE_COUNT"].toInt();
+}
+
 int Config::getResourceTypeCount()
 {
     return confMap["RESOURCE_TYPE_COUNT"].toInt();
 }
 
-int Config::getUCTypeCount()
+int Config::getResourceUseTypeCount()
 {
-    return confMap["UC_TYPE_COUNT"].toInt();
+    return confMap["RESOURCE_USE_TYPE_COUNT"].toInt();
 }
 
-int Config::getWorkflowCount()
+int Config::getResourceMinPriceCount()
 {
-    return confMap["WORKFLOW_COUNT"].toInt();
+    return confMap["RESOURCE_MIN_PRICE"].toInt();
+}
+
+int Config::getResourceMaxPriceCount()
+{
+    return confMap["RESOURCE_Max_PRICE"].toInt();
 }

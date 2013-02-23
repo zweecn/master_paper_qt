@@ -14,9 +14,22 @@ public:
         return _instance;
     }
 
-    int getResourceTypeCount();
-    int getUCTypeCount();
+
+//    int getUCTypeCount();
     int getWorkflowCount();
+    int getOneActivityServiceCount();
+    int getServiceMinPrice();
+    int getServiceMaxPrice();
+    int getServiceMinReliability();
+    int getServiceMaxReliability();
+    int getServiceMinExectime();
+    int getServiceMaxExectime();
+
+    int getResourceCount();
+    int getResourceTypeCount();
+    int getResourceUseTypeCount();
+    int getResourceMinPriceCount();
+    int getResourceMaxPriceCount();
 
 protected:
     Config();

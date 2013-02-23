@@ -10,6 +10,8 @@
 #include "resource.h"
 #include "businesssimulation.h"
 #include "criticalpath.h"
+#include "workflow.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +30,8 @@ int main(int argc, char *argv[])
 //    ServiceInfoTable sit;
 //    sit.show();
 
+    WorkFlow::Instance()->makeService();
+    WorkFlow::Instance()->makeResource();
     BusinessSimulation bs;
     bs.run();
 

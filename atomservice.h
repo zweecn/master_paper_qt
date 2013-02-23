@@ -13,7 +13,7 @@ public:
     bool free;
 
     int price;
-    double reliability;
+    int reliability;
     int execTime;
 
     bool operator ==(AtomService &other);

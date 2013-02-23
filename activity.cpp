@@ -10,4 +10,9 @@ Activity::Activity()
     state = 0;
     redoCount = 0;
     replaceCount = 0;
+
+    earlyStart = 0;
+    lateStart = 0;
+    earlyComplate = 0;
+    lateComplate = 0;
 }

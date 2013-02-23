@@ -15,7 +15,8 @@ public:
             RESOUCE_NOT_USE = 0,
             NEED_ADD = 1,
             NEED_REDUCE = 2,
-            NEED_CANCEL = 3
+            NEED_CANCEL = 3,
+            UC_COUNT = 4
         };
 
     int t;      // time
