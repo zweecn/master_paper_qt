@@ -8,6 +8,8 @@
 #include "criticalpath.h"
 #include "businessevent.h"
 #include "servicegraph.h"
+#include "intervalcoverage.h"
+
 #include <QApplication>
 #include <QTime>
 #include <QtGui>
@@ -61,10 +63,10 @@ void BusinessSimulation::run()
         }
 
         // [1] event
-        BusinessEvent e = BusinessEvent::random(t, activities, workflowCount);
+        BusinessEvent event = BusinessEvent::random(t, activities, workflowCount);
 
         // [2] update show
-        bugActivities[e.n].insert(e.a);
+        bugActivities[event.n].insert(event.a);
         for (int i = 0; i < workflowCount; i++) {
             updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
         }
@@ -73,16 +75,19 @@ void BusinessSimulation::run()
         sleepAMoment(100);
 
         // [4] do sth
-        if (e.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
-
-        } else if (e.type == BusinessEvent::NEED_ADD) { //需求增加
-
-        } else if (e.type == BusinessEvent::NEED_REDUCE) { // 需求减少
-
-        } else if (e.type == BusinessEvent::NEED_CANCEL) { // 需求取消
-
+        if (event.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
+            qDebug() << "RESOUCE_NOT_USE";
+            Activity * bug = &activities[event.n][event.a];
+            int reward = resourceReplace(bug, runningActivities[event.n]);
+            sleepAMoment(2000);
+        } else if (event.type == BusinessEvent::NEED_ADD) { //需求增加
+            qDebug() << "NEED_ADD";
+        } else if (event.type == BusinessEvent::NEED_REDUCE) { // 需求减少
+            qDebug() << "NEED_REDUCE";
+        } else if (event.type == BusinessEvent::NEED_CANCEL) { // 需求取消
+            qDebug() << "NEED_CANCEL";
         } else {
-            qDebug() << "t = " << t << " Normal event.";
+            qDebug() << "Normal event";
         }
         for (int i = 0; i < workflowCount; i++) {
             bugActivities[i].clear();
@@ -111,6 +116,61 @@ void BusinessSimulation::run()
     delete[] bugActivities;
 
     qDebug() << "BusinessSimulation::run() finished.";
+}
+
+int BusinessSimulation::resourceReplace(Activity *bug, QSet<int> & running)
+{
+    QList<Resource> & all_resource = WorkFlow::Instance()->all_resource;
+    Resource* resource = NULL;
+    for (int i = 0; i < all_resource.size(); i++)
+    {
+        if (all_resource[i].type == bug->resource->type
+                && all_resource[i].used < all_resource[i].use_type
+                && all_resource[i].id != bug->resource->id)
+        {
+            if (resource == NULL) {
+                resource = &all_resource[i];
+            } else if (all_resource[i].price < resource->price) {
+                resource = &all_resource[i];
+            }
+        }
+    }
+    qDebug() << "Old = " << bug->resource->id << "New = " << resource->id;
+    // Calcacute the reward and return it
+    int reward = resource->price;
+//    qDebug() << "resource->price =" << reward << "bug->resource->price = " << bug->resource->price;
+    if (!running.contains(bug->number)) {
+        reward -= bug->resource->price;
+    }
+    bug->resource = resource;
+    bug->resource->used++;
+    return reward;
+}
+
+int BusinessSimulation::termateDemand(Activity *firstActivity)
+{
+    return 0;
+}
+
+int BusinessSimulation::doNothing(Activity *firstActivity)
+{
+    return 0;
+}
+
+int BusinessSimulation::transResource(int bugFlow, Activity *bug)
+{
+    for (int i = 0; i < workflowCount; i++)
+    {
+        if (i == bugFlow)
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+    return 0;
 }
 
 void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
@@ -187,12 +247,12 @@ bool BusinessSimulation::init()
         qDebug() << "Can not open start_filename file.";
         return false;
     }
-    QTextStream floStream(&file);
+    QTextStream stream(&file);
     QString line;
     QTextCodec *codec=QTextCodec::codecForName("GBK");
-    floStream.setCodec(codec);
-    line = codec->fromUnicode(floStream.readLine());
-    line = line = codec->fromUnicode(floStream.readLine());
+    stream.setCodec(codec);
+    line = codec->fromUnicode(stream.readLine());
+    line = line = codec->fromUnicode(stream.readLine());
     workflowCount = line.toInt();
     if (workflowCount <= 0)
     {
@@ -206,7 +266,7 @@ bool BusinessSimulation::init()
         activities[i] = new Activity[activitySize];
         for (int j = 0; j < activitySize; j++)
         {
-            line = codec->fromUnicode(floStream.readLine());
+            line = codec->fromUnicode(stream.readLine());
             QStringList list = line.split("\t");
             if (list.size() != start_member_size) {
                 continue;
@@ -221,6 +281,7 @@ bool BusinessSimulation::init()
                 if (all_service[k].id == serviceId)
                 {
                     activities[i][j].blindService = &all_service[k];
+                    activities[i][j].blindService->free = false;
                 }
             }
             for (int k = 0; k < all_resource.size(); k++)
@@ -228,12 +289,19 @@ bool BusinessSimulation::init()
                 if (all_resource[k].id == resourceId)
                 {
                     activities[i][j].resource = &all_resource[k];
+                    activities[i][j].resource->used++;
                 }
             }
         }
-        line = codec->fromUnicode(floStream.readLine());
+        line = codec->fromUnicode(stream.readLine());
     }
     file.close();
+
+    workflowState = new int[workflowCount];
+    for (int i = 0; i < workflowCount; i++)
+    {
+        workflowState[i] = WORKFLOW_READY;
+    }
 
     qDebug() << "BusinessSimulation.init() finised.";
     return true;
@@ -246,7 +314,6 @@ bool BusinessSimulation::initEarlyLateComplate()
     for (int i = 0; i < workflowCount; i++)
     {
         Activity* startActivity = activities[i];
-        qDebug() << startActivity;
         std::vector<std::vector<int> > g = toGraph(startActivity);
         CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
         cp.run();
@@ -283,6 +350,10 @@ std::vector<std::vector<int> > BusinessSimulation::toGraph(Activity* a)
     return g;
 }
 
+SegMent* BusinessSimulation::toSegMent(Activity *a)
+{
+    return NULL;
+}
 
 //void BusinessSimulation::oneFlowProcess()
 //{

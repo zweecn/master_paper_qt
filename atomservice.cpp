@@ -2,6 +2,7 @@
 
 AtomService::AtomService()
 {
+
 }
 
 bool AtomService::operator ==(AtomService &other)

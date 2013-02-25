@@ -9,6 +9,7 @@ public:
     int type;
     int use_type;
     int price;
+    int used;
 
     bool operator ==(Resource &other);
 };

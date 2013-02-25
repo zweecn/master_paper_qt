@@ -148,7 +148,8 @@ bool WorkFlow::readResource()
         r.id = list[0].toInt();
         r.type = list[1].toInt();
         r.use_type = list[2].toInt();
-        r.type = list[3].toInt();
+        r.price = list[3].toInt();
+        r.used = 0;
         all_resource.append(r);
 //        qDebug() << line;
 //        qWarning(line);
