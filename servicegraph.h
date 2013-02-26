@@ -16,6 +16,10 @@ public:
     QList<QColor> colors;
     int** graph;
 
+    int flowId;
+    int recommendHeight;
+    int recommendWidth;
+
 signals:
 
 public slots:
@@ -23,6 +27,9 @@ public slots:
 protected:
     void paintEvent(QPaintEvent *);
     bool init();
+private:
+
+
 };
 
 #endif // SERVICEGRAPH_H

@@ -103,7 +103,7 @@ void DrawGraph::DrawText(QPaintDevice *device, const QString &str)
     }
     painter.setPen(Qt::SolidLine);
     if (str != "") {
-        painter.drawText(QPoint(20, 20), str);
+        painter.drawText(QPoint(30, 30), str);
     } else {
         QString planQos("预订全局QoS(Price, Exectime)");
         QString currQos("当前全局QoS(Price, Exectime)");
@@ -111,7 +111,7 @@ void DrawGraph::DrawText(QPaintDevice *device, const QString &str)
         QString op("OP(不作为/重试/替换/重组/终止)");
         QString info(planQos + "\n" + currQos + "\n" + event + "\n" + op);
 //        qDebug() << info;
-        painter.drawText(QPoint(20, 20), info);
+        painter.drawText(QPoint(30, 30), info);
     }
 
     painter.end();

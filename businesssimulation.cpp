@@ -29,24 +29,26 @@ BusinessSimulation::BusinessSimulation()
 
 BusinessSimulation::~BusinessSimulation()
 {
-    delete sg;
+//    delete sg;
     for (int i = 0; i < workflowCount; i++) {
         delete[] activities[i];
     }
     delete[] activities;
 }
 
-void BusinessSimulation::run()
+void BusinessSimulation::run(ServiceGraph* sg)
 {
     qDebug() << "BusinessSimulation::run() begin...";
-    sg = new ServiceGraph[workflowCount];
+//    sg = new ServiceGraph[workflowCount];
+//    this->sg = _sg;
     QSet<int> *runningActivities = new QSet<int>[workflowCount];
     QSet<int> *finishedActivities = new QSet<int>[workflowCount];
     QSet<int> *bugActivities = new QSet<int>[workflowCount];
+
     for (int i = 0; i < workflowCount; i++) {
         runningActivities[i].insert(0);
         qDebug() << runningActivities[i] << finishedActivities[i];
-        sg[i].show();
+//        sg[i].show();
     }
 
     int t = 0;
@@ -427,6 +429,11 @@ SegMent* BusinessSimulation::toSegMent(Activity *a)
         data[i].price = a[i].resource->price;
     }
     return data;
+}
+
+int BusinessSimulation::getWorkflowCount()
+{
+    return workflowCount;
 }
 
 //void BusinessSimulation::oneFlowProcess()

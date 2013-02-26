@@ -12,6 +12,7 @@
 #include "criticalpath.h"
 #include "workflow.h"
 #include "intervalcoverage.h"
+#include "businessmainwidget.h"
 
 
 int main(int argc, char *argv[])
@@ -35,12 +36,18 @@ int main(int argc, char *argv[])
 //    WorkFlow::Instance()->makeResource();
 
 //    IntervalCoverage::runExample();
-    BusinessSimulation bs;
-    bs.run();
 
+//    BusinessSimulation bs;
+//    bs.run();
+
+    BusinessMainWidget bmw;
+    bmw.show();
 
 //    CriticalPath cp;
 //    cp.runExample();
+
+//    ServiceGraph sg;
+//    sg.show();
 
     return a.exec();
 }

@@ -5,7 +5,7 @@ ServiceGraph::ServiceGraph(QWidget *parent) :
     QWidget(parent)
 {
     init();
-    resize(700, 400);
+    resize(recommendWidth, recommendHeight);
     setWindowTitle(tr("服务流程图"));
 }
 
@@ -19,6 +19,10 @@ ServiceGraph::~ServiceGraph()
 
 bool ServiceGraph::init()
 {
+    flowId = 0;
+    recommendHeight = 200;
+    recommendWidth = 350;
+
     pointsName.clear();
     for (int i = 0; i < 9; i++) {
         pointsName.push_back(QString("a%1").arg(i+1));
@@ -34,6 +38,11 @@ bool ServiceGraph::init()
     points.push_back(QPoint(400, 250));
     points.push_back(QPoint(500, 250));
     points.push_back(QPoint(600, 250));
+
+    for (int i = 0; i < points.size(); i++) {
+        points[i].setX(points[i].x()/2);
+        points[i].setY(points[i].y()/2);
+    }
 
     colors.clear();
     for (int i = 0; i < 9; i++) {
@@ -62,5 +71,5 @@ bool ServiceGraph::init()
 
 void ServiceGraph::paintEvent(QPaintEvent *)
 {
-    DrawGraph::DrawAll(this, points, pointsName, colors, graph, "");
+    DrawGraph::DrawAll(this, points, pointsName, colors, graph, tr("流程 %1").arg(flowId));
 }

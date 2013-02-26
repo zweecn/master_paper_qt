@@ -17,12 +17,14 @@ public:
 //    BusinessSimulation(QWidget *parent = 0);
     ~BusinessSimulation();
 
-    void run();
+    void run(ServiceGraph* sg);
 
     int resourceReplace(Activity* bug, QSet<int> & running);
     int termateDemand(Activity *bug, Activity* firstActivity);
     int doNothing(Activity *bug, Activity* firstActivity);
     int transResource(int bugFlow, Activity* bug);
+
+    int getWorkflowCount();
 
 private:
     bool init();
@@ -60,7 +62,7 @@ private:
 
 
     // UI
-    ServiceGraph* sg;
+//    ServiceGraph* sg;
 };
 
 #endif // BUSINESSSIMULATION_H
