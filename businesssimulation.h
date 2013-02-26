@@ -7,6 +7,7 @@
 
 class Activity;
 class ServiceGraph;
+class BusinessAction;
 
 class BusinessSimulation  //: public QWidget
 {
@@ -19,8 +20,8 @@ public:
     void run();
 
     int resourceReplace(Activity* bug, QSet<int> & running);
-    int termateDemand(Activity* firstActivity);
-    int doNothing(Activity* firstActivity);
+    int termateDemand(Activity *bug, Activity* firstActivity);
+    int doNothing(Activity *bug, Activity* firstActivity);
     int transResource(int bugFlow, Activity* bug);
 
 private:
@@ -36,13 +37,27 @@ private:
     std::vector<std::vector<int> > toGraph(Activity* a);
     SegMent* toSegMent(Activity* a);
 
+    BusinessAction *actions;
+    enum
+    {
+        REPLACE_POS = 0,
+        TRANS_POS = 1,
+        TERMINATE_POS = 2,
+        DO_NOTHING_POS = 3,
+        ADD_NEW_NEED_POS = 4,
+        ACTIONS_COUNT = 5
+    };
     int workflowCount;
     Activity** activities;
     int *workflowState;
-    enum {WORKFLOW_FINISHED = 1,
-          WORKFLOW_FAILED = 2,
-          WORKFLOW_RUNNING = 3,
-          WORKFLOW_READY = 4};
+    enum
+    {
+        WORKFLOW_FINISHED = 1,
+        WORKFLOW_FAILED = 2,
+        WORKFLOW_RUNNING = 3,
+        WORKFLOW_READY = 4
+    };
+
 
     // UI
     ServiceGraph* sg;

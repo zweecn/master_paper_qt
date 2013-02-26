@@ -34,9 +34,9 @@ int main(int argc, char *argv[])
 //    WorkFlow::Instance()->makeService();
 //    WorkFlow::Instance()->makeResource();
 
-    IntervalCoverage::runExample();
-//    BusinessSimulation bs;
-//    bs.run();
+//    IntervalCoverage::runExample();
+    BusinessSimulation bs;
+    bs.run();
 
 
 //    CriticalPath cp;

@@ -9,6 +9,8 @@
 #include "businessevent.h"
 #include "servicegraph.h"
 #include "intervalcoverage.h"
+#include "businessaction.h"
+#include "intervalcoverage.h"
 
 #include <QApplication>
 #include <QTime>
@@ -74,17 +76,24 @@ void BusinessSimulation::run()
         // [3] sleep a moment
         sleepAMoment(100);
 
+        actions = new BusinessAction[ACTIONS_COUNT];
+        Activity * bug = &activities[event.n][event.a];
         // [4] do sth
         if (event.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
             qDebug() << "RESOUCE_NOT_USE";
-            Activity * bug = &activities[event.n][event.a];
-            int reward = resourceReplace(bug, runningActivities[event.n]);
-            sleepAMoment(2000);
+            resourceReplace(bug, runningActivities[event.n]);
+            transResource(event.n, bug);
+            termateDemand(bug, activities[event.n]);
         } else if (event.type == BusinessEvent::NEED_ADD) { //需求增加
             qDebug() << "NEED_ADD";
+            resourceReplace(bug, runningActivities[event.n]);
+            transResource(event.n, bug);
+            termateDemand(bug, activities[event.n]);
         } else if (event.type == BusinessEvent::NEED_REDUCE) { // 需求减少
+            doNothing(bug, activities[event.n]);
             qDebug() << "NEED_REDUCE";
         } else if (event.type == BusinessEvent::NEED_CANCEL) { // 需求取消
+            termateDemand(bug, activities[event.n]);
             qDebug() << "NEED_CANCEL";
         } else {
             qDebug() << "Normal event";
@@ -93,6 +102,16 @@ void BusinessSimulation::run()
             bugActivities[i].clear();
         }
 
+        BusinessAction *resAction = &actions[0];
+        for (int i = 1; i < ACTIONS_COUNT; i++)
+        {
+            if (resAction->reward > actions[i].reward)
+            {
+                resAction = &actions[i];
+            }
+        }
+
+        sleepAMoment(2000);
         // [5] update show
         for (int i = 0; i < workflowCount; i++) {
             updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
@@ -111,6 +130,7 @@ void BusinessSimulation::run()
         t++;
     }
 
+    delete[] actions;
     delete[] runningActivities;
     delete[] finishedActivities;
     delete[] bugActivities;
@@ -142,23 +162,48 @@ int BusinessSimulation::resourceReplace(Activity *bug, QSet<int> & running)
     if (!running.contains(bug->number)) {
         reward -= bug->resource->price;
     }
-    bug->resource = resource;
-    bug->resource->used++;
+//    bug->resource = resource;
+//    bug->resource->used++;
+
+    actions[REPLACE_POS].bug = bug;
+    actions[REPLACE_POS].type = BusinessAction::RESOURCE_REPLACE;
+    actions[REPLACE_POS].reward = reward;
+
+    actions[REPLACE_POS].replaceResource = resource;
+
     return reward;
 }
 
-int BusinessSimulation::termateDemand(Activity *firstActivity)
+int BusinessSimulation::termateDemand(Activity *bug, Activity *firstActivity)
 {
-    return 0;
+    int res = 0;
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        res += (firstActivity[i].resource->price
+                + firstActivity[i].blindService->price);
+    }
+
+    actions[TERMINATE_POS].bug = bug;
+    actions[TERMINATE_POS].type = BusinessAction::RESOURCE_TERMINATE_NEED;
+    actions[TERMINATE_POS].reward = res;
+
+    return res;
 }
 
-int BusinessSimulation::doNothing(Activity *firstActivity)
+int BusinessSimulation::doNothing(Activity *bug, Activity *firstActivity)
 {
+    actions[DO_NOTHING_POS].bug = bug;
+    actions[DO_NOTHING_POS].type = BusinessAction::RESOURCE_DO_NOTHING;
+    actions[DO_NOTHING_POS].reward = 0;
+
     return 0;
 }
 
 int BusinessSimulation::transResource(int bugFlow, Activity *bug)
 {
+    int minCost = INT_MAX;
+    int otherFlow = -1;
+    QList<int> minResult;
     for (int i = 0; i < workflowCount; i++)
     {
         if (i == bugFlow)
@@ -167,10 +212,31 @@ int BusinessSimulation::transResource(int bugFlow, Activity *bug)
         }
         else
         {
-
+            SegMent *data = toSegMent(activities[i]);
+            IntervalCoverage *ic = new IntervalCoverage(workflowCount, data, bug->earlyStart, bug->lateComplate);
+            ic->minCost();
+            if (minCost < ic->getResult())
+            {
+                minCost = ic->getResult();
+                minResult = ic->getResultDataID();
+                otherFlow = i;
+            }
+            delete[] data;
+            delete ic;
         }
     }
-    return 0;
+
+    actions[TRANS_POS].bug = bug;
+    actions[TRANS_POS].type = BusinessAction::RESOURCE_TRANSPORT;
+    actions[TRANS_POS].reward = minCost;
+
+    actions[TRANS_POS].otherFlowId = otherFlow;
+    actions[TRANS_POS].otherActivities = minResult;
+    for (int i = 0; i < minResult.size(); i++) {
+        actions[TRANS_POS].otherFlowResource
+                .append(activities[otherFlow][minResult[i]].resource);
+    }
+    return minCost;
 }
 
 void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
@@ -352,7 +418,15 @@ std::vector<std::vector<int> > BusinessSimulation::toGraph(Activity* a)
 
 SegMent* BusinessSimulation::toSegMent(Activity *a)
 {
-    return NULL;
+    SegMent *data = new SegMent[workflowCount];
+    for (int i = 0; i < workflowCount; i++)
+    {
+        data[i].id = i;
+        data[i].left = a[i].earlyStart;
+        data[i].right = a[i].lateComplate;
+        data[i].price = a[i].resource->price;
+    }
+    return data;
 }
 
 //void BusinessSimulation::oneFlowProcess()

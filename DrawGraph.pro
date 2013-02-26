@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     businessevent.cpp \
     config.cpp \
     criticalpath.cpp \
-    intervalcoverage.cpp
+    intervalcoverage.cpp \
+    businessaction.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -39,9 +40,12 @@ HEADERS  += widget.h \
     businessevent.h \
     config.h \
     criticalpath.h \
-    intervalcoverage.h
+    intervalcoverage.h \
+    businessaction.h
 
 FORMS    +=
+
+
 
 
 

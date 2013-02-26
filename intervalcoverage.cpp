@@ -69,7 +69,7 @@ bool IntervalCoverage::freeMem()
     if (--prefix)
         delete[] prefix;
 
-    std::cout << "Free mem succeed.\n";
+//    std::cout << "Free mem succeed.\n";
     return true;
 }
 
