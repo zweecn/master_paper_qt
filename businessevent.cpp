@@ -15,7 +15,7 @@ BusinessEvent::BusinessEvent()
     type = NORMAIL;   // event type
     t1 = 0;     // start time
     t2 = 0;     // end time
-    amount = 0; // amount of resource
+//    amount = 0; // amount of resource
 }
 
 BusinessEvent BusinessEvent::random(int currTime, Activity ** activities, int workflowCount)

@@ -283,21 +283,20 @@ void BusinessSimulation::sleepAMoment(int msec)
 void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActivity,
                                        QSet<int> &finishedActivity, QSet<int> &bugActivity)
 {
+    QList<QColor> colors = sg.getColors();
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
-            //            sg->colors[i].setRgb(0, 0, 255);
-            sg.colors[i].setRgb(0, 0, 255);
+            colors[i].setRgb(0, 0, 255);
         } else if (runningActivity.contains(i)) {
-            //            sg->colors[i].setRgb(255, 255, 0);
-            sg.colors[i].setRgb(255, 255, 0);
+            colors[i].setRgb(255, 255, 0);
         } else if (bugActivity.contains(i)) {
-            sg.colors[i].setRgb(255, 0, 0);
+            colors[i].setRgb(255, 0, 0);
         } else {
-            sg.colors[i].setRgb(0, 255, 0);
+            colors[i].setRgb(0, 255, 0);
         }
     }
-    //    sg->update();
-    sg.update();
+    sg.setColors(colors);
+//    sg.update();
 }
 
 void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)

@@ -51,6 +51,22 @@ void BusinessMainWidget::createEventGroupBox()
 void BusinessMainWidget::createActionGroupBox()
 {
     actionGroupBox = new QGroupBox(tr("动作(Actions)"));
+
+    actionTable = new QTableWidget();
+    actionTable->setColumnCount(3);
+    actionTable->setRowCount(3);
+    QStringList header;
+    header << "动作" << "收益" << "详细说明";
+    actionTable->setHorizontalHeaderLabels(header);
+    actionTable->horizontalHeader()->setStretchLastSection(true);
+    actionTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    actionTable->setEditTriggers (QAbstractItemView::NoEditTriggers);
+    actionTable->setSelectionMode (QAbstractItemView::SingleSelection);
+    actionTable->setSortingEnabled(true);
+
+    QHBoxLayout *actionLayout = new QHBoxLayout;
+    actionLayout->addWidget(actionTable);
+    actionGroupBox->setLayout(actionLayout);
 }
 
 void BusinessMainWidget::createButtonGroupBox()

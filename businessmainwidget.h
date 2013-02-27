@@ -29,6 +29,7 @@ private:
     QGroupBox *eventGroupBox;
 
     QGroupBox *actionGroupBox;
+    QTableWidget *actionTable;
 
     QGroupBox *buttonGroupBox;
     QPushButton *autoStartButton;

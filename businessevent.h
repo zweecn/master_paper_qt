@@ -25,7 +25,7 @@ public:
     int type;   // event type
     int t1;     // start time
     int t2;     // end time
-    int amount; // amount of resource
+//    int amount; // amount of resource
 };
 
 #endif // BUSINESSEVENT_H

@@ -7,6 +7,8 @@ ServiceGraph::ServiceGraph(QWidget *parent) :
     init();
     resize(recommendWidth, recommendHeight);
     setWindowTitle(tr("服务流程图"));
+
+    connect(this, SIGNAL(updateGraphSignal()), this, SLOT(update()));
 }
 
 ServiceGraph::~ServiceGraph()
@@ -72,4 +74,70 @@ bool ServiceGraph::init()
 void ServiceGraph::paintEvent(QPaintEvent *)
 {
     DrawGraph::DrawAll(this, points, pointsName, colors, graph, tr("流程 %1").arg(flowId));
+}
+
+
+void ServiceGraph::setPointsName(QList<QString>& _pointsName)
+{
+    pointsName = _pointsName;
+    emit updateGraphSignal();
+}
+
+void ServiceGraph::setPoints(QList<QPoint>& _points)
+{
+    points = _points;
+    emit updateGraphSignal();
+}
+
+void ServiceGraph::setColors(QList<QColor>& _colors)
+{
+    colors = _colors;
+    emit updateGraphSignal();
+}
+
+void ServiceGraph::setGraph(int ** _graph)
+{
+    graph = _graph;
+    emit updateGraphSignal();
+}
+
+void ServiceGraph::setFlowId(int _flowId)
+{
+    flowId = _flowId;
+    emit updateGraphSignal();
+}
+
+QList<QString>& ServiceGraph::getPointsName()
+{
+    return pointsName;
+}
+
+QList<QPoint>& ServiceGraph::getPoints()
+{
+    return points;
+}
+
+QList<QColor>& ServiceGraph::getColors()
+{
+    return colors;
+}
+
+int** ServiceGraph::getGraph()
+{
+    return graph;
+}
+
+int ServiceGraph::getFlowId()
+{
+    return flowId;
+}
+
+int ServiceGraph::getRecommedHeight()
+{
+    return recommendHeight;
+}
+
+int ServiceGraph::getRecommedWidth()
+{
+    return recommendWidth;
 }
