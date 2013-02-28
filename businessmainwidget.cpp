@@ -21,7 +21,7 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     setLayout(mainLayout);
 
     setWindowTitle(tr("用户操作界面"));
-    resize(800, 600);
+    resize(800, 700);
 }
 
 void BusinessMainWidget::createFlowGroupBox()
@@ -30,8 +30,8 @@ void BusinessMainWidget::createFlowGroupBox()
     sg = new ServiceGraph[bs->getWorkflowCount()];
     for (int i = 0; i < bs->getWorkflowCount(); i++)
     {
-        sg[i].setFixedHeight(sg[i].recommendHeight);
-        sg[i].flowId = i;
+        sg[i].setFixedHeight(sg[i].getRecommedHeight());
+        sg[i].setFlowId(i);
     }
     QGridLayout *flowLayout = new QGridLayout;
     for (int i = 0; i < bs->getWorkflowCount(); i++)
@@ -44,28 +44,21 @@ void BusinessMainWidget::createFlowGroupBox()
 void BusinessMainWidget::createEventGroupBox()
 {
     eventGroupBox = new QGroupBox(tr("事件(Event)"));
+    eventWidget = new BusinessEventWidget();
+
     QHBoxLayout *eventLayout = new QHBoxLayout;
+    eventLayout->addWidget(eventWidget);
     eventGroupBox->setLayout(eventLayout);
+    eventGroupBox->setFixedHeight(110);
 }
 
 void BusinessMainWidget::createActionGroupBox()
 {
     actionGroupBox = new QGroupBox(tr("动作(Actions)"));
-
-    actionTable = new QTableWidget();
-    actionTable->setColumnCount(3);
-    actionTable->setRowCount(3);
-    QStringList header;
-    header << "动作" << "收益" << "详细说明";
-    actionTable->setHorizontalHeaderLabels(header);
-    actionTable->horizontalHeader()->setStretchLastSection(true);
-    actionTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    actionTable->setEditTriggers (QAbstractItemView::NoEditTriggers);
-    actionTable->setSelectionMode (QAbstractItemView::SingleSelection);
-    actionTable->setSortingEnabled(true);
+    actionWidget = new BusinessActionWidget();
 
     QHBoxLayout *actionLayout = new QHBoxLayout;
-    actionLayout->addWidget(actionTable);
+    actionLayout->addWidget(actionWidget);
     actionGroupBox->setLayout(actionLayout);
 }
 
@@ -93,6 +86,9 @@ void BusinessMainWidget::init()
 void BusinessMainWidget::autoRun()
 {
     autoStartButton->setEnabled(false);
-    bs->run(sg);
+    bs->setServiceGraph(sg);
+    bs->setBusinessEventWidget(eventWidget);
+    bs->setBusinessActionWidget(actionWidget);
+    bs->run();
     autoStartButton->setEnabled(true);
 }

@@ -11,6 +11,8 @@
 #include "intervalcoverage.h"
 #include "businessaction.h"
 #include "intervalcoverage.h"
+#include "businesseventwidget.h"
+#include "businessactionwidget.h"
 
 #include <QApplication>
 #include <QTime>
@@ -29,119 +31,195 @@ BusinessSimulation::BusinessSimulation()
 
 BusinessSimulation::~BusinessSimulation()
 {
-//    delete sg;
     for (int i = 0; i < workflowCount; i++) {
         delete[] activities[i];
     }
     delete[] activities;
-}
-
-void BusinessSimulation::run(ServiceGraph* sg)
-{
-    qDebug() << "BusinessSimulation::run() begin...";
-//    sg = new ServiceGraph[workflowCount];
-//    this->sg = _sg;
-    QSet<int> *runningActivities = new QSet<int>[workflowCount];
-    QSet<int> *finishedActivities = new QSet<int>[workflowCount];
-    QSet<int> *bugActivities = new QSet<int>[workflowCount];
-
-    for (int i = 0; i < workflowCount; i++) {
-        runningActivities[i].insert(0);
-        qDebug() << runningActivities[i] << finishedActivities[i];
-//        sg[i].show();
-    }
-
-    int t = 0;
-    while (true)
-    {
-        // [0] if is finished ?
-        qDebug() << "At t =" << t << " ...";
-        bool flag = true;
-        for (int i = 0; i < workflowCount; i++) {
-            if (!runningActivities[i].isEmpty()) {
-                flag = false;
-            }
-        }
-        if (flag) {
-            break;
-        }
-
-        // [1] event
-        BusinessEvent event = BusinessEvent::random(t, activities, workflowCount);
-
-        // [2] update show
-        bugActivities[event.n].insert(event.a);
-        for (int i = 0; i < workflowCount; i++) {
-            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
-        }
-
-        // [3] sleep a moment
-        sleepAMoment(100);
-
-        actions = new BusinessAction[ACTIONS_COUNT];
-        Activity * bug = &activities[event.n][event.a];
-        // [4] do sth
-        if (event.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
-            qDebug() << "RESOUCE_NOT_USE";
-            resourceReplace(bug, runningActivities[event.n]);
-            transResource(event.n, bug);
-            termateDemand(bug, activities[event.n]);
-        } else if (event.type == BusinessEvent::NEED_ADD) { //需求增加
-            qDebug() << "NEED_ADD";
-            resourceReplace(bug, runningActivities[event.n]);
-            transResource(event.n, bug);
-            termateDemand(bug, activities[event.n]);
-        } else if (event.type == BusinessEvent::NEED_REDUCE) { // 需求减少
-            doNothing(bug, activities[event.n]);
-            qDebug() << "NEED_REDUCE";
-        } else if (event.type == BusinessEvent::NEED_CANCEL) { // 需求取消
-            termateDemand(bug, activities[event.n]);
-            qDebug() << "NEED_CANCEL";
-        } else {
-            qDebug() << "Normal event";
-        }
-        for (int i = 0; i < workflowCount; i++) {
-            bugActivities[i].clear();
-        }
-
-        BusinessAction *resAction = &actions[0];
-        for (int i = 1; i < ACTIONS_COUNT; i++)
-        {
-            if (resAction->reward > actions[i].reward)
-            {
-                resAction = &actions[i];
-            }
-        }
-
-        sleepAMoment(2000);
-        // [5] update show
-        for (int i = 0; i < workflowCount; i++) {
-            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
-        }
-
-        // [6] sleep a moment & time passed & update show
-        sleepAMoment();
-        for (int i = 0; i < workflowCount; i++) {
-            timePassed(activities[i], runningActivities[i], finishedActivities[i]);
-            updatePainter(sg[i], runningActivities[i], finishedActivities[i], bugActivities[i]);
-            qDebug() << "Flow" << i << ", runningActivities =" << runningActivities[i]
-                     << "finishedActivities =" << finishedActivities[i];
-        }
-
-        // [7] next second
-        t++;
-    }
 
     delete[] actions;
     delete[] runningActivities;
     delete[] finishedActivities;
     delete[] bugActivities;
+}
+
+void BusinessSimulation::clearData()
+{
+    for (int i = 0; i < workflowCount; i++)
+    {
+        runningActivities[i].clear();
+        finishedActivities[i].clear();
+        bugActivities[i].clear();
+    }
+}
+
+
+void BusinessSimulation::run()
+{
+    qDebug() << "BusinessSimulation::run() begin...";
+    clearData();
+
+    for (int i = 0; i < workflowCount; i++) {
+        runningActivities[i].insert(0);
+        qDebug() << runningActivities[i] << finishedActivities[i];
+    }
+
+    int t = 0;
+    while (!isFinished())
+    {
+        qDebug() << "At t =" << t << "...";
+
+        // [1] event
+        BusinessEvent event = BusinessEvent::random(t, activities, workflowCount);
+        bew->setEvent(&event);
+
+        // [2] update show
+        bugActivities[event.n].insert(event.a);
+        updatePainter();
+
+        // [3]
+        BusinessAction * action = operation(event);
+        // [4]
+        recovery(action);
+
+
+        sleepAMoment();
+        // [5] update show
+        updatePainter();
+
+        // [6] sleep a moment & time passed & update show
+        sleepAMoment();
+        timePassed();
+        updatePainter();
+
+        // [7] next second
+        t++;
+    }
 
     qDebug() << "BusinessSimulation::run() finished.";
 }
 
-int BusinessSimulation::resourceReplace(Activity *bug, QSet<int> & running)
+bool BusinessSimulation::isFinished()
 {
+    bool flag = true;
+    for (int i = 0; i < workflowCount; i++) {
+        if (!runningActivities[i].isEmpty()) {
+            flag = false;
+        }
+    }
+    if (flag) {
+        return true;
+    }
+    return false;
+}
+
+BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
+{
+    // [4] do sth
+    if (event.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
+        qDebug() << "RESOUCE_NOT_USE";
+        resourceReplace(event);
+        termateDemand(event);
+        actions[BusinessAction::RESOURCE_REPLACE].isActive = true;
+        actions[BusinessAction::RESOURCE_TRANSPORT].isActive = transResource(event);
+        actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = true;
+
+        actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
+        actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
+    } else if (event.type == BusinessEvent::NEED_ADD) { //需求增加
+        qDebug() << "NEED_ADD";
+        resourceReplace(event);
+        termateDemand(event);
+
+        actions[BusinessAction::RESOURCE_REPLACE].isActive = true;
+        actions[BusinessAction::RESOURCE_TRANSPORT].isActive = transResource(event);
+        actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = true;
+
+        actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
+        actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
+    } else if (event.type == BusinessEvent::NEED_REDUCE) { // 需求减少
+        doNothing(event);
+        actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = true;
+
+        actions[BusinessAction::RESOURCE_REPLACE].isActive = false;
+        actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
+        actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = false;
+        actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
+        qDebug() << "NEED_REDUCE";
+    } else if (event.type == BusinessEvent::NEED_CANCEL) { // 需求取消
+        termateDemand(event);
+        actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = true;
+
+        actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
+        actions[BusinessAction::RESOURCE_REPLACE].isActive = false;
+        actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
+        actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
+        qDebug() << "NEED_CANCEL";
+    } else {
+        qDebug() << "Normal event";
+        actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = false;
+        actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
+        actions[BusinessAction::RESOURCE_REPLACE].isActive = false;
+        actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
+        actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
+    }
+    baw->setBusinessAction(actions);
+
+    BusinessAction *resAction = NULL;
+    for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
+    {
+        if (actions[i].isActive && (resAction == NULL || resAction->reward < actions[i].reward))
+        {
+            resAction = &actions[i];
+        }
+    }
+
+    return resAction;
+}
+
+bool BusinessSimulation::recovery(BusinessAction *action)
+{
+
+    if (action == NULL)
+    {
+        return false;
+    }
+    if (action->type == BusinessAction::RESOURCE_REPLACE)
+    {
+        action->bug->resource = action->newResource;
+    }
+    // bug, add resourList in activity;
+    else if (action->type == BusinessAction::RESOURCE_TRANSPORT)
+    {
+        action->bug->resourceList = action->otherFlowResource;
+        workflowState[action->event->n] = WORKFLOW_FAILED;
+    }
+    else if (action->type == BusinessAction::RESOURCE_TERMINATE_NEED)
+    {
+        workflowState[action->event->n] = WORKFLOW_FAILED;
+    }
+    else if (action->type == BusinessAction::RESOURCE_DO_NOTHING)
+    {
+
+    }
+    else if (action->type == BusinessAction::RESOURCE_ADD_NEW_NEED)
+    {
+
+    }
+
+    for (int i = 0; i < workflowCount; i++) {
+//        if (workflowState[i] != WORKFLOW_FAILED)
+            bugActivities[i].clear();
+    }
+
+    baw->setAutoBusinessAction(action);
+    return true;
+}
+
+int BusinessSimulation::resourceReplace(BusinessEvent & event)
+{
+    Activity *bug = &activities[event.n][event.a];
+    QSet<int> & running = runningActivities[event.n];
+
     QList<Resource> & all_resource = WorkFlow::Instance()->all_resource;
     Resource* resource = NULL;
     for (int i = 0; i < all_resource.size(); i++)
@@ -159,50 +237,32 @@ int BusinessSimulation::resourceReplace(Activity *bug, QSet<int> & running)
     }
     qDebug() << "Old = " << bug->resource->id << "New = " << resource->id;
     // Calcacute the reward and return it
-    int reward = resource->price;
-//    qDebug() << "resource->price =" << reward << "bug->resource->price = " << bug->resource->price;
+    int cost = resource->price;
     if (!running.contains(bug->number)) {
-        reward -= bug->resource->price;
+        cost = cost + bug->resource->price;
     }
+
 //    bug->resource = resource;
 //    bug->resource->used++;
 
-    actions[REPLACE_POS].bug = bug;
-    actions[REPLACE_POS].type = BusinessAction::RESOURCE_REPLACE;
-    actions[REPLACE_POS].reward = reward;
+    actions[BusinessAction::RESOURCE_REPLACE].bug = bug;
+    actions[BusinessAction::RESOURCE_REPLACE].type = BusinessAction::RESOURCE_REPLACE;
+    actions[BusinessAction::RESOURCE_REPLACE].event = &event;
+    actions[BusinessAction::RESOURCE_REPLACE].reward = -cost;
 
-    actions[REPLACE_POS].replaceResource = resource;
+    actions[BusinessAction::RESOURCE_REPLACE].oldResource = bug->resource;
+    actions[BusinessAction::RESOURCE_REPLACE].newResource = resource;
 
-    return reward;
+
+//    qDebug() << bug->resource << resource;
+    return cost;
 }
 
-int BusinessSimulation::termateDemand(Activity *bug, Activity *firstActivity)
+bool BusinessSimulation::transResource(BusinessEvent & event)
 {
-    int res = 0;
-    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
-    {
-        res += (firstActivity[i].resource->price
-                + firstActivity[i].blindService->price);
-    }
+    int bugFlow = event.n;
+    Activity *bug = &activities[event.n][event.a];
 
-    actions[TERMINATE_POS].bug = bug;
-    actions[TERMINATE_POS].type = BusinessAction::RESOURCE_TERMINATE_NEED;
-    actions[TERMINATE_POS].reward = res;
-
-    return res;
-}
-
-int BusinessSimulation::doNothing(Activity *bug, Activity *firstActivity)
-{
-    actions[DO_NOTHING_POS].bug = bug;
-    actions[DO_NOTHING_POS].type = BusinessAction::RESOURCE_DO_NOTHING;
-    actions[DO_NOTHING_POS].reward = 0;
-
-    return 0;
-}
-
-int BusinessSimulation::transResource(int bugFlow, Activity *bug)
-{
     int minCost = INT_MAX;
     int otherFlow = -1;
     QList<int> minResult;
@@ -217,7 +277,7 @@ int BusinessSimulation::transResource(int bugFlow, Activity *bug)
             SegMent *data = toSegMent(activities[i]);
             IntervalCoverage *ic = new IntervalCoverage(workflowCount, data, bug->earlyStart, bug->lateComplate);
             ic->minCost();
-            if (minCost < ic->getResult())
+            if (minCost > ic->getResult())
             {
                 minCost = ic->getResult();
                 minResult = ic->getResultDataID();
@@ -228,21 +288,68 @@ int BusinessSimulation::transResource(int bugFlow, Activity *bug)
         }
     }
 
-    actions[TRANS_POS].bug = bug;
-    actions[TRANS_POS].type = BusinessAction::RESOURCE_TRANSPORT;
-    actions[TRANS_POS].reward = minCost;
+    if (minCost == -1)
+    {
+        minCost = INT_MAX;
+    }
 
-    actions[TRANS_POS].otherFlowId = otherFlow;
-    actions[TRANS_POS].otherActivities = minResult;
+    actions[BusinessAction::RESOURCE_TRANSPORT].bug = bug;
+    actions[BusinessAction::RESOURCE_TRANSPORT].type = BusinessAction::RESOURCE_TRANSPORT;
+    actions[BusinessAction::RESOURCE_TRANSPORT].event = &event;
+    actions[BusinessAction::RESOURCE_TRANSPORT].reward = -minCost;
+
+    actions[BusinessAction::RESOURCE_TRANSPORT].otherFlowId = otherFlow;
+    actions[BusinessAction::RESOURCE_TRANSPORT].otherFlowActivities = minResult;
+    actions[BusinessAction::RESOURCE_TRANSPORT].otherFlowResource.clear();
     for (int i = 0; i < minResult.size(); i++) {
-        actions[TRANS_POS].otherFlowResource
+        actions[BusinessAction::RESOURCE_TRANSPORT].otherFlowResource
                 .append(activities[otherFlow][minResult[i]].resource);
     }
-    return minCost;
+
+    actions[BusinessAction::RESOURCE_TRANSPORT].newResource = NULL;
+
+    return (minCost != INT_MAX);
 }
 
-void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity)
+int BusinessSimulation::termateDemand(BusinessEvent & event)
 {
+    Activity *bug = &activities[event.n][event.a];
+    Activity *firstActivity = activities[event.n];
+
+    int cost = 0;
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        cost += (firstActivity[i].resource->price
+                + firstActivity[i].blindService->price);
+    }
+
+    actions[BusinessAction::RESOURCE_TERMINATE_NEED].bug = bug;
+    actions[BusinessAction::RESOURCE_TERMINATE_NEED].type = BusinessAction::RESOURCE_TERMINATE_NEED;
+    actions[BusinessAction::RESOURCE_TERMINATE_NEED].event = &event;
+    actions[BusinessAction::RESOURCE_TERMINATE_NEED].reward = -cost;
+
+    return cost;
+}
+
+int BusinessSimulation::doNothing(BusinessEvent & event)
+{
+    Activity *bug = &activities[event.n][event.a];
+
+    actions[BusinessAction::RESOURCE_DO_NOTHING].bug = bug;
+    actions[BusinessAction::RESOURCE_DO_NOTHING].type = BusinessAction::RESOURCE_DO_NOTHING;
+    actions[BusinessAction::RESOURCE_DO_NOTHING].event = &event;
+    actions[BusinessAction::RESOURCE_DO_NOTHING].reward = 0;
+
+    return 0;
+}
+
+
+void BusinessSimulation::timePassed(int flowId)
+{
+    Activity *startActivity = activities[flowId];
+    QSet<int> & runningActivity = runningActivities[flowId];
+    QSet<int> & finishedActivity = finishedActivities[flowId];
+
     std::vector<std::vector<int> > g = toGraph(startActivity);
     CriticalPath cp(WorkFlow::Instance()->getActivitySize(), g);
     cp.run();
@@ -271,18 +378,24 @@ void BusinessSimulation::timePassed(Activity *startActivity, QSet<int> & running
     }
 }
 
-void BusinessSimulation::sleepAMoment(int msec)
+void BusinessSimulation::timePassed()
 {
-    QTime dieTime = QTime::currentTime().addMSecs(msec);
-    while( QTime::currentTime() < dieTime ) {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    for (int i = 0; i < workflowCount; i++) {
+//        if (workflowState[i] == WORKFLOW_FAILED)
+//            continue;
+        timePassed(i);
+        qDebug() << "Flow" << i << ", runningActivities =" << runningActivities[i]
+                 << "finishedActivities =" << finishedActivities[i];
     }
 }
 
 // 更新显示
-void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActivity,
-                                       QSet<int> &finishedActivity, QSet<int> &bugActivity)
+void BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg)
 {
+    QSet<int> & runningActivity = runningActivities[flowId];
+    QSet<int> & finishedActivity = finishedActivities[flowId];
+    QSet<int> & bugActivity = bugActivities[flowId];
+
     QList<QColor> colors = sg.getColors();
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
@@ -296,12 +409,27 @@ void BusinessSimulation::updatePainter(ServiceGraph & sg, QSet<int> &runningActi
         }
     }
     sg.setColors(colors);
-//    sg.update();
 }
 
-void BusinessSimulation::printCurrState(int t, QSet<int> & runningActivity)
+void BusinessSimulation::updatePainter()
 {
-    qDebug() << "At " << t << ", running: " << runningActivity;
+    for (int i = 0; i < workflowCount; i++) {
+        updatePainter(i, sg[i]);
+    }
+}
+
+void BusinessSimulation::sleepAMoment(int msec)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
+    while( QTime::currentTime() < dieTime ) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
+}
+
+
+void BusinessSimulation::printCurrState(int t, int flowId)
+{
+    qDebug() << "At " << t << ", running: " << runningActivities[flowId];
 }
 
 bool BusinessSimulation::init()
@@ -370,6 +498,11 @@ bool BusinessSimulation::init()
         workflowState[i] = WORKFLOW_READY;
     }
 
+    runningActivities = new QSet<int>[workflowCount];
+    finishedActivities = new QSet<int>[workflowCount];
+    bugActivities = new QSet<int>[workflowCount];
+    actions = new BusinessAction[BusinessAction::ACTIONS_COUNT];
+
     qDebug() << "BusinessSimulation.init() finised.";
     return true;
 
@@ -435,31 +568,32 @@ int BusinessSimulation::getWorkflowCount()
     return workflowCount;
 }
 
-//void BusinessSimulation::oneFlowProcess()
-//{
-//    int t = 0;
-//    Activity* startActivity = activities[0];
-//    QSet<int> runningActivity;
-//    QSet<int> finishedActivity;
-//    runningActivity.insert(0);
-//    while (!runningActivity.isEmpty() && ++t)
-//    {
-//        printCurrState(t, runningActivity);
-//        BusinessEvent e = BusinessEvent::random(t);
-//        if (e.type == 0) { // 资源不可用
+void BusinessSimulation::setServiceGraph(ServiceGraph * _sg)
+{
+    this->sg = _sg;
+}
 
-//        } else if (e.type == 1) { //需求增加
+ServiceGraph* BusinessSimulation::getServiceGraph()
+{
+    return sg;
+}
 
-//        } else if (e.type == 2) { // 需求减少
+void BusinessSimulation::setBusinessEventWidget(BusinessEventWidget *_bew)
+{
+    bew = _bew;
+}
 
-//        } else if (e.type == 3) { // 需求取消
+BusinessEventWidget * BusinessSimulation::getBusinessEventWidget()
+{
+    return bew;
+}
 
-//        } else {
-//            qDebug() << "t = " << t << " Normal event.";
-//        }
+void BusinessSimulation::setBusinessActionWidget(BusinessActionWidget *_baw)
+{
+    baw = _baw;
+}
 
-//        timePassed(t, startActivity, runningActivity, finishedActivity);
-//        sleepAMoment();
-////        updatePainter(runningActivity, finishedActivity);
-//    }
-//}
+BusinessActionWidget * BusinessSimulation::getBusinessActionWidget()
+{
+    return baw;
+}

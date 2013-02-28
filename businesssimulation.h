@@ -8,47 +8,55 @@
 class Activity;
 class ServiceGraph;
 class BusinessAction;
+class BusinessEvent;
+class BusinessEventWidget;
+class BusinessActionWidget;
 
-class BusinessSimulation  //: public QWidget
+class BusinessSimulation
 {
-//    Q_OBJECT
 public:
     BusinessSimulation();
-//    BusinessSimulation(QWidget *parent = 0);
     ~BusinessSimulation();
 
-    void run(ServiceGraph* sg);
+    void run();
 
-    int resourceReplace(Activity* bug, QSet<int> & running);
-    int termateDemand(Activity *bug, Activity* firstActivity);
-    int doNothing(Activity *bug, Activity* firstActivity);
-    int transResource(int bugFlow, Activity* bug);
+    ServiceGraph* getServiceGraph();
+    void setServiceGraph(ServiceGraph* _sg);
+    BusinessEventWidget* getBusinessEventWidget();
+    void setBusinessEventWidget(BusinessEventWidget * _bew);
+    BusinessActionWidget* getBusinessActionWidget();
+    void setBusinessActionWidget(BusinessActionWidget* _baw);
+
+    BusinessAction* operation(BusinessEvent & event);
+    bool recovery(BusinessAction *action);
+
+    int resourceReplace(BusinessEvent & event);
+    int termateDemand(BusinessEvent & event);
+    int doNothing(BusinessEvent & event);
+    bool transResource(BusinessEvent & event);
 
     int getWorkflowCount();
 
 private:
     bool init();
     bool initEarlyLateComplate();
-    void printCurrState(int t, QSet<int> & runningActivity);
-    void timePassed(Activity *startActivity, QSet<int> & runningActivity, QSet<int> & finishedActivity);
-    void updatePainter(ServiceGraph & sg, QSet<int> & runningActivity, QSet<int> & finishedActivity,
-                       QSet<int> &bugActivity);
-    void sleepAMoment(int msec = 100);
-//    void oneFlowProcess();
+    bool isFinished();
+
+    void clearData();
+    void printCurrState(int t, int flowId);
+
+    void timePassed(int flowId);
+    void timePassed();
+    void updatePainter(int flowId, ServiceGraph & sg);
+    void updatePainter();
+
+    void sleepAMoment(int msec = 1000);
 
     std::vector<std::vector<int> > toGraph(Activity* a);
     SegMent* toSegMent(Activity* a);
 
     BusinessAction *actions;
-    enum
-    {
-        REPLACE_POS = 0,
-        TRANS_POS = 1,
-        TERMINATE_POS = 2,
-        DO_NOTHING_POS = 3,
-        ADD_NEW_NEED_POS = 4,
-        ACTIONS_COUNT = 5
-    };
+
     int workflowCount;
     Activity** activities;
     int *workflowState;
@@ -61,8 +69,14 @@ private:
     };
 
 
+    QSet<int> *runningActivities;
+    QSet<int> *finishedActivities;
+    QSet<int> *bugActivities;
+
     // UI
-//    ServiceGraph* sg;
+    ServiceGraph* sg;
+    BusinessEventWidget* bew;
+    BusinessActionWidget* baw;
 };
 
 #endif // BUSINESSSIMULATION_H

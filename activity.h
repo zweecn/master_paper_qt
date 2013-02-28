@@ -2,9 +2,8 @@
 #define ACTIVITY_H
 #include "atomservice.h"
 #include "resource.h"
+#include <QList>
 
-//class AtomService;
-//class Resource;
 class Activity
 {
 public:
@@ -14,6 +13,8 @@ public:
 
     AtomService *blindService;
     Resource *resource;
+
+    QList<Resource*> resourceList;
 
     int number;
     double x;

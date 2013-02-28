@@ -4,6 +4,7 @@ Activity::Activity()
 {
     blindService = 0;
     resource = 0;
+    resourceList.clear();
 
     number = 0;
     x = 0;

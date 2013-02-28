@@ -27,7 +27,7 @@ bool ServiceGraph::init()
 
     pointsName.clear();
     for (int i = 0; i < 9; i++) {
-        pointsName.push_back(QString("a%1").arg(i+1));
+        pointsName.push_back(QString("a%1").arg(i));
     }
 
     points.clear();

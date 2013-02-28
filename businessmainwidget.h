@@ -6,6 +6,9 @@
 #include "servicegraph.h"
 #include "businesssimulation.h"
 
+#include "businesseventwidget.h"
+#include "businessactionwidget.h"
+
 class BusinessMainWidget : public QWidget
 {
     Q_OBJECT
@@ -27,9 +30,10 @@ private:
     QGroupBox *flowGroupBox;
 
     QGroupBox *eventGroupBox;
+    BusinessEventWidget *eventWidget;
 
     QGroupBox *actionGroupBox;
-    QTableWidget *actionTable;
+    BusinessActionWidget *actionWidget;
 
     QGroupBox *buttonGroupBox;
     QPushButton *autoStartButton;
@@ -40,6 +44,7 @@ private:
     void init();
     ServiceGraph *sg;
     BusinessSimulation *bs;
+
 };
 
 #endif // BUSINESSMAINWIDGET_H
