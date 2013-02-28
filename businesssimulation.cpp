@@ -80,6 +80,7 @@ void BusinessSimulation::run()
 
         // [3]
         BusinessAction * action = operation(event);
+
         if (!isAutoRun && event.type != BusinessEvent::NORMAIL)
             nextStepCond.wait(&nextStepMutex);
 
@@ -181,6 +182,7 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         }
     }
 
+    baw->setAutoBusinessAction(resAction);
     return resAction;
 }
 
@@ -218,8 +220,6 @@ bool BusinessSimulation::recovery(BusinessAction *action)
 //        if (workflowState[i] != WORKFLOW_FAILED)
             bugActivities[i].clear();
     }
-
-    baw->setAutoBusinessAction(action);
     return true;
 }
 
@@ -511,6 +511,10 @@ bool BusinessSimulation::init()
     finishedActivities = new QSet<int>[workflowCount];
     bugActivities = new QSet<int>[workflowCount];
     actions = new BusinessAction[BusinessAction::ACTIONS_COUNT];
+    for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
+    {
+        actions[i].type = i;
+    }
 
     qDebug() << "BusinessSimulation.init() finised.";
     return true;

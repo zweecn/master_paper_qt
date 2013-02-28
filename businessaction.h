@@ -14,6 +14,8 @@ public:
     QString name();
     QString toString();
 
+    static QList<QString> nameList();
+
     enum
     {
         RESOURCE_REPLACE = 0,

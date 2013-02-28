@@ -2,11 +2,13 @@
 #define BUSINESSACTIONWIDGET_H
 
 #include <QWidget>
+#include <QMutex>
 
 class QTableWidget;
 class QLabel;
 class BusinessAction;
 
+extern QMutex nextStepMutex;
 
 class BusinessActionWidget : public QWidget
 {

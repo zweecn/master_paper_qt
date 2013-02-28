@@ -9,6 +9,7 @@
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
 
+extern QMutex nextStepMutex;
 extern QWaitCondition nextStepCond;
 
 class BusinessMainWidget : public QWidget

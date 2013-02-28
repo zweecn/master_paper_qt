@@ -88,3 +88,10 @@ QString BusinessAction::toString()
     }
     return res;
 }
+
+QList<QString> BusinessAction::nameList()
+{
+    QList<QString> res;
+    res << "资源替换" << "资源转移" << "不作为" << "终止需求" << "引入 m+k 个新需求";
+    return res;
+}
