@@ -3,7 +3,13 @@
 #include <vector>
 #include <QSet>
 #include <QWidget>
+#include <QThread>
+#include <QWaitCondition>
+
 #include "intervalcoverage.h"
+
+extern QMutex nextStepMutex;
+extern QWaitCondition nextStepCond;
 
 class Activity;
 class ServiceGraph;
@@ -12,7 +18,7 @@ class BusinessEvent;
 class BusinessEventWidget;
 class BusinessActionWidget;
 
-class BusinessSimulation
+class BusinessSimulation : public  QThread
 {
 public:
     BusinessSimulation();
@@ -26,6 +32,7 @@ public:
     void setBusinessEventWidget(BusinessEventWidget * _bew);
     BusinessActionWidget* getBusinessActionWidget();
     void setBusinessActionWidget(BusinessActionWidget* _baw);
+    void setAutoRun(bool _isAutoRun);
 
     BusinessAction* operation(BusinessEvent & event);
     bool recovery(BusinessAction *action);
@@ -36,6 +43,7 @@ public:
     bool transResource(BusinessEvent & event);
 
     int getWorkflowCount();
+
 
 private:
     bool init();
@@ -77,6 +85,7 @@ private:
     ServiceGraph* sg;
     BusinessEventWidget* bew;
     BusinessActionWidget* baw;
+    bool isAutoRun;
 };
 
 #endif // BUSINESSSIMULATION_H

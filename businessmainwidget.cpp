@@ -1,5 +1,6 @@
 #include "businessmainwidget.h"
 #include "drawgraph.h"
+#include "config.h"
 
 BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     QWidget(parent)
@@ -11,8 +12,6 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     createActionGroupBox();
     createButtonGroupBox();
 
-    connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
-
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(flowGroupBox);
     mainLayout->addWidget(eventGroupBox);
@@ -22,19 +21,23 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
 
     setWindowTitle(tr("用户操作界面"));
     resize(800, 700);
+
+    connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
+    connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
+    connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
 }
 
 void BusinessMainWidget::createFlowGroupBox()
 {
     flowGroupBox = new QGroupBox(tr("服务流程(Service Workflow)"));
-    sg = new ServiceGraph[bs->getWorkflowCount()];
-    for (int i = 0; i < bs->getWorkflowCount(); i++)
+    sg = new ServiceGraph[workflowCount];
+    for (int i = 0; i < workflowCount; i++)
     {
         sg[i].setFixedHeight(sg[i].getRecommedHeight());
         sg[i].setFlowId(i);
     }
     QGridLayout *flowLayout = new QGridLayout;
-    for (int i = 0; i < bs->getWorkflowCount(); i++)
+    for (int i = 0; i < workflowCount; i++)
     {
         flowLayout->addWidget(&sg[i], 0, i);
     }
@@ -81,14 +84,32 @@ void BusinessMainWidget::createButtonGroupBox()
 void BusinessMainWidget::init()
 {
     bs = new BusinessSimulation();
+    workflowCount = Config::Instance()->getWorkflowCount();
 }
 
 void BusinessMainWidget::autoRun()
 {
     autoStartButton->setEnabled(false);
+    bs->setAutoRun(true);
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
     bs->setBusinessActionWidget(actionWidget);
-    bs->run();
-    autoStartButton->setEnabled(true);
+    bs->start();
+//    autoStartButton->setEnabled(true);
+}
+
+void BusinessMainWidget::manualRun()
+{
+    startButton->setEnabled(false);
+    bs->setAutoRun(false);
+    bs->setServiceGraph(sg);
+    bs->setBusinessEventWidget(eventWidget);
+    bs->setBusinessActionWidget(actionWidget);
+    bs->start();
+//    startButton->setEnabled(true);
+}
+
+void BusinessMainWidget::nextStep()
+{
+    nextStepCond.wakeOne();
 }

@@ -57,6 +57,12 @@ void BusinessActionWidget::updateActionTable()
 
     for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
     {
+        actionTable->item(i, 0)->setText(tr(""));
+        actionTable->item(i, 1)->setText(tr(""));
+        actionTable->item(i, 2)->setText(tr(""));
+    }
+    for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
+    {
         actionTable->item(i, 0)->setText(tr("%1").arg(actions[i].name()));
         if (actions[i].isActive)
         {

@@ -21,9 +21,10 @@
 const QString start_filename = "data/business_start";
 const int start_member_size = 3;
 
-//BusinessSimulation::BusinessSimulation(QWidget *parent) :
-//    QWidget(parent)
-BusinessSimulation::BusinessSimulation()
+QMutex nextStepMutex;
+QWaitCondition nextStepCond;
+
+BusinessSimulation::BusinessSimulation() : QThread()
 {
     init();
     initEarlyLateComplate();
@@ -66,6 +67,7 @@ void BusinessSimulation::run()
     int t = 0;
     while (!isFinished())
     {
+        nextStepMutex.lock();
         qDebug() << "At t =" << t << "...";
 
         // [1] event
@@ -78,21 +80,27 @@ void BusinessSimulation::run()
 
         // [3]
         BusinessAction * action = operation(event);
+        if (!isAutoRun && event.type != BusinessEvent::NORMAIL)
+            nextStepCond.wait(&nextStepMutex);
+
         // [4]
         recovery(action);
 
 
-        sleepAMoment();
+//        sleepAMoment();
+        sleep(1);
         // [5] update show
         updatePainter();
 
         // [6] sleep a moment & time passed & update show
-        sleepAMoment();
+//        sleepAMoment();
+        sleep(1);
         timePassed();
         updatePainter();
 
         // [7] next second
         t++;
+        nextStepMutex.unlock();
     }
 
     qDebug() << "BusinessSimulation::run() finished.";
@@ -275,7 +283,8 @@ bool BusinessSimulation::transResource(BusinessEvent & event)
         else
         {
             SegMent *data = toSegMent(activities[i]);
-            IntervalCoverage *ic = new IntervalCoverage(workflowCount, data, bug->earlyStart, bug->lateComplate);
+            IntervalCoverage *ic = new IntervalCoverage(workflowCount, data,
+                                                        bug->earlyStart, bug->lateComplate);
             ic->minCost();
             if (minCost > ic->getResult())
             {
@@ -596,4 +605,9 @@ void BusinessSimulation::setBusinessActionWidget(BusinessActionWidget *_baw)
 BusinessActionWidget * BusinessSimulation::getBusinessActionWidget()
 {
     return baw;
+}
+
+void BusinessSimulation::setAutoRun(bool _isAutoRun)
+{
+    isAutoRun = _isAutoRun;
 }

@@ -3,11 +3,13 @@
 
 #include <QWidget>
 #include <QtGui>
+
 #include "servicegraph.h"
 #include "businesssimulation.h"
-
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
+
+extern QWaitCondition nextStepCond;
 
 class BusinessMainWidget : public QWidget
 {
@@ -19,6 +21,10 @@ signals:
 
 public slots:
     void autoRun();
+
+    void manualRun();
+    void nextStep();
+
 private:
 
     // UI
@@ -44,7 +50,7 @@ private:
     void init();
     ServiceGraph *sg;
     BusinessSimulation *bs;
-
+    int workflowCount;
 };
 
 #endif // BUSINESSMAINWIDGET_H
