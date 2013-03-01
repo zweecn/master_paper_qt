@@ -14,6 +14,7 @@
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
 #include "allmutex.h"
+#include "businessstatewidget.h"
 
 #include <QApplication>
 #include <QTime>
@@ -90,6 +91,7 @@ void BusinessSimulation::autoRun()
         // [2] update show
         bugActivities[currEvent->n].insert(currEvent->a);
         updatePainter();
+        bsw->setActivities(activities);
 
         // [3]
         actionWidgetMutex.lock();
@@ -99,18 +101,24 @@ void BusinessSimulation::autoRun()
         actionWidgetMutex.unlock();
 
         // [4]
+        stateWidgetMutex.lock();
         recovery(action);
+        stateWidgetMutex.unlock();
 
         sleep(1);
         // [5] update show
         updatePainter();
+        bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
         sleep(1);
 
+        stateWidgetMutex.lock();
         timePassed();
+        stateWidgetMutex.unlock();
 
         updatePainter();
+        bsw->setActivities(activities);
 
         // [7] next second
         t++;
@@ -141,6 +149,7 @@ void BusinessSimulation::manualRun()
         // [2] update show
         bugActivities[currEvent->n].insert(currEvent->a);
         updatePainter();
+        bsw->setActivities(activities);
 
         // [3]
         actionWidgetMutex.lock();
@@ -155,20 +164,26 @@ void BusinessSimulation::manualRun()
         actionWidgetMutex.unlock();
 
         // [4]
+        stateWidgetMutex.lock();
         recovery(&actions[selectActionId]);
+        stateWidgetMutex.unlock();
 
         emit normalEventSignal();
         sleep(1);
 
         // [5] update show
         updatePainter();
+        bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
 
+        stateWidgetMutex.lock();
         timePassed();
+        stateWidgetMutex.unlock();
 
         sleep(1);
         updatePainter();
+        bsw->setActivities(activities);
 
         // [7] next second
         t++;
@@ -687,4 +702,9 @@ void BusinessSimulation::setAutoRun(bool _isAutoRun)
 void BusinessSimulation::setSelectActionId(int _selectActionId)
 {
     selectActionId = _selectActionId;
+}
+
+void BusinessSimulation::setBusinessStateWidget(BusinessStateWidget *_bsw)
+{
+    bsw = _bsw;
 }

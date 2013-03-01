@@ -10,7 +10,7 @@
 #include "businessactionwidget.h"
 #include "serviceinfotable.h"
 #include "linechart.h"
-
+#include "businessstatewidget.h"
 
 class BusinessMainWidget : public QWidget
 {
@@ -60,7 +60,7 @@ private:
     LineChart *rewardLineChart;
 
     QGroupBox *stateGroupBox;
-
+    BusinessStateWidget *stateWidget;
 
     // ALG
     void init();

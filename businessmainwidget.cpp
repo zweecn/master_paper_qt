@@ -115,8 +115,11 @@ void BusinessMainWidget::createRewardGroupBox()
 
 void BusinessMainWidget::createStateGroupBox()
 {
-    stateGroupBox = new QGroupBox(tr("服务流程状态"));
-
+    stateGroupBox = new QGroupBox(tr("服务流程状态(State)"));
+    stateWidget = new BusinessStateWidget();
+    QVBoxLayout *stateLayout = new QVBoxLayout;
+    stateLayout->addWidget(stateWidget);
+    stateGroupBox->setLayout(stateLayout);
 }
 
 void BusinessMainWidget::init()
@@ -135,6 +138,7 @@ void BusinessMainWidget::autoRun()
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
     bs->setBusinessActionWidget(actionWidget);
+    bs->setBusinessStateWidget(stateWidget);
     bs->start();
 }
 
@@ -148,6 +152,7 @@ void BusinessMainWidget::manualRun()
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
     bs->setBusinessActionWidget(actionWidget);
+    bs->setBusinessStateWidget(stateWidget);
     bs->start();
 }
 

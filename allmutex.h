@@ -10,5 +10,6 @@ extern QMutex eventWidgetMutex;
 extern QMutex serviceGraphMutex;
 extern QMutex actionWidgetMutex;
 extern QMutex nextStepMutex;
+extern QMutex stateWidgetMutex;
 
 #endif // ALLMUTEX_H

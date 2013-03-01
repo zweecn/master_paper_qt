@@ -6,3 +6,4 @@ QMutex eventWidgetMutex;
 QMutex serviceGraphMutex;
 QMutex actionWidgetMutex;
 QMutex nextStepMutex;
+QMutex stateWidgetMutex;

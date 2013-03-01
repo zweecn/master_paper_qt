@@ -14,6 +14,7 @@ class BusinessAction;
 class BusinessEvent;
 class BusinessEventWidget;
 class BusinessActionWidget;
+class BusinessStateWidget;
 
 class BusinessSimulation : public  QThread
 {
@@ -32,6 +33,8 @@ public:
     void setBusinessEventWidget(BusinessEventWidget * _bew);
     BusinessActionWidget* getBusinessActionWidget();
     void setBusinessActionWidget(BusinessActionWidget* _baw);
+    void setBusinessStateWidget(BusinessStateWidget* _bsw);
+
     void setAutoRun(bool _isAutoRun);
     void setSelectActionId(int _selectActionId);
     BusinessAction* operation(BusinessEvent & event);
@@ -93,6 +96,7 @@ private:
     ServiceGraph* sg;
     BusinessEventWidget* bew;
     BusinessActionWidget* baw;
+    BusinessStateWidget* bsw;
     bool isAutoRun;
 };
 
