@@ -2,6 +2,8 @@
 #define BUSINESSEVENTWIDGET_H
 
 #include <QWidget>
+#include <QMutex>
+#include "allmutex.h"
 
 class QTableWidget;
 class BusinessEvent;

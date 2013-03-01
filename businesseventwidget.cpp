@@ -2,6 +2,8 @@
 #include "businessevent.h"
 #include <QtGui>
 
+
+
 BusinessEventWidget::BusinessEventWidget(QWidget *parent) :
     QWidget(parent)
 {
@@ -38,6 +40,8 @@ void BusinessEventWidget::createEventTable()
 
 void BusinessEventWidget::updateEvent()
 {
+    eventWidgetMutex.lock();
+    qDebug() << "BusinessEventWidget::updateEvent() ..." << event->t ;
     eventTable->item(0, 0)->setText(tr("%1").arg(event->t));
     QString type;
     if (event->type == BusinessEvent::NORMAIL) {
@@ -63,6 +67,8 @@ void BusinessEventWidget::updateEvent()
         eventTable->item(0, 4)->setText(tr(""));
         eventTable->item(0, 5)->setText(tr(""));
     }
+    qDebug() << "BusinessEventWidget::updateEvent() finished.";
+    eventWidgetMutex.unlock();
 }
 
 void BusinessEventWidget::setEvent(BusinessEvent *_event)

@@ -1,5 +1,6 @@
 #include "servicegraph.h"
 #include "drawgraph.h"
+#include "allmutex.h"
 
 ServiceGraph::ServiceGraph(QWidget *parent) :
     QWidget(parent)
@@ -73,7 +74,9 @@ bool ServiceGraph::init()
 
 void ServiceGraph::paintEvent(QPaintEvent *)
 {
+    serviceGraphMutex.lock();
     DrawGraph::DrawAll(this, points, pointsName, colors, graph, tr("Á÷³Ì %1").arg(flowId));
+    serviceGraphMutex.unlock();
 }
 
 

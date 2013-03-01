@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     businessaction.cpp \
     businessmainwidget.cpp \
     businesseventwidget.cpp \
-    businessactionwidget.cpp
+    businessactionwidget.cpp \
+    allmutex.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -47,9 +48,14 @@ HEADERS  += widget.h \
     businessaction.h \
     businessmainwidget.h \
     businesseventwidget.h \
-    businessactionwidget.h
+    businessactionwidget.h \
+    allmutex.h
 
 FORMS    +=
+
+
+
+
 
 
 

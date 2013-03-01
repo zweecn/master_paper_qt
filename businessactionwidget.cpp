@@ -2,6 +2,7 @@
 #include "businessaction.h"
 #include "resource.h"
 #include "businessevent.h"
+#include "allmutex.h"
 
 #include <QtGui>
 #include <QDebug>
@@ -56,8 +57,7 @@ void BusinessActionWidget::createActionTable()
 
 void BusinessActionWidget::updateActionTable()
 {
-//    nextStepMutex.lock();
-
+    actionWidgetMutex.lock();
     for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
     {
         if (actions[i].isActive)
@@ -84,8 +84,7 @@ void BusinessActionWidget::updateActionTable()
         autoActionLabel->setText(tr("ÎÞ¶¯×÷"));
     }
 
-//    nextStepMutex.unlock();
-
+    actionWidgetMutex.unlock();
 }
 
 void BusinessActionWidget::setBusinessAction(BusinessAction *_actions)

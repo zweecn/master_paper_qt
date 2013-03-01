@@ -8,8 +8,6 @@ class QTableWidget;
 class QLabel;
 class BusinessAction;
 
-extern QMutex nextStepMutex;
-
 class BusinessActionWidget : public QWidget
 {
     Q_OBJECT

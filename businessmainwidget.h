@@ -9,8 +9,6 @@
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
 
-extern QMutex nextStepMutex;
-extern QWaitCondition nextStepCond;
 
 class BusinessMainWidget : public QWidget
 {
@@ -25,6 +23,9 @@ public slots:
 
     void manualRun();
     void nextStep();
+
+    void enableNextStepButton();
+    void disableNextStepButton();
 
 private:
 

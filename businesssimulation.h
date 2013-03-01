@@ -8,9 +8,6 @@
 
 #include "intervalcoverage.h"
 
-extern QMutex nextStepMutex;
-extern QWaitCondition nextStepCond;
-
 class Activity;
 class ServiceGraph;
 class BusinessAction;
@@ -20,11 +17,14 @@ class BusinessActionWidget;
 
 class BusinessSimulation : public  QThread
 {
+    Q_OBJECT
 public:
     BusinessSimulation();
     ~BusinessSimulation();
 
     void run();
+    void autoRun();
+    void manualRun();
 
     ServiceGraph* getServiceGraph();
     void setServiceGraph(ServiceGraph* _sg);
@@ -44,6 +44,9 @@ public:
 
     int getWorkflowCount();
 
+signals:
+    void normalEventSignal();
+    void badEventSignal();
 
 private:
     bool init();
@@ -63,7 +66,6 @@ private:
     std::vector<std::vector<int> > toGraph(Activity* a);
     SegMent* toSegMent(Activity* a);
 
-    BusinessAction *actions;
 
     int workflowCount;
     Activity** activities;
@@ -81,7 +83,12 @@ private:
     QSet<int> *finishedActivities;
     QSet<int> *bugActivities;
 
+    // Below is the data should be lock when they are read/write
+    BusinessEvent* currEvent;
+    BusinessAction *actions;
+
     // UI
+
     ServiceGraph* sg;
     BusinessEventWidget* bew;
     BusinessActionWidget* baw;

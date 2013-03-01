@@ -25,6 +25,8 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
     connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
+    connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
+    connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
 }
 
 void BusinessMainWidget::createFlowGroupBox()
@@ -90,26 +92,40 @@ void BusinessMainWidget::init()
 void BusinessMainWidget::autoRun()
 {
     autoStartButton->setEnabled(false);
+    startButton->setEnabled(false);
+    nextStepButton->setEnabled(false);
+
     bs->setAutoRun(true);
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
     bs->setBusinessActionWidget(actionWidget);
     bs->start();
-//    autoStartButton->setEnabled(true);
 }
 
 void BusinessMainWidget::manualRun()
 {
+    autoStartButton->setEnabled(false);
     startButton->setEnabled(false);
+    nextStepButton->setEnabled(false);
+
     bs->setAutoRun(false);
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
     bs->setBusinessActionWidget(actionWidget);
     bs->start();
-//    startButton->setEnabled(true);
 }
 
 void BusinessMainWidget::nextStep()
 {
     nextStepCond.wakeOne();
+}
+
+void BusinessMainWidget::enableNextStepButton()
+{
+    nextStepButton->setEnabled(true);
+}
+
+void BusinessMainWidget::disableNextStepButton()
+{
+    nextStepButton->setEnabled(false);
 }

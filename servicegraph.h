@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QList>
+#include <QMutex>
 
 class ServiceGraph : public QWidget
 {

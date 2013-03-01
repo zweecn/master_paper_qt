@@ -13,6 +13,7 @@
 #include "intervalcoverage.h"
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
+#include "allmutex.h"
 
 #include <QApplication>
 #include <QTime>
@@ -21,8 +22,6 @@
 const QString start_filename = "data/business_start";
 const int start_member_size = 3;
 
-QMutex nextStepMutex;
-QWaitCondition nextStepCond;
 
 BusinessSimulation::BusinessSimulation() : QThread()
 {
@@ -32,6 +31,7 @@ BusinessSimulation::BusinessSimulation() : QThread()
 
 BusinessSimulation::~BusinessSimulation()
 {
+    qDebug() << "BusinessSimulation::~BusinessSimulation() ...";
     for (int i = 0; i < workflowCount; i++) {
         delete[] activities[i];
     }
@@ -41,6 +41,8 @@ BusinessSimulation::~BusinessSimulation()
     delete[] runningActivities;
     delete[] finishedActivities;
     delete[] bugActivities;
+    delete currEvent;
+    qDebug() << "BusinessSimulation::~BusinessSimulation() finished.";
 }
 
 void BusinessSimulation::clearData()
@@ -53,10 +55,19 @@ void BusinessSimulation::clearData()
     }
 }
 
-
 void BusinessSimulation::run()
 {
     qDebug() << "BusinessSimulation::run() begin...";
+    if (isAutoRun) {
+        autoRun();
+    } else {
+        manualRun();
+    }
+    qDebug() << "BusinessSimulation::run() finished.";
+}
+
+void BusinessSimulation::autoRun()
+{
     clearData();
 
     for (int i = 0; i < workflowCount; i++) {
@@ -67,44 +78,100 @@ void BusinessSimulation::run()
     int t = 0;
     while (!isFinished())
     {
-        nextStepMutex.lock();
+        emit normalEventSignal();
         qDebug() << "At t =" << t << "...";
 
         // [1] event
-        BusinessEvent event = BusinessEvent::random(t, activities, workflowCount);
-        bew->setEvent(&event);
+        eventWidgetMutex.lock();
+        *currEvent = BusinessEvent::random(t, activities, workflowCount);
+        bew->setEvent(currEvent);
+        eventWidgetMutex.unlock();
 
         // [2] update show
-        bugActivities[event.n].insert(event.a);
+        bugActivities[currEvent->n].insert(currEvent->a);
         updatePainter();
 
         // [3]
-        BusinessAction * action = operation(event);
-
-        if (!isAutoRun && event.type != BusinessEvent::NORMAIL)
-            nextStepCond.wait(&nextStepMutex);
+        actionWidgetMutex.lock();
+        BusinessAction * action = operation(*currEvent);
+        baw->setBusinessAction(actions);
+        baw->setAutoBusinessAction(action);
+        actionWidgetMutex.unlock();
 
         // [4]
         recovery(action);
 
-
-//        sleepAMoment();
         sleep(1);
         // [5] update show
         updatePainter();
 
         // [6] sleep a moment & time passed & update show
-//        sleepAMoment();
         sleep(1);
+
         timePassed();
+
         updatePainter();
 
         // [7] next second
         t++;
-        nextStepMutex.unlock();
+    }
+}
+
+void BusinessSimulation::manualRun()
+{
+    clearData();
+
+    for (int i = 0; i < workflowCount; i++) {
+        runningActivities[i].insert(0);
+        qDebug() << runningActivities[i] << finishedActivities[i];
     }
 
-    qDebug() << "BusinessSimulation::run() finished.";
+    int t = 0;
+    while (!isFinished())
+    {
+        emit normalEventSignal();
+        qDebug() << "At t =" << t << "...";
+
+        // [1] event
+        eventWidgetMutex.lock();
+        *currEvent = BusinessEvent::random(t, activities, workflowCount);
+        bew->setEvent(currEvent);
+        eventWidgetMutex.unlock();
+
+        // [2] update show
+        bugActivities[currEvent->n].insert(currEvent->a);
+        updatePainter();
+
+        // [3]
+        actionWidgetMutex.lock();
+        BusinessAction * action = operation(*currEvent);
+        baw->setBusinessAction(actions);
+        baw->setAutoBusinessAction(action);
+        if (currEvent->type != BusinessEvent::NORMAIL)
+        {
+            emit badEventSignal();
+            nextStepCond.wait(&actionWidgetMutex);
+        }
+        actionWidgetMutex.unlock();
+
+        // [4]
+        recovery(action);
+
+        emit normalEventSignal();
+        sleep(1);
+
+        // [5] update show
+        updatePainter();
+
+        // [6] sleep a moment & time passed & update show
+
+        timePassed();
+
+        updatePainter();
+
+        // [7] next second
+        t++;
+    }
 }
 
 bool BusinessSimulation::isFinished()
@@ -171,7 +238,6 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
         actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
     }
-    baw->setBusinessAction(actions);
 
     BusinessAction *resAction = NULL;
     for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
@@ -182,7 +248,6 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         }
     }
 
-    baw->setAutoBusinessAction(resAction);
     return resAction;
 }
 
@@ -405,6 +470,7 @@ void BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg)
     QSet<int> & finishedActivity = finishedActivities[flowId];
     QSet<int> & bugActivity = bugActivities[flowId];
 
+    serviceGraphMutex.lock();
     QList<QColor> colors = sg.getColors();
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
@@ -418,6 +484,7 @@ void BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg)
         }
     }
     sg.setColors(colors);
+    serviceGraphMutex.unlock();
 }
 
 void BusinessSimulation::updatePainter()
@@ -515,7 +582,7 @@ bool BusinessSimulation::init()
     {
         actions[i].type = i;
     }
-
+    currEvent = new BusinessEvent();
     qDebug() << "BusinessSimulation.init() finised.";
     return true;
 

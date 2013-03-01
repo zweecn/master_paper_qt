@@ -26,6 +26,7 @@ public:
     int lateStart;
     int earlyComplate;
     int lateComplate;
+
 };
 
 #endif // ACTIVITY_H
