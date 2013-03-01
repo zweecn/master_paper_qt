@@ -3,10 +3,14 @@
 
 #include <QWidget>
 #include <QMutex>
+#include <QList>
+
 #include "allmutex.h"
+#include "businessevent.h"
 
 class QTableWidget;
 class BusinessEvent;
+class QLabel;
 
 class BusinessEventWidget : public QWidget
 {
@@ -23,8 +27,14 @@ public slots:
     void updateEvent();
 private:
     void createEventTable();
+    void createHistoryEventTable();
 
     QTableWidget *eventTable;
+    QTableWidget *historyEventTable;
+    QLabel *currEventLabel;
+    QLabel *historyEventLabel;
+    QList<BusinessEvent> historyEventList;
+
     BusinessEvent *event;
 
 };

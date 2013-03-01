@@ -8,6 +8,8 @@
 #include "businesssimulation.h"
 #include "businesseventwidget.h"
 #include "businessactionwidget.h"
+#include "serviceinfotable.h"
+#include "linechart.h"
 
 
 class BusinessMainWidget : public QWidget
@@ -33,7 +35,10 @@ private:
     void createFlowGroupBox();
     void createEventGroupBox();
     void createActionGroupBox();
+    void createServiceGroupBox();
     void createButtonGroupBox();
+    void createRewardGroupBox();
+    void createStateGroupBox();
 
     QGroupBox *flowGroupBox;
 
@@ -43,10 +48,19 @@ private:
     QGroupBox *actionGroupBox;
     BusinessActionWidget *actionWidget;
 
+    QGroupBox *serviceInfoGroupBox;
+    ServiceInfoTable* serviceInfoTable;
+
     QGroupBox *buttonGroupBox;
     QPushButton *autoStartButton;
     QPushButton *startButton;
     QPushButton *nextStepButton;
+
+    QGroupBox *rewardGroupBox;
+    LineChart *rewardLineChart;
+
+    QGroupBox *stateGroupBox;
+
 
     // ALG
     void init();

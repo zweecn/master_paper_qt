@@ -26,28 +26,28 @@ int main(int argc, char *argv[])
     //    Widget w;
     //    w.show();
 
-    //    LineChart lc;
-    //    lc.show();
+//    LineChart lc;
+//    lc.show();
 
-//    ServiceInfoTable sit;
-//    sit.show();
+    //    ServiceInfoTable sit;
+    //    sit.show();
 
-//    WorkFlow::Instance()->makeService();
-//    WorkFlow::Instance()->makeResource();
+    //    WorkFlow::Instance()->makeService();
+    //    WorkFlow::Instance()->makeResource();
 
-//    IntervalCoverage::runExample();
+    //    IntervalCoverage::runExample();
 
-//    BusinessSimulation bs;
-//    bs.run();
+    //    BusinessSimulation bs;
+    //    bs.run();
 
     BusinessMainWidget bmw;
     bmw.show();
 
-//    CriticalPath cp;
-//    cp.runExample();
+    //    CriticalPath cp;
+    //    cp.runExample();
 
-//    ServiceGraph sg;
-//    sg.show();
+    //    ServiceGraph sg;
+    //    sg.show();
 
 
     return a.exec();

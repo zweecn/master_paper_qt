@@ -45,3 +45,43 @@ BusinessEvent BusinessEvent::random(int currTime, Activity ** activities, int wo
     }
     return e;
 }
+
+bool BusinessEvent::operator ==(BusinessEvent &other)
+{
+    if (t != other.t) {
+        return false;
+    }
+    if (n != other.n) {
+        return false;
+    }
+    if (a != other.a) {
+        return false;
+    }
+    if (t1 != other.t1) {
+        return false;
+    }
+    if (t2 != other.t2) {
+        return false;
+    }
+    if (type != other.type) {
+        return false;
+    }
+    return true;
+}
+
+QString BusinessEvent::name()
+{
+    QString res;
+    if (type == BusinessEvent::NORMAIL) {
+        res = "正常";
+    } else if (type == BusinessEvent::RESOUCE_NOT_USE) {
+        res = "资源不可用";
+    } else if (type == BusinessEvent::NEED_ADD) {
+        res = "需求增加";
+    } else if (type == BusinessEvent::NEED_REDUCE) {
+        res = "需求减少";
+    } else if (type == BusinessEvent::NEED_CANCEL) {
+        res = "需求取消";
+    }
+    return res;
+}

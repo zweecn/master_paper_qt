@@ -1,12 +1,17 @@
 #ifndef BUSINESSEVENT_H
 #define BUSINESSEVENT_H
 
+#include <QString>
+
 class Activity;
 
 class BusinessEvent
 {
 public:
     BusinessEvent();
+
+    QString name();
+    bool operator ==(BusinessEvent &other);
 
     static BusinessEvent random(int currTime, Activity ** activities, int workflowCount);
 

@@ -13,8 +13,8 @@ BusinessActionWidget::BusinessActionWidget(QWidget *parent) :
     createActionTable();
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(actionTable);
     mainLayout->addWidget(autoActionLabel);
+    mainLayout->addWidget(actionTable);
     setLayout(mainLayout);
 
     setWindowTitle(tr("业务流程不确定事件动作"));
@@ -37,6 +37,9 @@ void BusinessActionWidget::createActionTable()
     actionTable->setEditTriggers (QAbstractItemView::NoEditTriggers);
     actionTable->setSelectionMode (QAbstractItemView::SingleSelection);
     actionTable->setSortingEnabled(false);
+    actionTable->setColumnWidth(0, 150);
+    actionTable->setColumnWidth(1, 80);
+//    actionTable->resizeRowsToContents();
     for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
     {
         for (int j = 0; j < 3; j++)

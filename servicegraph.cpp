@@ -23,8 +23,8 @@ ServiceGraph::~ServiceGraph()
 bool ServiceGraph::init()
 {
     flowId = 0;
-    recommendHeight = 200;
-    recommendWidth = 350;
+    recommendHeight = 180;
+    recommendWidth = 300;
 
     pointsName.clear();
     for (int i = 0; i < 9; i++) {
@@ -43,8 +43,8 @@ bool ServiceGraph::init()
     points.push_back(QPoint(600, 250));
 
     for (int i = 0; i < points.size(); i++) {
-        points[i].setX(points[i].x()/2);
-        points[i].setY(points[i].y()/2);
+        points[i].setX(points[i].x()/2.2);
+        points[i].setY(points[i].y()/2.2);
     }
 
     colors.clear();

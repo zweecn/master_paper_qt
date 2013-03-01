@@ -12,13 +12,21 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     createFlowGroupBox();
     createEventGroupBox();
     createActionGroupBox();
+    createServiceGroupBox();
     createButtonGroupBox();
+    createRewardGroupBox();
+    createStateGroupBox();
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(flowGroupBox);
-    mainLayout->addWidget(eventGroupBox);
-    mainLayout->addWidget(actionGroupBox);
-    mainLayout->addWidget(buttonGroupBox);
+//    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QGridLayout *mainLayout = new QGridLayout;
+    mainLayout->addWidget(flowGroupBox, 0, 0, 1, 2);
+//    mainLayout->addWidget(serviceInfoGroupBox, 1, 0);
+    mainLayout->addWidget(stateGroupBox, 1, 0, 1, 2);
+    mainLayout->addWidget(eventGroupBox, 2, 0);
+    mainLayout->addWidget(actionGroupBox, 2, 1);
+    mainLayout->addWidget(buttonGroupBox, 3, 0, 1, 2);
+//    mainLayout->addWidget(rewardGroupBox, 3, 0, 1, 2);
+
     setLayout(mainLayout);
 
     setWindowTitle(tr("用户操作界面"));
@@ -29,7 +37,6 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
     connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
     connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
-
 }
 
 void BusinessMainWidget::createFlowGroupBox()
@@ -44,7 +51,7 @@ void BusinessMainWidget::createFlowGroupBox()
     QGridLayout *flowLayout = new QGridLayout;
     for (int i = 0; i < workflowCount; i++)
     {
-        flowLayout->addWidget(&sg[i], 0, i);
+        flowLayout->addWidget(&sg[i], i / 4, i % 4);
     }
     flowGroupBox->setLayout(flowLayout);
 }
@@ -57,7 +64,7 @@ void BusinessMainWidget::createEventGroupBox()
     QHBoxLayout *eventLayout = new QHBoxLayout;
     eventLayout->addWidget(eventWidget);
     eventGroupBox->setLayout(eventLayout);
-    eventGroupBox->setFixedHeight(110);
+//    eventGroupBox->setFixedHeight(120);
 }
 
 void BusinessMainWidget::createActionGroupBox()
@@ -68,6 +75,16 @@ void BusinessMainWidget::createActionGroupBox()
     QHBoxLayout *actionLayout = new QHBoxLayout;
     actionLayout->addWidget(actionWidget);
     actionGroupBox->setLayout(actionLayout);
+}
+
+void BusinessMainWidget::createServiceGroupBox()
+{
+    serviceInfoGroupBox = new QGroupBox(tr("候选服务信息"));
+    serviceInfoTable = new ServiceInfoTable();
+
+    QHBoxLayout *serviceLayout = new QHBoxLayout;
+    serviceLayout->addWidget(serviceInfoTable);
+    serviceInfoGroupBox->setLayout(serviceLayout);
 }
 
 void BusinessMainWidget::createButtonGroupBox()
@@ -85,6 +102,22 @@ void BusinessMainWidget::createButtonGroupBox()
     buttonGroupBox->setLayout(buttonLayout);
 }
 
+void BusinessMainWidget::createRewardGroupBox()
+{
+    rewardGroupBox = new QGroupBox(tr("收益(Reward)"));
+    rewardLineChart = new LineChart();
+
+    QHBoxLayout *rewardLayout = new QHBoxLayout;
+    rewardLayout->addWidget(rewardLineChart);
+    rewardGroupBox->setLayout(rewardLayout);
+    rewardGroupBox->setFixedHeight(300);
+}
+
+void BusinessMainWidget::createStateGroupBox()
+{
+    stateGroupBox = new QGroupBox(tr("服务流程状态"));
+
+}
 
 void BusinessMainWidget::init()
 {

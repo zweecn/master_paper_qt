@@ -2,6 +2,7 @@
 #define LINECHART_H
 
 #include <QWidget>
+#include <QPoint>
 
 class LineChart : public QWidget
 {
@@ -16,6 +17,13 @@ signals:
 
 public slots:
 
+private:
+    void init();
+
+    int xLength;
+    int yLength;
+    int delta;
+    QPoint origin;
 };
 
 #endif // LINECHART_H
