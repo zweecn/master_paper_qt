@@ -155,7 +155,7 @@ void BusinessSimulation::manualRun()
         actionWidgetMutex.unlock();
 
         // [4]
-        recovery(action);
+        recovery(&actions[selectActionId]);
 
         emit normalEventSignal();
         sleep(1);
@@ -167,6 +167,7 @@ void BusinessSimulation::manualRun()
 
         timePassed();
 
+        sleep(1);
         updatePainter();
 
         // [7] next second
@@ -681,4 +682,9 @@ BusinessActionWidget * BusinessSimulation::getBusinessActionWidget()
 void BusinessSimulation::setAutoRun(bool _isAutoRun)
 {
     isAutoRun = _isAutoRun;
+}
+
+void BusinessSimulation::setSelectActionId(int _selectActionId)
+{
+    selectActionId = _selectActionId;
 }

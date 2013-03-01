@@ -2,6 +2,8 @@
 #include "drawgraph.h"
 #include "config.h"
 
+#include <QMessageBox>
+
 BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     QWidget(parent)
 {
@@ -27,6 +29,7 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
     connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
     connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
+
 }
 
 void BusinessMainWidget::createFlowGroupBox()
@@ -117,7 +120,17 @@ void BusinessMainWidget::manualRun()
 
 void BusinessMainWidget::nextStep()
 {
-    nextStepCond.wakeOne();
+    int res = actionWidget->getCurrentRow();
+    qDebug() << "Select Row: " << res ;
+    if (res == -1)
+    {
+        QMessageBox::critical(this, tr("错误"), tr("请选中一个[有效]的动作! "), QMessageBox::Ok);
+    }
+    else
+    {
+        bs->setSelectActionId(res);
+        nextStepCond.wakeOne();
+    }
 }
 
 void BusinessMainWidget::enableNextStepButton()

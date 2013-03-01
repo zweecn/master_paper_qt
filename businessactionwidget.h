@@ -19,6 +19,8 @@ public:
     BusinessAction* getBusinessAction();
     BusinessAction* getAutoBusinessAction();
 
+    int getCurrentRow();
+
 signals:
     void updateActionsSignal();
 

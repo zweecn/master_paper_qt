@@ -109,3 +109,12 @@ BusinessAction * BusinessActionWidget::getAutoBusinessAction()
 {
     return autoAction;
 }
+
+int BusinessActionWidget::getCurrentRow()
+{
+    if (actionTable->currentRow() == -1
+            ||actionTable->item(actionTable->currentRow(), 1)->text().isEmpty()) {
+        return -1;
+    }
+    return actionTable->currentRow();
+}

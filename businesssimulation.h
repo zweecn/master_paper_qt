@@ -33,7 +33,7 @@ public:
     BusinessActionWidget* getBusinessActionWidget();
     void setBusinessActionWidget(BusinessActionWidget* _baw);
     void setAutoRun(bool _isAutoRun);
-
+    void setSelectActionId(int _selectActionId);
     BusinessAction* operation(BusinessEvent & event);
     bool recovery(BusinessAction *action);
 
@@ -86,6 +86,7 @@ private:
     // Below is the data should be lock when they are read/write
     BusinessEvent* currEvent;
     BusinessAction *actions;
+    int selectActionId;
 
     // UI
 
