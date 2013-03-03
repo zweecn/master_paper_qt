@@ -30,7 +30,8 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     setLayout(mainLayout);
 
     setWindowTitle(tr("用户操作界面"));
-    resize(800, 700);
+    resize(1024, 800);
+    showMaximized();
 
     connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
     connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));

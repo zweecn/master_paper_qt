@@ -17,6 +17,7 @@ public:
     int execTime;
 
     bool operator ==(AtomService &other);
+    bool operator <(AtomService &other);
 };
 
 #endif // ATOMSERVICE_H

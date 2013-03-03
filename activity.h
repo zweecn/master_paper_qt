@@ -9,6 +9,10 @@ class Activity
 public:
     Activity();
 
+    Activity & operator = (const Activity & other);
+    bool operator ==(const Activity & other);
+    bool operator <(const Activity & other);
+
     enum {FINISHED = -1};
 
     AtomService *blindService;

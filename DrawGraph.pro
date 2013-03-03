@@ -30,7 +30,19 @@ SOURCES += main.cpp\
     businesseventwidget.cpp \
     businessactionwidget.cpp \
     allmutex.cpp \
-    businessstatewidget.cpp
+    businessstatewidget.cpp \
+    webservicemainwidget.cpp \
+    webservicesimulation.cpp \
+    webservicestate.cpp \
+    webserviceevent.cpp \
+    webserviceaction.cpp \
+    webserviceatomstate.cpp \
+    markovstate.cpp \
+    webserviceflow.cpp \
+    markovrecord.cpp \
+    markovaction.cpp \
+    layermarkovbackward.cpp \
+    markov.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -51,9 +63,49 @@ HEADERS  += widget.h \
     businesseventwidget.h \
     businessactionwidget.h \
     allmutex.h \
-    businessstatewidget.h
+    businessstatewidget.h \
+    webservicemainwidget.h \
+    webservicesimulation.h \
+    webservicestate.h \
+    webserviceevent.h \
+    webserviceaction.h \
+    webserviceatomstate.h \
+    markovstate.h \
+    webserviceflow.h \
+    markovrecord.h \
+    markovaction.h \
+    layermarkovbackward.h \
+    markov.h
 
 FORMS    +=
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

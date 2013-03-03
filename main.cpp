@@ -13,7 +13,8 @@
 #include "workflow.h"
 #include "intervalcoverage.h"
 #include "businessmainwidget.h"
-
+#include "webservicesimulation.h"
+#include "webserviceflow.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,8 +41,8 @@ int main(int argc, char *argv[])
     //    BusinessSimulation bs;
     //    bs.run();
 
-    BusinessMainWidget bmw;
-    bmw.show();
+//    BusinessMainWidget bmw;
+//    bmw.show();
 
     //    CriticalPath cp;
     //    cp.runExample();
@@ -49,6 +50,9 @@ int main(int argc, char *argv[])
     //    ServiceGraph sg;
     //    sg.show();
 
-
+//    WebServiceSimulation wss;
+//    wss.run();
+    WebServiceFlow wsf;
+    wsf.init();
     return a.exec();
 }
