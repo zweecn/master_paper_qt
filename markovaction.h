@@ -26,13 +26,16 @@ public:
     bool operator ==(const MarkovAction & other) const;
     bool operator <(const MarkovAction & other) const;
 
+    double getPosibility();
+    double getPriceCost();
+    double getTimeCost();
+
     double getReplacePosibility();
     double getReplacePriceCost();
     double getReplaceTimeCost();
     double getReComposePosibility();
     double getReComposePriceCost();
     double getReComposeTimeCost();
-
 
     static AtomService* nextFreeService(int activityId);
     static QList<RecomposeNode> recomposeFreeService(int activityId);

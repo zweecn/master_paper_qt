@@ -2,6 +2,9 @@
 #include "workflow.h"
 #include "markovstate.h"
 #include "markovrecord.h"
+#include "assert.h"
+#include "config.h"
+
 #include <QDebug>
 
 MarkovAction::MarkovAction()
@@ -286,28 +289,115 @@ MarkovAction MarkovAction::reComposite(MarkovState & state)
     return action;
 }
 
+double MarkovAction::getPosibility()
+{
+    if (type == MarkovAction::TERMINATE)
+    {
+        return 1;
+    }
+    if (type == MarkovAction::DO_NOTHING)
+    {
+        assert(oldService != NULL);
+        return oldService->reliability;
+    }
+    if (type == MarkovAction::A_RE_DO)
+    {
+        assert(oldService != NULL);
+        return oldService->reliability;
+    }
+    if (type == MarkovAction::A_REPLACE)
+    {
+        return getReplacePosibility();
+    }
+    if (type == MarkovAction::A_RE_COMPOSITE)
+    {
+        return getReComposePosibility();
+    }
+    return 0;
+}
+
+double MarkovAction::getPriceCost()
+{
+    if (type == MarkovAction::TERMINATE)
+    {
+        return Config::Instance()->getPuinishmentFailed();
+    }
+    if (type == MarkovAction::DO_NOTHING)
+    {
+        return 0;
+    }
+    if (type == MarkovAction::A_RE_DO)
+    {
+        assert(oldService != NULL);
+        return oldService->price;
+    }
+    if (type == MarkovAction::A_REPLACE)
+    {
+        return getReplacePriceCost();
+    }
+    if (type == MarkovAction::A_RE_COMPOSITE)
+    {
+        return getReComposePriceCost();
+    }
+    return 0;
+}
+
+double MarkovAction::getTimeCost()
+{
+    if (type == MarkovAction::TERMINATE)
+    {
+        return 0;
+    }
+    if (type == MarkovAction::DO_NOTHING)
+    {
+        return 0;
+    }
+    if (type == MarkovAction::A_RE_DO)
+    {
+        assert(oldService != NULL);
+        return oldService->execTime;
+    }
+    if (type == MarkovAction::A_REPLACE)
+    {
+        return getReplaceTimeCost();
+    }
+    if (type == MarkovAction::A_RE_COMPOSITE)
+    {
+        return getReComposeTimeCost();
+    }
+    return 0;
+}
+
 double MarkovAction::getReplacePosibility()
 {
+    assert(newService != NULL);
     return newService->reliability;
 }
 
 // Bugs
 double MarkovAction::getReplacePriceCost()
 {
+    assert(newService != NULL);
     return newService->price;
 }
 
 double MarkovAction::getReplaceTimeCost()
 {
+    assert(oldService != NULL && newService != NULL);
     return newService->execTime - oldService->execTime;
 }
 
+//Bug
 double MarkovAction::getReComposePosibility()
 {
-    double res = 1;
+    double res = 0;
     for (int i = 0; i < oldNewServiceList.size(); i++)
     {
-        res *= oldNewServiceList[i].newService->reliability;
+        assert(oldNewServiceList[i].newService != NULL);
+        if (res > oldNewServiceList[i].newService->reliability)
+        {
+            res = oldNewServiceList[i].newService->reliability;
+        }
     }
     return res;
 }
@@ -318,6 +408,7 @@ double MarkovAction::getReComposePriceCost()
     double res = 0;
     for (int i = 0; i < oldNewServiceList.size(); i++)
     {
+        assert(oldNewServiceList[i].newService != NULL && oldNewServiceList[i].oldService != NULL);
         res += oldNewServiceList[i].newService->price - oldNewServiceList[i].oldService->price;
     }
     return res;
@@ -329,8 +420,8 @@ double MarkovAction::getReComposeTimeCost()
     double res = 0;
     for (int i = 0; i < oldNewServiceList.size(); i++)
     {
+        assert(oldNewServiceList[i].newService != NULL && oldNewServiceList[i].oldService != NULL);
         res += oldNewServiceList[i].newService->execTime - oldNewServiceList[i].oldService->execTime;
     }
     return res;
 }
-

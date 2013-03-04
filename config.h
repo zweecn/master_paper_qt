@@ -14,7 +14,6 @@ public:
         return _instance;
     }
 
-
 //    int getUCTypeCount();
     int getWorkflowCount();
     int getOneActivityServiceCount();
@@ -30,6 +29,12 @@ public:
     int getResourceUseTypeCount();
     int getResourceMinPriceCount();
     int getResourceMaxPriceCount();
+
+    double getWeaken();
+    int getPuinishmentPerSecond();
+    int getPuinishmentFailed();
+    int getReduceLayerSize();
+    bool isExtendTree();
 
 protected:
     Config();

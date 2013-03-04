@@ -28,9 +28,9 @@ void Test::runLayerMarkovBackwardTest()
     bd.runMarkov();
 //    //		bd.printRecords();
 //    //    bd.printSimpleRecords();
-    double maxUtility =  bd.getCurrActionReward();
+    double maxUtility =  bd.getMarkovReward();
     qDebug() << "Markov:" << bd.getAction().name();
-    qDebug() << "Cost:" << bd.getCurrActionCost() << "TimeCost:" << bd.getCurrActionTimeCost();
+    qDebug() << "Cost:" << bd.getMarkovCost() << "TimeCost:" << bd.getMarkovTimeCost();
 
     if (maxUtility <= - INT_MAX + 1)
     {
@@ -40,30 +40,29 @@ void Test::runLayerMarkovBackwardTest()
     {
         qDebug() << "Max utility:" << maxUtility;
     }
-    qDebug() << " Utility:" << bd.getMarkovBestUtility();
+    qDebug() << "Utility:" << bd.getMarkovBestUtility();
+    time_t midTime = clock();
+    qDebug() << "Markov runtime:" << midTime - startTime << "ms.";
 
     //		bd.printUtility();
     //		bd.printMap();
 
-//    /*********************************************************************************
-//     * End Markov test. Begin Greedy.
-//     *********************************************************************************/
-//    bd.runGreedy();
-//    System.out.print("Greedy:" + bd.getGreedyAction());
-//    qDebug()("Cost: %.2f TimeCost: %.2f ", bd.getGreedyPriceCost(), bd.getGreedyTimeCost());
-//    double greedyUtility = bd.getGreedyActionReward();
-//    if (greedyUtility <= - Double.MAX_VALUE) {
-//        qDebug() << (" Max utility: %s ", "MIN_VALUE");
-//    } else {
-//        qDebug() << (" Max utility: %.2f ", greedyUtility);
-//    }
-//    qDebug() << ("\n");
-//    /*********************************************************************************
-//     * End greedy.
-//     *********************************************************************************/
-
-//    long endTime=System.currentTimeMillis();
-//    qDebug() << ("\nTotal RunTime: "
-//                 + (endTime - startTime) + " ms. (include the runtime of print the record and print steps)");
+    /*********************************************************************************
+     * End Markov test. Begin Greedy.
+     *********************************************************************************/
+    bd.runGreedy();
+    qDebug() << "Greedy:"  << bd.getGreedyAction().toString();
+    qDebug() << "Cost:" << bd.getGreedyPriceCost() << "TimeCost:" << bd.getGreedyTimeCost();
+    double greedyUtility = bd.getGreedyActionReward();
+    if (greedyUtility <= - INT_MAX) {
+        qDebug() << "Max utility: MIN_VALUE";
+    } else {
+        qDebug() << "Max utility:" << greedyUtility;
+    }
+    time_t endTime = clock();
+    qDebug() << "Greedy runtime:" << endTime - midTime << "ms.";
+    /*********************************************************************************
+     * End greedy.
+     *********************************************************************************/
     qDebug() << "Test::runLayerMarkovBackwardTest() finished.";
 }

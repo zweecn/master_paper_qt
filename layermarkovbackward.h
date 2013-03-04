@@ -154,9 +154,10 @@ public:
     double getTReward(StateTAndAction & sta, QList<ToStateInfo> & tsi);
 
     double getMarkovBestUtility();
-    double getCurrActionCost();
-    double getCurrActionTimeCost();
-    double getCurrActionReward();
+    double getMarkovCost();
+    double getMarkovTimeCost();
+    double getMarkovReward();
+    double getMarkovPosibility();
     MarkovAction & getAction();
     MarkovState & getStateNew();
 
@@ -182,20 +183,12 @@ public:
     QHash<TAndState, QList<MarkovAction> > tState2ChildActionMap;
     QHash<StateTAndAction, QList<ToStateInfo> > stateTAction2ChildStateInfoMap;
 
-    enum
-    {
-        IS_EXTEND_TREE = 1,
-        REDUCE_LAYER_SIZE = 2,
-        WEAKEN = 1,
-        PUNISHMENT_FAILED = 100,
-        PUNISHMENT_PER_SECOND = 1
-
-    };
 private:
     double** utility;
     QString* step;
-    double actionCost;
-    double actionTimeCost;
+    double markovPriceCost;
+    double markovTimeCost;
+    double markovPosibility;
 
     MarkovAction firstAction;
     MarkovState stateNew;

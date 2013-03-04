@@ -1,8 +1,9 @@
 #include "layermarkovbackward.h"
 #include "markovrecord.h"
 #include "markov.h"
-#include "climits"
+#include "config.h"
 
+#include <climits>
 #include <ctime>
 #include <QDebug>
 
@@ -39,7 +40,7 @@ void LayerMarkovBackward::init(int reduceLayerSize)
         generateLayerRecords();
     }
     reduceLayer(reduceLayerSize);
-    extendTree(IS_EXTEND_TREE);
+    extendTree(Config::Instance()->isExtendTree());
     initMap();
     initMarkovInfo();
 }
@@ -49,8 +50,8 @@ void LayerMarkovBackward::init()
     qDebug() << "LayerMarkovBackward::init() ...";
     time_t t1 = clock();
     generateLayerRecords();
-    reduceLayer(REDUCE_LAYER_SIZE);
-    extendTree(IS_EXTEND_TREE);
+    reduceLayer(Config::Instance()->getReduceLayerSize());
+    extendTree(Config::Instance()->isExtendTree());
     initMap();
     time_t t2 = clock();
     initMarkovInfo();
@@ -67,7 +68,7 @@ void LayerMarkovBackward::initGreedy()
         generateLayerRecords();
     }
     reduceLayer(1);
-    extendTree(IS_EXTEND_TREE);
+    extendTree(Config::Instance()->isExtendTree());
     initMap();
     initMarkovInfo();
 }
@@ -282,6 +283,10 @@ void LayerMarkovBackward::runMarkov()
         stateNew.init();
     }
     runMarkovRunTime = clock() - t1;
+
+    markovPriceCost = firstAction.getPriceCost();
+    markovTimeCost = firstAction.getTimeCost();
+    markovPosibility = firstAction.getPosibility();
 }
 
 double LayerMarkovBackward::maxUtility(int t, MarkovState & i)
@@ -299,13 +304,13 @@ double LayerMarkovBackward::maxUtility(int t, MarkovState & i)
         for (int j = 0; j < tsiList.size(); j++)
         {
             ToStateInfo &tsi = tsiList[j];
-            reward +=  WEAKEN * tsi.getPosibility() * utility[t+1][tsi.state.id];
+            reward +=  Config::Instance()->getWeaken() * tsi.getPosibility() * utility[t+1][tsi.state.id];
         }
         if (u < reward) {
             u = reward;
             step[t] = makeStepString(t, a, u);
-            actionCost = stateTAction2ChildStateInfoMap[sta][0].getPrice();
-            actionTimeCost = stateTAction2ChildStateInfoMap[sta][0].getTime();
+            markovPriceCost = stateTAction2ChildStateInfoMap[sta][0].getPrice();
+            markovTimeCost = stateTAction2ChildStateInfoMap[sta][0].getTime();
             //				posibility = stateTAction2ChildStateInfoMap.get(sta).get(0).getPosibility();
             firstAction = a;
             stateNew = stateTAction2ChildStateInfoMap[sta][0].getState();
@@ -322,7 +327,7 @@ double LayerMarkovBackward::getNReward(int t, MarkovState & state)
 {
     if (state.globalState == MarkovState::S_FAILED)
     {
-        return (- PUNISHMENT_FAILED);
+        return (- Config::Instance()->getPuinishmentFailed());
     }
     return 0;
 }
@@ -335,15 +340,15 @@ double LayerMarkovBackward::getTReward(StateTAndAction & sta, QList<ToStateInfo>
     double res = 0;
     if (!tsi.isEmpty() && tsi[0].state.globalState == MarkovState::S_FAILED)
     {
-        res = - (tsi[0].getPosibility()) * PUNISHMENT_FAILED / getTsize()
+        res = - (tsi[0].getPosibility()) *  Config::Instance()->getPuinishmentFailed() / getTsize()
                 - tsi[0].getPrice()
-                - tsi[0].getTime() * PUNISHMENT_PER_SECOND;
+                - tsi[0].getTime() * Config::Instance()->getPuinishmentPerSecond();
     }
     else if (!tsi.isEmpty() && tsi[0].state.globalState != MarkovState::S_FAILED)
     {
-        res = - (1-tsi[0].getPosibility()) * PUNISHMENT_FAILED / getTsize()
+        res = - (1-tsi[0].getPosibility()) * Config::Instance()->getPuinishmentFailed() / getTsize()
                 - tsi[0].getPrice()
-                - tsi[0].getTime() * PUNISHMENT_PER_SECOND;
+                - tsi[0].getTime() * Config::Instance()->getPuinishmentPerSecond();
     }
     return  res; //- (1-tsi.get(0).getPosibility()) * Configs.FAILED_PUNISHMENT
 }
@@ -355,24 +360,29 @@ double LayerMarkovBackward::getMarkovBestUtility()
     return utility[0][0];
 }
 
-double LayerMarkovBackward::getCurrActionCost()
+double LayerMarkovBackward::getMarkovCost()
 {
-    return actionCost;
+    return markovPriceCost;
 }
 
-double LayerMarkovBackward::getCurrActionTimeCost()
+double LayerMarkovBackward::getMarkovTimeCost()
 {
-    return actionTimeCost;
+    return markovTimeCost;
 }
 
-double LayerMarkovBackward::getCurrActionReward()
+double LayerMarkovBackward::getMarkovPosibility()
 {
-    double res = //- (1-posibility) * Configs.PUNISHMENT_FAILED
-            - actionCost
-            - actionTimeCost * PUNISHMENT_PER_SECOND;
+    return markovPosibility;
+}
+
+double LayerMarkovBackward::getMarkovReward()
+{
+    double res = //- (1-posibility) * Configs.Config::Instance()->getPuinishmentFailed()
+            - markovPriceCost
+            - markovTimeCost * Config::Instance()->getPuinishmentPerSecond();
     if (getAction().type == MarkovAction::A_TERMINATE)
     {
-        res -= PUNISHMENT_FAILED;
+        res -= Config::Instance()->getPuinishmentFailed();
     }
     return res;
 }
@@ -393,11 +403,15 @@ void LayerMarkovBackward::runGreedy()
 {
     initGreedy();
     runMarkov();
-    greedyReward = getCurrActionReward();
-    greedyPriceCost = getCurrActionCost();
-    greedyTimeCost = getCurrActionTimeCost();
+    greedyReward = getMarkovReward();
+    greedyPriceCost = getMarkovCost();
+    greedyTimeCost = getMarkovTimeCost();
     greedyAction = getAction();
     greedyStateNew = getStateNew();
+
+    greedyPriceCost = firstAction.getPriceCost();
+    greedyTimeCost = firstAction.getTimeCost();
+    greedyPosibility = firstAction.getPosibility();
 }
 
 MarkovAction & LayerMarkovBackward::getGreedyAction()
@@ -430,7 +444,7 @@ double LayerMarkovBackward::getGreedyActionReward()
     double temp = 0;
     if (greedyAction.type == MarkovAction::A_TERMINATE)
     {
-        temp = PUNISHMENT_FAILED;
+        temp = Config::Instance()->getPuinishmentFailed();
     }
     return greedyReward - temp;
 }

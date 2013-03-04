@@ -110,3 +110,29 @@ int Config::getResourceMaxPriceCount()
 {
     return confMap["RESOURCE_Max_PRICE"].toInt();
 }
+
+double Config::getWeaken()
+{
+    return confMap["WEAKEN"].toDouble();
+}
+
+int Config::getPuinishmentPerSecond()
+{
+    return confMap["PUNISHMENT_PER_SECOND"].toInt();
+}
+
+int Config::getPuinishmentFailed()
+{
+    return confMap["PUNISHMENT_FAILED"].toInt();
+}
+
+int Config::getReduceLayerSize()
+{
+    return confMap["REDUCE_LAYER_SIZE"].toInt();
+}
+
+bool Config::isExtendTree()
+{
+    return (bool) confMap["IS_EXTEND_TREE"].toInt();
+}
+
