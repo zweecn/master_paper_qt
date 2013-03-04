@@ -7,6 +7,35 @@ MarkovAction::MarkovAction()
 {
 }
 
+QString MarkovAction::name()
+{
+    QString res;
+    switch (type)
+    {
+    case ERROR_ACTION:
+        res = "ERROR_ACTION";
+        break;
+    case A_NO_ACTION:
+        res = "A_NO_ACTION";
+        break;
+    case A_TERMINATE:
+        res = "A_TERMINATE";
+        break;
+    case A_RE_DO:
+        res = "A_RE_DO";
+        break;
+    case A_REPLACE:
+        res = "A_REPLACE";
+        break;
+    case A_RE_COMPOSITE:
+        res = "A_RE_COMPOSITE";
+        break;
+    default:
+        break;
+    }
+    return res;
+}
+
 AtomService* MarkovAction::nextFreeService(int activityId)
 {
     QList<AtomService> & all_service = WorkFlow::Instance()->all_service;
@@ -185,5 +214,53 @@ MarkovAction MarkovAction::reComposite(MarkovState & state)
     }
     state.faultActivity->x = 0;
     return action;
+}
+
+double MarkovAction::getReplacePosibility()
+{
+    return newService->reliability;
+}
+
+// Bugs
+double MarkovAction::getReplacePriceCost()
+{
+    return newService->price;
+}
+
+double MarkovAction::getReplaceTimeCost()
+{
+    return newService->execTime - oldService->execTime;
+}
+
+double MarkovAction::getReComposePosibility()
+{
+    double res = 1;
+    for (int i = 0; i < oldNewServiceList.size(); i++)
+    {
+        res *= oldNewServiceList[i].newService->reliability;
+    }
+    return res;
+}
+
+// Bugs
+double MarkovAction::getReComposePriceCost()
+{
+    double res = 0;
+    for (int i = 0; i < oldNewServiceList.size(); i++)
+    {
+        res += oldNewServiceList[i].newService->price - oldNewServiceList[i].oldService->price;
+    }
+    return res;
+}
+
+// Bugs
+double MarkovAction::getReComposeTimeCost()
+{
+    double res = 0;
+    for (int i = 0; i < oldNewServiceList.size(); i++)
+    {
+        res += oldNewServiceList[i].newService->execTime - oldNewServiceList[i].oldService->execTime;
+    }
+    return res;
 }
 

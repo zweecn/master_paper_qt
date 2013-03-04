@@ -42,6 +42,21 @@ MarkovRecord::MarkovRecord(MarkovState & _stateBefore, MarkovState & _stateAfter
     init();
 }
 
+MarkovRecord & MarkovRecord::operator =(const MarkovRecord& other)
+{
+    if (this == &other)
+    {
+        return *this;
+    }
+    stateBefore = other.stateBefore;
+    stateAfter = other.stateAfter;
+    action = other.action;
+    posibility = other.posibility;
+    priceCost = other.priceCost;
+    timeCost = other.timeCost;
+    return *this;
+}
+
 bool MarkovRecord::init()
 {
     addStateAction(stateBefore, action, priceCost, timeCost);

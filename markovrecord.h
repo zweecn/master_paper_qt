@@ -35,6 +35,7 @@ public:
     MarkovRecord(MarkovState & _stateBefore, MarkovState & _stateAfter, MarkovAction & _action,
                  double _posibility, double _priceCost, double _timeCost);
 
+    MarkovRecord & operator =(const MarkovRecord& other);
     bool init();
 
     MarkovState stateBefore;

@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     markovrecord.cpp \
     markovaction.cpp \
     layermarkovbackward.cpp \
-    markov.cpp
+    markov.cpp \
+    test.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -75,9 +76,12 @@ HEADERS  += widget.h \
     markovrecord.h \
     markovaction.h \
     layermarkovbackward.h \
-    markov.h
+    markov.h \
+    test.h
 
 FORMS    +=
+
+
 
 
 

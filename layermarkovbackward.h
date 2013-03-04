@@ -134,6 +134,43 @@ class LayerMarkovBackward
 public:
     LayerMarkovBackward(MarkovState& _state);
 
+    void init(int reduceLayerSize);
+    void init();
+    void initGreedy();
+    void initMap();
+    void generateLayerRecords();
+    void extendTree(bool isExtend);
+    void reduceLayer(int i);
+    void addToRecords(QList<MarkovRecord> &destRecords, QList<MarkovRecord> &sourceRecord);
+    void addToMap(int t, QList<MarkovRecord> & records);
+    QString makeStepString(int t, MarkovAction & action, double u);
+    int getTsize();
+    bool hasChildren(int t, MarkovState & state);
+
+    void initMarkovInfo();
+    void runMarkov();
+    double maxUtility(int t, MarkovState & i);
+    double getNReward(int t, MarkovState & state);
+    double getTReward(StateTAndAction & sta, QList<ToStateInfo> & tsi);
+
+    double getMarkovBestUtility();
+    double getCurrActionCost();
+    double getCurrActionTimeCost();
+    double getCurrActionReward();
+    MarkovAction & getAction();
+    MarkovState & getStateNew();
+
+
+    // Next is greedy
+
+    double getGreedyActionReward();
+    MarkovState & getGreedyStateNew();
+    double getGreedyPosibility();
+    double getGreedyTimeCost();
+    double getGreedyPriceCost();
+    MarkovAction & getGreedyAction();
+    void runGreedy();
+
     MarkovState state;
     MarkovState greedyState;
 
@@ -148,7 +185,11 @@ public:
     enum
     {
         IS_EXTEND_TREE = 1,
-        REDUCE_LAYER_SIZE = 2
+        REDUCE_LAYER_SIZE = 2,
+        WEAKEN = 1,
+        PUNISHMENT_FAILED = 100,
+        PUNISHMENT_PER_SECOND = 1
+
     };
 private:
     double** utility;
@@ -162,6 +203,14 @@ private:
     long generateRecordRunTime;
     long initMarkovInfoRunTime;
     long runMarkovRunTime;
+
+    // Next is greedy
+    MarkovAction greedyAction;
+    double greedyPriceCost;
+    double greedyTimeCost;
+    double greedyPosibility;
+    double greedyReward;
+    MarkovState greedyStateNew;
 };
 
 #endif // LAYERMARKOVBACKWARD_H

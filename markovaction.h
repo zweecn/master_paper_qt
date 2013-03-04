@@ -17,9 +17,19 @@ class MarkovAction
 public:
     MarkovAction();
 
+    QString name();
+
     MarkovAction & operator =(const MarkovAction & other);
     bool operator ==(const MarkovAction & other) const;
     bool operator <(const MarkovAction & other) const;
+
+    double getReplacePosibility();
+    double getReplacePriceCost();
+    double getReplaceTimeCost();
+    double getReComposePosibility();
+    double getReComposePriceCost();
+    double getReComposeTimeCost();
+
 
     static AtomService* nextFreeService(int activityId);
     static QList<RecomposeNode> recomposeFreeService(int activityId);

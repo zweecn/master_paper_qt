@@ -1,9 +1,41 @@
 #include "markov.h"
 #include "markovrecord.h"
 #include <QDebug>
+#include <qmath.h>
+
 
 Markov::Markov()
 {
+}
+
+bool Markov::helper(MarkovState & state)
+{
+    if (!MarkovRecord::hasState(state)) {
+        MarkovRecord::addState(state);
+    } else {
+        MarkovState *tmps = MarkovRecord::getState(state);
+        if (tmps == NULL) {
+            qDebug() << "Markov::helper(MarkovState & state). tmps==NULL";
+        } else {
+            state = (*tmps);
+        }
+    }
+    return true;
+}
+
+bool Markov::helper(MarkovAction & action)
+{
+    if (!MarkovRecord::hasAction(action)) {
+        MarkovRecord::addAction(action);
+    } else {
+        MarkovAction *tmpa = MarkovRecord::getAction(action);
+        if (tmpa == NULL) {
+            qDebug() << "Markov::noActionRecords(MarkovState & state). tmpa==NULL";
+        } else {
+            action = (*tmpa);
+        }
+    }
+    return true;
 }
 
 QList<MarkovRecord> Markov::noActionRecords(MarkovState & state)
@@ -28,65 +60,23 @@ QList<MarkovRecord> Markov::noActionRecords(MarkovState & state)
 
     if (stateAfter.globalState == MarkovState::S_FAILED)
     {
-        if (!MarkovRecord::hasState(stateAfter)) {
-            MarkovRecord::addState(stateAfter);
-        } else {
-            MarkovState *tmps = MarkovRecord::getState(stateAfter);
-            if (tmps == NULL) {
-                qDebug() << "MarkovAction::noActionRecords(MarkovState & state). tmpa==NULL";
-            } else {
-                stateAfter = (*tmps);
-            }
-        }
-        if (!MarkovRecord::hasAction(noac)) {
-            MarkovRecord::addAction(noac);
-        } else {
-            MarkovAction *tmpa = MarkovRecord::getAction(noac);
-            if (tmpa == NULL) {
-                qDebug() << "MarkovAction::noActionRecords(MarkovState & state). tmps==NULL";
-            } else {
-                noac = (*tmpa);
-            }
-        }
+        helper(stateAfter);
+        helper(noac);
         records.append(MarkovRecord(stateAfter, stateAfter, noac, 1, 0, timeCost));
         return records;
     }
     else
     {
         QList<MarkovState> states = stateAfter.getNextTwoStates();
+        if (states.size() < 2)
+        {
+            return records;
+        }
         MarkovState stateAfter1 = states[0];
         MarkovState stateAfter2 = states[1];
-        if (!MarkovRecord::hasState(stateAfter1)) {
-            MarkovRecord::addState(stateAfter1);
-        } else {
-            MarkovState *tmps = MarkovRecord::getState(stateAfter1);
-            if (tmps == NULL) {
-                qDebug() << "MarkovAction::noActionRecords(MarkovState & state). tmpa==NULL";
-            } else {
-                stateAfter1 = (*tmps);
-            }
-        }
-        if (!MarkovRecord::hasState(stateAfter2)) {
-            MarkovRecord::addState(stateAfter2);
-        } else {
-            MarkovState *tmps = MarkovRecord::getState(stateAfter2);
-            if (tmps == NULL) {
-                qDebug() << "MarkovAction::noActionRecords(MarkovState & state). tmpa==NULL";
-            } else {
-                stateAfter2 = (*tmps);
-            }
-        }
-
-        if (!MarkovRecord::hasAction(noac)) {
-            MarkovRecord::addAction(noac);
-        } else {
-            MarkovAction *tmpa = MarkovRecord::getAction(noac);
-            if (tmpa == NULL) {
-                qDebug() << "MarkovAction::noActionRecords(MarkovState & state). tmps==NULL";
-            } else {
-                noac = (*tmpa);
-            }
-        }
+        helper(stateAfter1);
+        helper(stateAfter2);
+        helper(noac);
         records.append(MarkovRecord(state, stateAfter1, noac,
                                  stateAfter.nextToDoActivity->blindService->reliability, 0, timeCost));
         records.append(MarkovRecord(state, stateAfter2, noac,
@@ -97,243 +87,211 @@ QList<MarkovRecord> Markov::noActionRecords(MarkovState & state)
 }
 
 
-//List<MarkovRecord> terminateRecords(MarkovState state) {
-//    double timeCost = 0;
-//    if (state.getGlobalState() != Markov.S_NORMAL && state.getGlobalState() != Markov.S_SUCCEED
-//            && (state.getFaultActivity().getX()-1) > 0) {
-//        timeCost = (state.getFaultActivity().getX()-1)
-//                * state.getFaultActivity().getBlindService().getQos().getExecTime();
-//    }
-//    MarkovState stateAfter = state.clone();
-//    BaseAction terminateAction = (BaseAction) Markov.terminate(stateAfter);
-//    if (stateAfter == NULL || stateAfter.isFinished() || MarkovRecord.hasStateAction(stateAfter, terminateAction)) {
-//        return NULL;
-//    }
-
-//    List<MarkovRecord> records = new ArrayList<MarkovRecord>();
-//    if (MarkovRecord.hasState(stateAfter)) {
-//        stateAfter = MarkovRecord.getState(stateAfter);
-//    } else {
-//        MarkovRecord.addState(stateAfter);
-//    }
-//    if (!MarkovRecord.hasAction(terminateAction)) {
-//        MarkovRecord.addAction(terminateAction);
-//    } else {
-//        terminateAction = (BaseAction) MarkovRecord.getAction(terminateAction);
-//    }
-//    records.add(new MarkovRecord(state, stateAfter, terminateAction, 1, 0, timeCost));
-//    return records;
-//}
+QList<MarkovRecord> Markov::terminateRecords(MarkovState & state)
+{
+    QList<MarkovRecord> records;
+    double timeCost = 0;
+    if (state.globalState != MarkovState::S_NORMAL
+            && state.globalState != MarkovState::S_SUCCEED
+            && (state.faultActivity->x - 1) > 0)
+    {
+        timeCost = (state.faultActivity->x - 1) * state.faultActivity->blindService->execTime;
+    }
+    MarkovState stateAfter = state;
+    MarkovAction terminateAction = MarkovAction::terminate(stateAfter);
+    if (terminateAction.type == MarkovAction::ERROR_ACTION
+            || stateAfter.isFinished()
+            || MarkovRecord::hasStateAction(stateAfter, terminateAction))
+    {
+        return records;
+    }
+    helper(stateAfter);
+    helper(terminateAction);
+    records.append(MarkovRecord(state, stateAfter, terminateAction, 1, 0, timeCost));
+    return records;
+}
 
 ////在action里面加上消耗和报酬
-//List<MarkovRecord> redoRecords(MarkovState state) {
-//    MarkovState stateAfter = state.clone();
-//    BaseAction redoAction = (BaseAction) Markov.redo(stateAfter);
-//    if (stateAfter == NULL || stateAfter.isFinished() || MarkovRecord.hasStateAction(stateAfter, redoAction)) {
-//        return NULL;
-//    }
-//    List<MarkovRecord> records = new ArrayList<MarkovRecord>();
-//    MarkovState[] states = stateAfter.getNextTwoStates();
+QList<MarkovRecord> Markov::redoRecords(MarkovState & state)
+{
+    QList<MarkovRecord> records;
+    MarkovState stateAfter = state;
+    MarkovAction redoAction = MarkovAction::redo(stateAfter);
+    if (redoAction.type == MarkovAction::ERROR_ACTION
+            || stateAfter.isFinished()
+            || MarkovRecord::hasStateAction(stateAfter, redoAction)) {
+        return records;
+    }
 
-//    MarkovState stateAfter1 = states[0];
-//    MarkovState stateAfter2 = states[1];
+    QList<MarkovState> states = stateAfter.getNextTwoStates();
+    if (states.size() < 2)
+    {
+        return records;
+    }
 
-//    if (!MarkovRecord.hasState(stateAfter1)) {
-//        MarkovRecord.addState(stateAfter1);
-//    } else {
-//        stateAfter1 = MarkovRecord.getState(stateAfter1);
-//    }
-//    if (!MarkovRecord.hasState(stateAfter2)) {
-//        MarkovRecord.addState(stateAfter2);
-//    } else {
-//        stateAfter2 = MarkovRecord.getState(stateAfter2);
-//    }
-//    if (!MarkovRecord.hasAction(redoAction)) {
-//        MarkovRecord.addAction(redoAction);
-//    } else {
-//        redoAction = (BaseAction) MarkovRecord.getAction(redoAction);
-//    }
+    MarkovState stateAfter1 = states[0];
+    MarkovState stateAfter2 = states[1];
 
-//    records.add(new MarkovRecord(state, stateAfter1, redoAction,
-//                                 state.getFaultActivity().getBlindService().getQos().getReliability(),
-//                                 state.getFaultActivity().getBlindService().getQos().getPrice(),
-//                                 Math.abs(state.getFaultActivity().getBlindService().getQos().getExecTime()*state.getFaultActivity().getX())));
-//    records.add(new MarkovRecord(state, stateAfter2, redoAction,
-//                                 1 - state.getFaultActivity().getBlindService().getQos().getReliability(),
-//                                 state.getFaultActivity().getBlindService().getQos().getPrice(),
-//                                 Math.abs(state.getFaultActivity().getBlindService().getQos().getExecTime()*state.getFaultActivity().getX())));
-//    return records;
-//}
+    helper(stateAfter1);
+    helper(stateAfter2);
+    helper(redoAction);
+
+    records.append(MarkovRecord(state, stateAfter1, redoAction,
+                                state.faultActivity->blindService->reliability,
+                                state.faultActivity->blindService->price,
+                                fabs(state.faultActivity->blindService->execTime * state.faultActivity->x)));
+
+    records.append(MarkovRecord(state, stateAfter2, redoAction,
+                                 1 - state.faultActivity->blindService->reliability,
+                                 state.faultActivity->blindService->price,
+                                 fabs(state.faultActivity->blindService->execTime * state.faultActivity->x)));
+    return records;
+}
 
 
 
-//List<MarkovRecord> replaceRecords(MarkovState state) {
-//    MarkovState stateAfter = state.clone();
+QList<MarkovRecord> Markov::replaceRecords(MarkovState & state)
+{
+    QList<MarkovRecord> records;
+    MarkovState stateAfter = state;
+    MarkovAction replaceAction = MarkovAction::replace(stateAfter);
 
-//    ReplaceAction replaceAction = (ReplaceAction) Markov.replace(stateAfter);
+    if (replaceAction.type == MarkovAction::ERROR_ACTION
+            || stateAfter.isFinished()
+            || MarkovRecord::hasStateAction(stateAfter, replaceAction)) {
+        return records;
+    }
 
-//    if (replaceAction == NULL || stateAfter == NULL || stateAfter.isFinished() || MarkovRecord.hasStateAction(stateAfter, replaceAction)) {
-//        return NULL;
-//    }
+    QList<MarkovState> states = stateAfter.getNextTwoStates();
+    if (states.size() < 2)
+    {
+        return records;
+    }
+    MarkovState stateAfter1 = states[0];
+    MarkovState stateAfter2 = states[1];
+    helper(stateAfter1);
+    helper(stateAfter2);
+    helper(replaceAction);
 
-//    List<MarkovRecord> records = new ArrayList<MarkovRecord>();
+    // NEED FINISH
+    records.append(MarkovRecord(state, stateAfter1, replaceAction,
+                                replaceAction.getReplacePosibility(),
+                                 replaceAction.getReplacePriceCost(),
+                                replaceAction.getReplaceTimeCost()));
+    records.append(MarkovRecord(state, stateAfter2, replaceAction,
+                                1 - replaceAction.getReplacePosibility(),
+                                replaceAction.getReplacePriceCost(),
+                                replaceAction.getReplaceTimeCost()));
 
-//    MarkovState[] states = stateAfter.getNextTwoStates();
-//    if (states == NULL || states.length < 2) {
-//        return NULL;
-//    }
+    return records;
+}
 
-//    MarkovState stateAfter1 = states[0];
-//    MarkovState stateAfter2 = states[1];
-//    if (!MarkovRecord.hasState(stateAfter1)) {
-//        MarkovRecord.addState(stateAfter1);
-//    } else {
-//        stateAfter1 = MarkovRecord.getState(stateAfter1);
-//    }
-//    if (!MarkovRecord.hasState(stateAfter2)) {
-//        MarkovRecord.addState(stateAfter2);
-//    } else {
-//        stateAfter2 = MarkovRecord.getState(stateAfter2);
-//    }
-//    if (!MarkovRecord.hasAction(replaceAction)) {
-//        MarkovRecord.addAction(replaceAction);
-//    } else {
-//        replaceAction = (ReplaceAction) MarkovRecord.getAction(replaceAction);
-//    }
+QList<MarkovRecord> Markov::reCompositeRecords(MarkovState & state)
+{
+    QList<MarkovRecord> records;
+    MarkovState stateAfter = state;
+    MarkovAction reCompositeAction = MarkovAction::reComposite(state);
 
+    if (reCompositeAction.type == MarkovAction::ERROR_ACTION
+            || stateAfter.isFinished()
+            || MarkovRecord::hasStateAction(stateAfter, reCompositeAction)) {
+        return records;
+    }
 
+    QList<MarkovState> states = stateAfter.getNextTwoStates();
+    if (states.size() < 2)
+    {
+        return records;
+    }
 
-//    records.add(new MarkovRecord(state, stateAfter1, replaceAction, replaceAction.getPosibility(),
-//                                 replaceAction.getPriceCost(), replaceAction.getTimeCost()));
-//    records.add(new MarkovRecord(state, stateAfter2, replaceAction, 1 - replaceAction.getPosibility(),
-//                                 replaceAction.getPriceCost(), replaceAction.getTimeCost()));
+    MarkovState stateAfter1 = states[0];
+    MarkovState stateAfter2 = states[1];
+    helper(stateAfter1);
+    helper(stateAfter2);
+    helper(reCompositeAction);
 
+    records.append(MarkovRecord(state, stateAfter1, reCompositeAction,
+                                reCompositeAction.getReComposePosibility(),
+                                reCompositeAction.getReComposePriceCost(),
+                                reCompositeAction.getReComposeTimeCost()));
+    records.append(MarkovRecord(state, stateAfter2, reCompositeAction,
+                                1 - reCompositeAction.getReComposePosibility(),
+                                reCompositeAction.getReComposePriceCost(),
+                                reCompositeAction.getReComposeTimeCost()));
 
-//    return records;
+    return records;
+}
 
+QList<MarkovRecord> Markov::getRecords(MarkovState & state)
+{
+    QList<MarkovRecord> resultRecords;
+    if (MarkovRecord::hasStateBefore(state)) {
+        return resultRecords;
+    }
 
-//}
+    if (state.globalState == MarkovState::S_NORMAL ) {
+        QList<MarkovRecord> tempRecords = Markov::noActionRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+    } else if (state.globalState == MarkovState::S_DELAYED) {
+        QList<MarkovRecord> tempRecords = Markov::noActionRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::terminateRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::replaceRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::reCompositeRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+    } else if (state.globalState == MarkovState::S_PRICE_UP) {
+        QList<MarkovRecord> tempRecords = Markov::noActionRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::terminateRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::replaceRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::reCompositeRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
 
-//List<MarkovRecord> reCompositeRecords(MarkovState state) {
-//    MarkovState stateAfter = state.clone();
-//    if (reCompositeAction == NULL || stateAfter.isFinished() || MarkovRecord.hasStateAction(stateAfter, reCompositeAction)) {
-//        return NULL;
-//    }
+    } else if (state.globalState == MarkovState::S_SUCCEED) {
+        QList<MarkovRecord> tempRecords = Markov::noActionRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+    } else if (state.globalState == MarkovState::S_FAILED) {
+        QList<MarkovRecord> tempRecords = Markov::terminateRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::redoRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::replaceRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+        tempRecords = Markov::reCompositeRecords(state);
+        if (!tempRecords.isEmpty()) {
+            resultRecords += tempRecords;
+        }
+    }
 
-//    List<MarkovRecord> records = new ArrayList<MarkovRecord>();
-
-//    MarkovState[] states = stateAfter.getNextTwoStates();
-
-//    if (states == NULL || states.length < 2) {
-//        return NULL;
-//    }
-//    ReCompositorImpl reCompositor = ((ReCompositorImpl) reCompositeAction.getReCompositor());
-
-//    MarkovState stateAfter1 = states[0];
-//    MarkovState stateAfter2 = states[1];
-//    if (!MarkovRecord.hasState(stateAfter1)) {
-//        MarkovRecord.addState(stateAfter1);
-//    } else {
-//        stateAfter1 = MarkovRecord.getState(stateAfter1);
-//    }
-//    if (!MarkovRecord.hasState(stateAfter2)) {
-//        MarkovRecord.addState(stateAfter2);
-//    } else {
-//        stateAfter2 = MarkovRecord.getState(stateAfter2);
-//    }
-//    if (!MarkovRecord.hasAction(reCompositeAction)) {
-//        MarkovRecord.addAction(reCompositeAction);
-//    } else {
-//        reCompositeAction = (ReCompositeAction) MarkovRecord.getAction(reCompositeAction);
-//    }
-
-
-//    records.add(new MarkovRecord(state, stateAfter1, reCompositeAction, reCompositor.getPosibility(),
-//                                 reCompositor.getPriceCost(), reCompositor.getTimeCost()));
-//    records.add(new MarkovRecord(state, stateAfter2, reCompositeAction, 1 - reCompositor.getPosibility(),
-//                                 reCompositor.getPriceCost(), reCompositor.getTimeCost()));
-
-//    return records;
-//}
-
-//List<MarkovRecord> getRecords(MarkovState state) {
-
-//    if (MarkovRecord.hasStateBefore(state)) {
-//        return NULL;
-//    }
-//    List<MarkovRecord> resultRecords = new ArrayList<MarkovRecord>();
-
-//    if (state.getGlobalState() == Markov.S_NORMAL ) {
-//        List<MarkovRecord> tempRecords = Markov.noActionRecords(state);
-
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//    } else if (state.getGlobalState() == Markov.S_DELAYED) {
-
-//        List<MarkovRecord> tempRecords = Markov.noActionRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.terminateRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.replaceRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.reCompositeRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//    } else if (state.getGlobalState() == Markov.S_PRICE_UP) {
-//        List<MarkovRecord> tempRecords = Markov.noActionRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.terminateRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        //System.out.println("state1=" + state);
-//        tempRecords = Markov.replaceRecords(state);
-//        //System.out.println("state2=" + state.getFaultActivity());
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.reCompositeRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//    } else if (state.getGlobalState() == Markov.S_SUCCEED) {
-//        List<MarkovRecord> tempRecords = Markov.noActionRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//    } else if (state.getGlobalState() == Markov.S_FAILED) {
-//        List<MarkovRecord> tempRecords = Markov.terminateRecords(state);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.redoRecords(state);
-//        //	System.out.println("Redo:" + tempRecords);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        //System.out.println("state=" + state);
-//        tempRecords = Markov.replaceRecords(state);
-//        //	System.out.println("Replace:" + tempRecords);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        tempRecords = Markov.reCompositeRecords(state);
-//        //	System.out.println("reComposite:" + tempRecords);
-//        if (tempRecords != NULL && !tempRecords.isEmpty()) {
-//            resultRecords.addAll(tempRecords);
-//        }
-//        //System.out.println("Line 469");
-//    }
-
-//    return resultRecords;
-//}
+    return resultRecords;
+}
