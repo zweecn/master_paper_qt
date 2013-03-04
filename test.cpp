@@ -25,23 +25,22 @@ void Test::runLayerMarkovBackwardTest()
      *********************************************************************************/
     time_t startTime = clock();
     LayerMarkovBackward bd(state);
-//    bd.runMarkov();
+    bd.runMarkov();
 //    //		bd.printRecords();
 //    //    bd.printSimpleRecords();
-//    double maxUtility =  bd.getCurrActionReward();
-//    qDebug() << "Markov:" << bd.getAction().name();
-//    qDebug() << "Cost:" << bd.getCurrActionCost() << "TimeCost:" << bd.getCurrActionTimeCost();
+    double maxUtility =  bd.getCurrActionReward();
+    qDebug() << "Markov:" << bd.getAction().name();
+    qDebug() << "Cost:" << bd.getCurrActionCost() << "TimeCost:" << bd.getCurrActionTimeCost();
 
-//    if (maxUtility <= - INT_MAX + 1)
-//    {
-//        qDebug() << "Max utility: MIN_VALUE";
-//    }
-//    else
-//    {
-//        qDebug() << "Max utility:" << maxUtility;
-//    }
-//    qDebug() << " Utility:" << bd.getMarkovBestUtility();
-//    qDebug() << "\n";
+    if (maxUtility <= - INT_MAX + 1)
+    {
+        qDebug() << "Max utility: MIN_VALUE";
+    }
+    else
+    {
+        qDebug() << "Max utility:" << maxUtility;
+    }
+    qDebug() << " Utility:" << bd.getMarkovBestUtility();
 
     //		bd.printUtility();
     //		bd.printMap();
