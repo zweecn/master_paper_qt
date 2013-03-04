@@ -16,8 +16,8 @@ public:
     static QList<MarkovRecord> reCompositeRecords(MarkovState & state);
     static QList<MarkovRecord> getRecords(MarkovState & state);
 
-    static bool helper(MarkovState & state);
-    static bool helper(MarkovAction & action);
+    static inline bool helper(MarkovState & state);
+    static inline bool helper(MarkovAction & action);
 };
 
 #endif // MARKOV_H

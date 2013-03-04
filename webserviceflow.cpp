@@ -21,7 +21,7 @@ WebServiceFlow::WebServiceFlow()
 
 bool WebServiceFlow::init()
 {
-    qDebug() << "WebServiceFlow::init() begin...";
+//    qDebug() << "WebServiceFlow::init() begin...";
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -33,8 +33,6 @@ bool WebServiceFlow::init()
     QTextCodec *codec=QTextCodec::codecForName("GBK");
     stream.setCodec(codec);
     line = codec->fromUnicode(stream.readLine());
-    line = line = codec->fromUnicode(stream.readLine());
-
     int activitySize = WorkFlow::Instance()->getActivitySize();
     activities = new Activity[activitySize];
     for (int j = 0; j < activitySize; j++)
@@ -66,10 +64,9 @@ bool WebServiceFlow::init()
             }
         }
     }
-
     file.close();
 
-    qDebug() << "WebServiceFlow::init() finised.";
+//    qDebug() << "WebServiceFlow::init() finised.";
     return true;
 }
 

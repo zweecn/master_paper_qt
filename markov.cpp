@@ -10,6 +10,7 @@ Markov::Markov()
 
 bool Markov::helper(MarkovState & state)
 {
+//    qDebug() << "Markov::helper(MarkovState & state)...";
     if (!MarkovRecord::hasState(state)) {
         MarkovRecord::addState(state);
     } else {
@@ -25,6 +26,7 @@ bool Markov::helper(MarkovState & state)
 
 bool Markov::helper(MarkovAction & action)
 {
+//    qDebug() << "Markov::helper(MarkovAction & action)...";
     if (!MarkovRecord::hasAction(action)) {
         MarkovRecord::addAction(action);
     } else {
@@ -99,15 +101,22 @@ QList<MarkovRecord> Markov::terminateRecords(MarkovState & state)
     }
     MarkovState stateAfter = state;
     MarkovAction terminateAction = MarkovAction::terminate(stateAfter);
+
     if (terminateAction.type == MarkovAction::ERROR_ACTION
             || stateAfter.isFinished()
             || MarkovRecord::hasStateAction(stateAfter, terminateAction))
     {
         return records;
     }
-    helper(stateAfter);
-    helper(terminateAction);
-    records.append(MarkovRecord(state, stateAfter, terminateAction, 1, 0, timeCost));
+
+    Markov::helper(stateAfter);
+    Markov::helper(terminateAction);
+
+    stateAfter.globalState = MarkovState::S_FAILED;
+    stateAfter.finished = true;
+
+    MarkovRecord rd(state, stateAfter, terminateAction, 1, 0, timeCost);
+    records.append(rd);
     return records;
 }
 
@@ -117,13 +126,21 @@ QList<MarkovRecord> Markov::redoRecords(MarkovState & state)
     QList<MarkovRecord> records;
     MarkovState stateAfter = state;
     MarkovAction redoAction = MarkovAction::redo(stateAfter);
+//    qDebug() << redoAction.type << stateAfter.isFinished()
+//             << MarkovRecord::hasStateAction(stateAfter, redoAction);
+
     if (redoAction.type == MarkovAction::ERROR_ACTION
             || stateAfter.isFinished()
             || MarkovRecord::hasStateAction(stateAfter, redoAction)) {
         return records;
     }
 
+//    if (stateAfter.faultActivity != NULL)
+//        stateAfter.faultActivity->x = 0;
+//    stateAfter.globalState = MarkovState::S_NORMAL;
+
     QList<MarkovState> states = stateAfter.getNextTwoStates();
+
     if (states.size() < 2)
     {
         return records;
@@ -162,11 +179,21 @@ QList<MarkovRecord> Markov::replaceRecords(MarkovState & state)
         return records;
     }
 
+//    qDebug() << stateAfter.toString();
+
+//    if (stateAfter.faultActivity != NULL)
+//        stateAfter.faultActivity->x = 0;
+//    stateAfter.globalState = MarkovState::S_NORMAL;
+//    stateAfter.finished = false;
+
+//    qDebug() << stateAfter.faultActivity;
+
     QList<MarkovState> states = stateAfter.getNextTwoStates();
     if (states.size() < 2)
     {
         return records;
     }
+
     MarkovState stateAfter1 = states[0];
     MarkovState stateAfter2 = states[1];
     helper(stateAfter1);
@@ -190,7 +217,7 @@ QList<MarkovRecord> Markov::reCompositeRecords(MarkovState & state)
 {
     QList<MarkovRecord> records;
     MarkovState stateAfter = state;
-    MarkovAction reCompositeAction = MarkovAction::reComposite(state);
+    MarkovAction reCompositeAction = MarkovAction::reComposite(stateAfter);
 
     if (reCompositeAction.type == MarkovAction::ERROR_ACTION
             || stateAfter.isFinished()
@@ -219,13 +246,17 @@ QList<MarkovRecord> Markov::reCompositeRecords(MarkovState & state)
                                 reCompositeAction.getReComposePriceCost(),
                                 reCompositeAction.getReComposeTimeCost()));
 
+//    qDebug() << records.size();
     return records;
 }
 
 QList<MarkovRecord> Markov::getRecords(MarkovState & state)
 {
+//    qDebug() << "Markov::getRecords() ... " << state.toString();
     QList<MarkovRecord> resultRecords;
-    if (MarkovRecord::hasStateBefore(state)) {
+    if (MarkovRecord::hasStateBefore(state))
+    {
+        qDebug() << "if (MarkovRecord::hasStateBefore(state)) ";
         return resultRecords;
     }
 
@@ -275,23 +306,33 @@ QList<MarkovRecord> Markov::getRecords(MarkovState & state)
             resultRecords += tempRecords;
         }
     } else if (state.globalState == MarkovState::S_FAILED) {
+//        qDebug() << "Begin." << state.toString();
         QList<MarkovRecord> tempRecords = Markov::terminateRecords(state);
+//        qDebug() << "terminateRecords tempRecords:" << tempRecords.size()
+//                    << state.toString();
         if (!tempRecords.isEmpty()) {
             resultRecords += tempRecords;
         }
         tempRecords = Markov::redoRecords(state);
+//        qDebug() << "redoRecords tempRecords:" << tempRecords.size()
+//                    << state.toString();
         if (!tempRecords.isEmpty()) {
             resultRecords += tempRecords;
         }
         tempRecords = Markov::replaceRecords(state);
+//        qDebug() << "replaceRecords tempRecords:" << tempRecords.size()
+//                    << state.toString();
         if (!tempRecords.isEmpty()) {
             resultRecords += tempRecords;
         }
         tempRecords = Markov::reCompositeRecords(state);
+//        qDebug() << "reCompositeRecords tempRecords:" << tempRecords.size()
+//                    << state.toString();
         if (!tempRecords.isEmpty()) {
             resultRecords += tempRecords;
         }
     }
 
+//    qDebug() << "Markov::getRecords() finished. resultRecords.size():" << resultRecords.size();
     return resultRecords;
 }

@@ -171,9 +171,9 @@ bool MarkovRecord::hasStateAction(MarkovState & state, MarkovAction & action)
     StateAction sa(state, action);
     if (stateAction2PriceCostMap.contains(sa))
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 int MarkovRecord::getMaxLayerSize()

@@ -15,6 +15,7 @@
 #include "businessmainwidget.h"
 #include "webservicesimulation.h"
 #include "webserviceflow.h"
+#include "test.h"
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +53,12 @@ int main(int argc, char *argv[])
 
 //    WebServiceSimulation wss;
 //    wss.run();
-    WebServiceFlow wsf;
-    wsf.init();
-    return a.exec();
+//    WebServiceFlow wsf;
+//    wsf.init();
+
+    Test t;
+    t.runLayerMarkovBackwardTest();
+//    return a.exec();
+
+    return 0;
 }

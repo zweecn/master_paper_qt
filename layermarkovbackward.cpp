@@ -4,6 +4,7 @@
 #include "climits"
 
 #include <ctime>
+#include <QDebug>
 
 uint qHash(const TAndState & key)
 {
@@ -22,11 +23,13 @@ uint qHash(const ToStateInfo & key)
 
 LayerMarkovBackward::LayerMarkovBackward(MarkovState& _state)
 {
+    qDebug() << "LayerMarkovBackward::LayerMarkovBackward() ...";
     state = _state;
     greedyState = _state;
     state.init();
     greedyState.init();
     init();
+    qDebug() << "LayerMarkovBackward::LayerMarkovBackward() finished.";
 }
 
 void LayerMarkovBackward::init(int reduceLayerSize)
@@ -43,6 +46,7 @@ void LayerMarkovBackward::init(int reduceLayerSize)
 
 void LayerMarkovBackward::init()
 {
+    qDebug() << "LayerMarkovBackward::init() ...";
     time_t t1 = clock();
     generateLayerRecords();
     reduceLayer(REDUCE_LAYER_SIZE);
@@ -53,6 +57,7 @@ void LayerMarkovBackward::init()
     time_t t3 = clock();
     generateRecordRunTime = t2 - t1;
     initMarkovInfoRunTime = t3 - t2;
+    qDebug() << "LayerMarkovBackward::init() finished.";
 }
 
 void LayerMarkovBackward::initGreedy()
@@ -69,16 +74,19 @@ void LayerMarkovBackward::initGreedy()
 
 void LayerMarkovBackward::initMap()
 {
+    qDebug() << "LayerMarkovBackward::initMap() ... allLayerRecords.size()=" << allLayerRecords.size();
     for (int t = 0; t < allLayerRecords.size(); t++) {
         addToMap(t, allLayerRecords[t]);
     }
     QSet<MarkovState> tempSet;
     tempSet.insert((allLayerRecords[0][0].stateBefore));
     t2StateMap.insert(0, tempSet);
+    qDebug() << "LayerMarkovBackward::initMap() finished.";
 }
 
 void LayerMarkovBackward::generateLayerRecords()
 {
+    qDebug() << "LayerMarkovBackward::generateLayerRecords() ... ";
     queue2.enqueue(state);
     QSet<MarkovState> stateSet;
     for (;;)
@@ -90,6 +98,7 @@ void LayerMarkovBackward::generateLayerRecords()
         }
         queue1 = queue2;
         queue2.clear();
+
         QList<MarkovRecord> oneLayerRecords;
         while (!queue1.isEmpty())
         {
@@ -98,6 +107,7 @@ void LayerMarkovBackward::generateLayerRecords()
             {
                 stateSet.insert(state);
                 QList<MarkovRecord> records = Markov::getRecords(state);
+                //                qDebug() << "records.size():" << records.size();
                 addToRecords(oneLayerRecords, records);
             }
         }
@@ -121,29 +131,27 @@ void LayerMarkovBackward::extendTree(bool isExtend)
     }
     for (int i = 0; i < allLayerRecords.size()-1; i++) {
         QSet<int> frontLayerStateAfterSet;
-        for (int j = 0; j < allLayerRecords[i].size(); j++)
+        QListIterator<MarkovRecord> it(allLayerRecords[i]);
+        while (it.hasNext())
         {
-            MarkovRecord & rd = allLayerRecords[i][j];
-            frontLayerStateAfterSet.insert(rd.stateAfter.id);
+            frontLayerStateAfterSet.insert(it.next().stateAfter.id);
         }
         QSet<int> nextLayerStateBeforeSet;
-        for (int j = 0; j < allLayerRecords[i+1].size(); j++)
+        it = allLayerRecords[i+1];
+        while (it.hasNext())
         {
-            MarkovRecord & rd = allLayerRecords[i][j];
-            nextLayerStateBeforeSet.insert(rd.stateBefore.id);
+            nextLayerStateBeforeSet.insert(it.next().stateBefore.id);
         }
         frontLayerStateAfterSet -= nextLayerStateBeforeSet;
         if (!frontLayerStateAfterSet.isEmpty())
         {
-            for (int j = 0; j < allLayerRecords[i].size(); j++)
+            it = allLayerRecords[i];
+            const MarkovRecord &rd = it.next();
+            if (frontLayerStateAfterSet.contains(rd.stateBefore.id))
             {
-                //                MarkovRecord  rd;
-                //                rd = allLayerRecords[i][j];
-                if (frontLayerStateAfterSet.contains(allLayerRecords[i][j].stateBefore.id))
-                {
-                    allLayerRecords[i+1].append(allLayerRecords[i][j]);
-                }
+                allLayerRecords[i+1].append(rd);
             }
+
         }
     }
 }

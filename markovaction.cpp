@@ -2,9 +2,44 @@
 #include "workflow.h"
 #include "markovstate.h"
 #include "markovrecord.h"
+#include <QDebug>
 
 MarkovAction::MarkovAction()
 {
+    init();
+}
+
+MarkovAction::MarkovAction(const MarkovAction &other)
+{
+    init();
+    id = other.id;
+    type = other.type;
+    bugActivityId = other.bugActivityId;
+
+    oldService = other.oldService;
+    newService = other.newService;
+
+    oldNewServiceList.clear();
+    for (int i = 0; i < other.oldNewServiceList.size(); i++)
+    {
+        RecomposeNode node;
+        node.activityId = other.oldNewServiceList[i].activityId;
+        node.oldService = other.oldNewServiceList[i].oldService;
+        node.newService = other.oldNewServiceList[i].newService;
+        oldNewServiceList.append(node);
+    }
+}
+
+bool MarkovAction::init()
+{
+    id = 0;
+    type = 0;
+    bugActivityId = 0;
+
+    oldService = NULL;
+    newService = NULL;
+
+    oldNewServiceList.clear();
 }
 
 QString MarkovAction::name()
@@ -33,6 +68,25 @@ QString MarkovAction::name()
     default:
         break;
     }
+    return res;
+}
+
+QString MarkovAction::toString()
+{
+    QString res = QString("Action: %1 %2 [").arg(id).arg(name());
+    if (oldService != NULL && newService != NULL)
+    {
+        res.append(QString("%1:%2->%3 ").arg(bugActivityId).arg(oldService->id).arg(newService->id));
+    }
+    for (int i = 0; i < oldNewServiceList.size(); i++)
+    {
+        res.append(QString("%1:%2->%3 ")
+                   .arg(oldNewServiceList[i].activityId)
+                   .arg(oldNewServiceList[i].oldService->id)
+                   .arg(oldNewServiceList[i].newService->id));
+    }
+    res = res.trimmed().append("]");
+
     return res;
 }
 
@@ -78,6 +132,7 @@ MarkovAction & MarkovAction::operator =(const MarkovAction & other)
         return *this;
     }
 
+    id = other.id;
     type = other.type;
     bugActivityId = other.bugActivityId;
 
@@ -168,7 +223,7 @@ MarkovAction MarkovAction::terminate(MarkovState & state)
     MarkovAction action;
     action.bugActivityId = state.nextToDoActivity->number;
     action.type = A_TERMINATE;
-    action.oldService = state.nextToDoActivity->blindService;
+    action.newService = action.oldService = state.nextToDoActivity->blindService;
     state.setFailed(true);
     return action;
 }
@@ -179,7 +234,12 @@ MarkovAction MarkovAction::redo(MarkovState & state)
     action.bugActivityId = state.faultActivity->number;
     action.type = A_RE_DO;
     action.newService = action.oldService = state.faultActivity->blindService;
-    state.faultActivity->x = 0;
+
+    if (state.faultActivity != NULL)
+        state.faultActivity->x = 0;
+    state.globalState = MarkovState::S_NORMAL;
+    state.finished = false;
+
     state.init();
     return action;
 }
@@ -197,7 +257,12 @@ MarkovAction MarkovAction::replace(MarkovState & state)
     action.oldService = state.faultActivity->blindService;
     action.newService = state.faultActivity->blindService = newFreeService;
     newFreeService->free = false;
-    state.faultActivity->x = 0;
+
+    if (state.faultActivity != NULL)
+        state.faultActivity->x = 0;
+    state.globalState = MarkovState::S_NORMAL;
+    state.finished = false;
+
     state.init();
     return action;
 }
@@ -212,7 +277,12 @@ MarkovAction MarkovAction::reComposite(MarkovState & state)
                 .activities[action.oldNewServiceList[i].activityId].blindService;
         action.oldNewServiceList[i].newService->free = false;
     }
-    state.faultActivity->x = 0;
+
+    if (state.faultActivity != NULL)
+        state.faultActivity->x = 0;
+    state.globalState = MarkovState::S_NORMAL;
+    state.finished = false;
+
     return action;
 }
 

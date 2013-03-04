@@ -9,6 +9,11 @@ class MarkovState : public WebServiceFlow
 {
 public:
     MarkovState();
+    MarkovState(const MarkovState& _state);
+
+    QString name();
+    QString toString();
+
     bool init();
 
     bool isPrefixActivitiesFinished(int activityId);
@@ -35,6 +40,7 @@ public:
     int globalState;
 
     QList<MarkovState> nextStateArray;
+
     QList<Activity*> nextToDoActivityList;
     Activity* nextToDoActivity;
     Activity* faultActivity;

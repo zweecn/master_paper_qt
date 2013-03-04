@@ -2,16 +2,60 @@
 #include "workflow.h"
 
 #include <QSet>
+#include <QDebug>
 
 MarkovState::MarkovState()
     : WebServiceFlow()
 {
+    id = -1;
     init();
+}
+
+MarkovState::MarkovState(const MarkovState &other)
+{
+//    finished = other.finished;
+//    id = other.id;
+//    globalState = other.globalState;
+
+//    nextStateArray = other.nextStateArray;
+//    nextToDoActivityList = other.nextToDoActivityList;
+//    nextToDoActivity = other.nextToDoActivity;
+//    faultActivity = other.faultActivity;
+
+//    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+//    {
+//        activities[i] = other.activities[i];
+//    }
+
+    finished = other.finished;
+    id = other.id;
+    globalState = other.globalState;
+
+    nextStateArray = other.nextStateArray;
+
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        activities[i] = other.activities[i];
+    }
+
+    nextToDoActivityList.clear();
+    for (int i = 0; i < other.nextToDoActivityList.size(); i++)
+    {
+        int id = other.nextToDoActivityList[i]->number;
+        Activity * aTmp = &activities[id];
+        nextToDoActivityList.append(aTmp);
+    }
+
+    nextToDoActivity = (other.nextToDoActivity == NULL
+                        ? NULL : &activities[other.nextToDoActivity->number]);
+    faultActivity = ( other.faultActivity == NULL
+                      ? NULL : &activities[other.faultActivity->number]);
 }
 
 // super clone activities
 bool MarkovState::init()
 {
+//    qDebug() << "MarkovState::init() ...";
     bool failed = false;
     nextToDoActivityList.clear();
     nextToDoActivity = NULL;
@@ -28,7 +72,6 @@ bool MarkovState::init()
         } else if (ac->x > 1) {
             ac->state = S_DELAYED;
         }
-
         switch (ac->state) {
         case S_FAILED:
         case S_DELAYED:
@@ -54,9 +97,12 @@ bool MarkovState::init()
     }
 
     if (nextToDoActivityList.isEmpty()
-            && isPrefixActivitiesFinished(activities[WorkFlow::Instance()->getActivitySize()-1].number)) {
+            && isPrefixActivitiesFinished(activities[WorkFlow::Instance()->getActivitySize()-1].number))
+    {
         globalState = S_SUCCEED;
-    } else {
+    }
+    else
+    {
         for (int i = 0; i < nextToDoActivityList.size(); i++) {
             Activity * ac = nextToDoActivityList[i];
             if (nextToDoActivity == NULL || ac->x * nextToDoActivity->blindService->execTime
@@ -82,8 +128,57 @@ bool MarkovState::init()
             }
         } //else
     } //else
-    //		System.out.println("In init. state=" + this);
+//    qDebug() << "MarkovState::init() finished.";
     return true;
+}
+
+QString MarkovState::name()
+{
+    QString res;
+    switch (globalState)
+    {
+    case S_NORMAL:
+        res = "S_NORMAL";
+        break;
+    case S_FAILED:
+        res = "S_FAILED";
+        break;
+    case S_SUCCEED:
+        res = "S_SUCCEED";
+        break;
+    case S_PRICE_UP:
+        res = "S_PRICE_UP";
+        break;
+    case S_DELAYED:
+        res = "S_DELAYED";
+        break;
+    default:
+        res = QString("%1").arg(globalState);
+        break;
+    }
+    return res;
+}
+
+QString MarkovState::toString()
+{
+    QString res(QString("State:%1 %2 [").arg(id).arg(name()));
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        res.append(QString("%1:%2,%3").arg(activities[i].number)
+                   .arg((int)activities[i].blindService->id)
+                   .arg(activities[i].x));
+        res.append(" ");
+    }
+    if (finished)
+    {
+        res.append("FINISHED");
+    }
+    else
+    {
+        res.append("EXECING");
+    }
+    res = res.trimmed().append("]");
+    return res;
 }
 
 bool MarkovState::isPrefixActivitiesFinished(int activityId)
@@ -122,6 +217,7 @@ MarkovState* MarkovState::nextSecond()
 
 QList<MarkovState> MarkovState::getNextTwoStates()
 {
+    nextStateArray.clear();
     nextStateArray.append(*this);
     if (isFailed())
     {
@@ -129,6 +225,7 @@ QList<MarkovState> MarkovState::getNextTwoStates()
     }
     else
     {
+        nextStateArray.append(*this);
         if (nextToDoActivityList.size() == 1)
         { //Seq
             nextStateArray[0].activities[nextToDoActivity->number].x = 1;
@@ -169,26 +266,48 @@ MarkovState & MarkovState::operator =(const MarkovState & other)
     }
     finished = other.finished;
     id = other.id;
-    globalState = other.id;
+    globalState = other.globalState;
 
     nextStateArray = other.nextStateArray;
-    nextToDoActivityList = other.nextToDoActivityList;
-    nextToDoActivity = other.nextToDoActivity;
-    faultActivity = other.faultActivity;
 
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
     {
         activities[i] = other.activities[i];
     }
+
+    nextToDoActivityList.clear();
+    for (int i = 0; i < other.nextToDoActivityList.size(); i++)
+    {
+        int id = other.nextToDoActivityList[i]->number;
+        Activity * aTmp = &activities[id];
+        nextToDoActivityList.append(aTmp);
+    }
+
+    nextToDoActivity = (other.nextToDoActivity == NULL
+                        ? NULL : &activities[other.nextToDoActivity->number]);
+    faultActivity = ( other.faultActivity == NULL
+                      ? NULL : &activities[other.faultActivity->number]);
     return *this;
 }
 
 bool MarkovState::operator ==(const MarkovState & other) const
 {
-    if (!(*faultActivity == *(other.faultActivity)))
+    if (faultActivity != NULL && other.faultActivity != NULL)
+    {
+        if (!(*faultActivity == *(other.faultActivity)))
+        {
+            return false;
+        }
+    }
+    if (faultActivity != NULL && other.faultActivity == NULL)
     {
         return false;
     }
+    if (faultActivity == NULL && other.faultActivity != NULL)
+    {
+        return false;
+    }
+
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
     {
         if (!(activities[i] == other.activities[i]))
@@ -201,10 +320,22 @@ bool MarkovState::operator ==(const MarkovState & other) const
 
 bool MarkovState::operator <(const MarkovState & other) const
 {
-    if (!(*faultActivity < *(other.faultActivity)))
+    if (faultActivity != NULL && other.faultActivity != NULL)
+    {
+        if (!(*faultActivity < *(other.faultActivity)))
+        {
+            return false;
+        }
+    }
+    if (faultActivity != NULL && other.faultActivity == NULL)
     {
         return false;
     }
+    if (faultActivity == NULL && other.faultActivity != NULL)
+    {
+        return true;
+    }
+
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
     {
         if (!(activities[i] < other.activities[i]))

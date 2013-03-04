@@ -16,8 +16,11 @@ class MarkovAction
 {
 public:
     MarkovAction();
+    MarkovAction(const MarkovAction& other);
+    bool init();
 
     QString name();
+    QString toString();
 
     MarkovAction & operator =(const MarkovAction & other);
     bool operator ==(const MarkovAction & other) const;
