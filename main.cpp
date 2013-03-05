@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
     //    ServiceGraph sg;
     //    sg.show();
 
-    WebServiceSimulation wss;
-    wss.run();
+//    WebServiceSimulation wss;
+//    wss.getResult();
     //    WebServiceFlow wsf;
     //    wsf.init();
 
-//    Test t;
+    Test t;
 
     //    return a.exec();
 

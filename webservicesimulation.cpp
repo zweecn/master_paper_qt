@@ -35,17 +35,47 @@ WebServiceSimulation::~WebServiceSimulation()
     clearData();
 }
 
-void WebServiceSimulation::run()
+void WebServiceSimulation::getResult()
 {
+    init();
     createStateTransTable();
-    //    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
     initUtility();
-    //    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
     //    printPosibility();
     //    printActionState();
     //    printStateAction();
     runMarkov();
     printResult();
+}
+
+QList<MarkovResultItem> WebServiceSimulation::getResult(WebServiceAtomState &state)
+{
+    init();
+    createStateTransTable();
+    initUtility();
+    runMarkov();
+    QList<MarkovResultItem> res;
+    for (int j = 0; j < actionList.size(); j++)
+    {
+        if (stateAction[state.getId()][actionList[j].getId()])
+        {
+            MarkovResultItem item;
+            item.action = actionList[j];
+            item.potentialReward = actionUtility[actionList[j].getId()];
+            for (int k = 0; k < stateList.size(); k++)
+            {
+                if (actionState[actionList[j].getId()][stateList[k].getId()])
+                {
+                    double p = posibility[actionList[j].getId()][stateList[k].getId()] / MAX_POSIBILITY;
+                    WebServiceAtomState s = stateList[k];
+                    item.suffixPosibility.append(p);
+                    item.suffixState.append(s);
+                }
+            }
+            res.append(item);
+        }
+    }
+
+    return res;
 }
 
 void WebServiceSimulation::printStateAction()
@@ -314,14 +344,6 @@ bool WebServiceSimulation::init()
             stateList.append(s);
         }
     }
-    //    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
-    //    {
-    //        for (int j = 0; j < WebServiceAtomState::STATE_SIZE; j++)
-    //        {
-    //            WebServiceAtomState & s = stateList[i * WebServiceAtomState::STATE_SIZE + j];
-    //            qDebug() << i << j << s.activityId << s.stateType << s.hash();
-    //        }
-    //    }
 
     maxStateSize = WorkFlow::Instance()->getActivitySize() * WebServiceAtomState::STATE_SIZE;
     maxActionSize = maxStateSize * WebServiceAction::ACTION_SIZE;
@@ -348,10 +370,6 @@ bool WebServiceSimulation::init()
 
 bool WebServiceSimulation::createStateTransTable()
 {
-    if (!init())
-    {
-        return false;
-    }
     for (int i = 0; i < stateList.size(); i++)
     {
         WebServiceAtomState & s = stateList[i];
@@ -474,23 +492,6 @@ void WebServiceSimulation::recomposite(WebServiceAtomState & s)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
             actionState[pAction->getId()][suffixState.getId()] = 1;
-            //            qDebug() << "actionState[pAction->getId()][suffixState.hash()]"
-            //                    << pAction->getId() <<  suffixState.getId()
-            //                     << actionState[pAction->getId()][suffixState.getId()];
-            //            qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
-
-            //            printActionState();
-
-            //            for (int i = 0; i < actionList.size(); i++)
-            //            {
-            //                for (int j = 0; j < stateList.size(); j++)
-            //                {
-            //                    qDebug() << actionList[i].getId()
-            //                                << stateList[j].getId() << stateList[j].activityId << stateList[j].STATE_SIZE
-            //                                   << actionState[actionList[i].getId()][stateList[j].getId()];
-            //                }
-            //            }
-
             posibility[pAction->getId()][suffixState.getId()]
                     = WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;

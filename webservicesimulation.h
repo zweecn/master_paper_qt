@@ -6,13 +6,38 @@
 #include "webserviceaction.h"
 #include "webserviceflow.h"
 
+class MarkovResultItem
+{
+public:
+    WebServiceAction action;
+    double potentialReward;
+    QList<WebServiceAtomState> suffixState;
+    QList<double> suffixPosibility;
+
+    QString toString()
+    {
+        QString res = action.toString();
+        res += QString(" PotentialReward:%1").arg(potentialReward);
+        res += QString(" Suffix:[");
+        for (int i = 0; i < suffixState.size(); i++)
+        {
+            res += (suffixState[i].toString().append(QString(",%1 ").arg(suffixPosibility[i])));
+        }
+        res += "]";
+        return res;
+    }
+};
+
 class WebServiceSimulation
 {
 public:
     WebServiceSimulation();
     ~WebServiceSimulation();
 
-    void run();
+    void getResult();
+
+    QList<MarkovResultItem> getResult(WebServiceAtomState &state);
+
     void printStateAction();
     void printActionState();
     void printPosibility();

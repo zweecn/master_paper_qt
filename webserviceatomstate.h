@@ -8,6 +8,7 @@ class WebServiceAtomState
 {
 public:
     WebServiceAtomState();
+    WebServiceAtomState(const WebServiceAtomState & other);
     bool operator ==(const WebServiceAtomState & other) const;
     QString toString();
 

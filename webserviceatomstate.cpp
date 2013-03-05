@@ -7,6 +7,12 @@ WebServiceAtomState::WebServiceAtomState()
 {
     id = 0;
 }
+WebServiceAtomState::WebServiceAtomState(const WebServiceAtomState & other)
+{
+    id = other.id;
+    activityId = other.activityId;
+    stateType = other.stateType;
+}
 
 bool WebServiceAtomState::operator ==(const WebServiceAtomState & other) const
 {
