@@ -121,11 +121,6 @@ int Config::getPuinishmentPerSecond()
     return confMap["PUNISHMENT_PER_SECOND"].toInt();
 }
 
-int Config::getPuinishmentFailed()
-{
-    return confMap["PUNISHMENT_FAILED"].toInt();
-}
-
 int Config::getReduceLayerSize()
 {
     return confMap["REDUCE_LAYER_SIZE"].toInt();
@@ -134,5 +129,35 @@ int Config::getReduceLayerSize()
 bool Config::isExtendTree()
 {
     return (bool) confMap["IS_EXTEND_TREE"].toInt();
+}
+
+int Config::getPuinishmentFailed()
+{
+    return confMap["PUNISHMENT_FAILED"].toInt();
+}
+
+int Config::getPuinishmentStop()
+{
+    return confMap["PUNISHMENT_STOP"].toInt();
+}
+
+int Config::getPuinishmentReadyN()
+{
+    return confMap["PUNISHMENT_READY_N"].toInt();
+}
+
+int Config::getPuinishmentReadyU()
+{
+    return confMap["PUNISHMENT_READY_U"].toInt();
+}
+
+int Config::getRewardFinishN()
+{
+    return confMap["REWARD_FINISH_N"].toInt();
+}
+
+int Config::getRewardFinishU()
+{
+    return confMap["REWARD_FINISH_U"].toInt();
 }
 

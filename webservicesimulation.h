@@ -1,47 +1,10 @@
 #ifndef WEBSERVICESIMULATION_H
 #define WEBSERVICESIMULATION_H
-#include "webserviceaction.h"
-#include "webservicestate.h"
 #include <QList>
 
-//class WebServiceState;
-//class WebServiceAction;
-//class Activity;
-
-class TActionToState
-{
-public:
-    int actionId;
-    int stateId;
-    double tp;
-    int dt;
-    double dc;
-};
-
-//class UTG
-//{
-//public:
-//    WSState rootState;
-//    QList<WSState> leafState;
-//    QList<int> actions;
-//    QList<TActionToState> tas;
-//};
-
-//struct WebServiceActionResultNode
-//{
-//    WebServiceActionResultNode(const WebServiceState & _state)
-//    {
-//        memset(p, 0, sizeof(double) * WebServiceState::STATE_COUNT);
-//        for (int i = 0; i < WebServiceState::STATE_COUNT; i++)
-//        {
-//            states[i] = _state;
-//        }
-//    }
-
-//    WebServiceState states[WebServiceState::STATE_COUNT];
-//    double p[WebServiceState::STATE_COUNT];
-//};
-
+#include "webserviceatomstate.h"
+#include "webserviceaction.h"
+#include "webserviceflow.h"
 
 class WebServiceSimulation
 {
@@ -50,26 +13,55 @@ public:
     ~WebServiceSimulation();
 
     void run();
+
 private:
+    bool clearData();
     bool init();
+    bool initUtility();
+    bool createStateTransTable();
+    bool runMarkov();
 
-    bool markov();
+    void noNeedDo(WebServiceAtomState & s);
+    WebServiceAction noNeedDo();
 
-//    WebServiceActionResultNode terminate();
-//    WebServiceActionResultNode doNothing();
-//    WebServiceActionResultNode retry();
-//    WebServiceActionResultNode substitute();
-//    WebServiceActionResultNode recompose();
+    void recomposite(WebServiceAtomState & s);
+    WebServiceAction recomposite(int activityId);
 
-//    WebServiceState currState;
-//    WebServiceAction *actions;
+    void retry(WebServiceAtomState & s);
+    WebServiceAction retry(int activityId);
 
-//    QList<WebServiceAction> markovActionList;
+    void replace(WebServiceAtomState & s);
+    WebServiceAction replace(int activityId);
 
-//    Activity *firstActivity;
-//    Activity *bugActivity;
+    void doNothing(WebServiceAtomState & s);
+    WebServiceAction doNothing();
 
-//    qint64 stateSize;
+    void terminate(WebServiceAtomState & s);
+    WebServiceAction terminate();
+
+    WebServiceAction* getAction(WebServiceAction & action);
+    QList<ReplaceNode> recomposeFreeService(int activityId);
+    AtomService* nextFreeService(int activityId);
+
+    QList<WebServiceAtomState> stateList;
+    QList<WebServiceAction> actionList;
+    WebServiceFlow wsf;
+
+    int ** stateAction;
+    int ** actionState;
+    int ** posibility;
+
+    enum
+    {
+        MIN_POSIBILITY = 0,
+        MAX_POSIBILITY = 100
+    };
+
+    double * actionUtility;
+    double * stateUtility;
+
+    int maxStateSize;
+    int maxActionSize;
 };
 
 #endif // WEBSERVICESIMULATION_H

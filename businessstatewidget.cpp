@@ -3,6 +3,7 @@
 #include "workflow.h"
 #include "allmutex.h"
 #include "activity.h"
+#include "markovaction.h"
 
 #include <QtGui>
 

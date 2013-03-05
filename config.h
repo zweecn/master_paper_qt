@@ -36,6 +36,12 @@ public:
     int getReduceLayerSize();
     bool isExtendTree();
 
+    int getPuinishmentStop();
+    int getPuinishmentReadyN();
+    int getPuinishmentReadyU();
+    int getRewardFinishN();
+    int getRewardFinishU();
+
 protected:
     Config();
     static Config * _instance;
