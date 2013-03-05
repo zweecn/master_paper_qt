@@ -9,8 +9,12 @@ class WebServiceAtomState
 public:
     WebServiceAtomState();
     bool operator ==(const WebServiceAtomState & other) const;
-    int hash();
     QString toString();
+
+    int getId();
+    void setId(int _id);
+    void setActivityId(int _activityId);
+    void setStateType(int _stateType);
 
     enum
     {
@@ -24,6 +28,7 @@ public:
         STATE_SIZE = 6
     };
 
+    int id;
     int activityId;
     int stateType;
 };

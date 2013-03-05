@@ -5,6 +5,7 @@
 
 WebServiceAtomState::WebServiceAtomState()
 {
+    id = 0;
 }
 
 bool WebServiceAtomState::operator ==(const WebServiceAtomState & other) const
@@ -12,10 +13,25 @@ bool WebServiceAtomState::operator ==(const WebServiceAtomState & other) const
     return (activityId == other.activityId && stateType == other.stateType);
 }
 
-int WebServiceAtomState::hash()
+int WebServiceAtomState::getId()
 {
-    int res = activityId * STATE_SIZE + stateType;
-    return res;
+    id = activityId * STATE_SIZE + stateType;
+    return id;
+}
+
+void WebServiceAtomState::setId(int _id)
+{
+    id = _id;
+}
+
+void WebServiceAtomState::setActivityId(int _activityId)
+{
+    activityId = _activityId;
+}
+
+void WebServiceAtomState::setStateType(int _stateType)
+{
+    stateType = _stateType;
 }
 
 QString WebServiceAtomState::toString()

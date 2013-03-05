@@ -23,7 +23,7 @@ class WebServiceAction
 {
 public:
     WebServiceAction();
-    WebServiceAction(int _id, int _type);
+//    WebServiceAction(int _id, int _type);
     WebServiceAction(const WebServiceAction &other);
     bool operator ==(const WebServiceAction & other) const;
     WebServiceAction & operator =(const WebServiceAction & other);
@@ -48,6 +48,7 @@ public:
     int dc;
     int dt;
 
+    int activityId;
     int type;
     QList<ReplaceNode> replaceList;
 };

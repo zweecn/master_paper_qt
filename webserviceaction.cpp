@@ -6,16 +6,17 @@ WebServiceAction::WebServiceAction()
     dc = dt = 0;
 }
 
-WebServiceAction::WebServiceAction(int _id, int _type)
-{
-    id = _id;
-    type = _type;
-    dc = dt = 0;
-}
+//WebServiceAction::WebServiceAction(int _id, int _type)
+//{
+//    id = _id;
+//    type = _type;
+//    dc = dt = 0;
+//}
 
 WebServiceAction::WebServiceAction(const WebServiceAction &other)
 {
     id = other.id;
+    activityId = other.activityId;
     type = other.type;
     dc = other.dc;
     dt = other.dt;
@@ -29,6 +30,7 @@ WebServiceAction & WebServiceAction::operator =(const WebServiceAction & other)
         return *this;
     }
     id = other.id;
+    activityId = other.activityId;
     type = other.type;
     dc = other.dc;
     dt = other.dt;
@@ -39,18 +41,7 @@ WebServiceAction & WebServiceAction::operator =(const WebServiceAction & other)
 
 bool WebServiceAction::operator ==(const WebServiceAction & other) const
 {
-//    if (type != other.type)
-//    {
-//        return false;
-//    }
-//    if (replaceList.size() != other.replaceList.size())
-//    {
-//        return false;
-//    }
-//    for (int i = 0; i < replaceList.size(); i++)
-//    {
-//    }
-    return (type == other.type && replaceList == other.replaceList);
+    return (activityId == other.activityId && type == other.type && replaceList == other.replaceList);
 }
 
 int WebServiceAction::getId()

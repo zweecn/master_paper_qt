@@ -16,7 +16,8 @@ public:
     void printStateAction();
     void printActionState();
     void printPosibility();
-
+    void printResult();
+    void printFirstStateResult();
 private:
     bool clearData();
     bool init();
@@ -27,7 +28,7 @@ private:
     bool isActionStateHasTrue();
 
     void noNeedDo(WebServiceAtomState & s);
-    WebServiceAction noNeedDo();
+    WebServiceAction noNeedDo(int activityId);
 
     void recomposite(WebServiceAtomState & s);
     WebServiceAction recomposite(int activityId);
@@ -39,10 +40,10 @@ private:
     WebServiceAction replace(int activityId);
 
     void doNothing(WebServiceAtomState & s);
-    WebServiceAction doNothing();
+    WebServiceAction doNothing(int activityId);
 
     void terminate(WebServiceAtomState & s);
-    WebServiceAction terminate();
+    WebServiceAction terminate(int activityId);
 
     WebServiceAction* getAction(WebServiceAction & action);
     QList<ReplaceNode> recomposeFreeService(int activityId);
