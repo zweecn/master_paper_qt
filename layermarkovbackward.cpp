@@ -2,6 +2,7 @@
 #include "markovrecord.h"
 #include "markov.h"
 #include "config.h"
+#include "assert.h"
 
 #include <climits>
 #include <ctime>
@@ -19,7 +20,11 @@ uint qHash(const StateTAndAction & key)
 
 uint qHash(const ToStateInfo & key)
 {
-    return key.time * key.price * key.posibility * qHash(key.state);
+    uint hash1 = qHash(int((key.time + 1) * 10));
+    uint hash2 = qHash(int((key.price +1) * 10));
+    uint hash3 = qHash(int((key.posibility +1) * 10));
+
+    return hash1 ^ hash2 ^ hash3 ^ qHash(key.state);
 }
 
 LayerMarkovBackward::LayerMarkovBackward(MarkovState& _state)
@@ -79,9 +84,11 @@ void LayerMarkovBackward::initMap()
     for (int t = 0; t < allLayerRecords.size(); t++) {
         addToMap(t, allLayerRecords[t]);
     }
-    QSet<MarkovState> tempSet;
-    tempSet.insert((allLayerRecords[0][0].stateBefore));
-    t2StateMap.insert(0, tempSet);
+    if (!allLayerRecords.isEmpty() && !allLayerRecords.first().isEmpty()) {
+        QSet<MarkovState> tempSet;
+        tempSet.insert((allLayerRecords[0][0].stateBefore));
+        t2StateMap.insert(0, tempSet);
+    }
     qDebug() << "LayerMarkovBackward::initMap() finished.";
 }
 
@@ -122,6 +129,7 @@ void LayerMarkovBackward::generateLayerRecords()
     {
         MarkovRecord::setMaxLayerSize(allLayerRecords.size());
     }
+    qDebug() << "LayerMarkovBackward::generateLayerRecords() finished.";
 }
 
 void LayerMarkovBackward::extendTree(bool isExtend)
@@ -172,11 +180,14 @@ void LayerMarkovBackward::addToRecords(QList<MarkovRecord> &destRecords, QList<M
 {
     if (!sourceRecord.isEmpty())
     {
-        destRecords += sourceRecord;
         for (int i = 0; i < sourceRecord.size(); i++)
         {
             MarkovRecord &rd = sourceRecord[i];
             queue2.enqueue(rd.stateAfter);
+            if (!destRecords.contains(rd))
+            {
+                destRecords.append(rd);
+            }
         }
     }
 }
@@ -261,6 +272,7 @@ void LayerMarkovBackward::initMarkovInfo()
 
 void LayerMarkovBackward::runMarkov()
 {
+    qDebug() << "LayerMarkovBackward::runMarkov() ... " << getTsize();
     time_t t1 = clock();
     for (int t = getTsize()-2; t >= 0; t--)
     {
@@ -269,6 +281,7 @@ void LayerMarkovBackward::runMarkov()
         {
             MarkovState i;
             i = it.next();
+            qDebug() << "i=" << i.toString();
             if (hasChildren(t, i))
             {
                 utility[t][i.id] = maxUtility(t, i);
@@ -276,17 +289,17 @@ void LayerMarkovBackward::runMarkov()
         }
     }
 
-    if (stateNew.id != -1) {
-        if (firstAction.type == MarkovAction::A_TERMINATE) {
-            stateNew.nextToDoActivity->x = (-1);
-        }
-        stateNew.init();
+    //    if (stateNew.id != -1) {
+    if (firstAction.type == MarkovAction::A_TERMINATE) {
+        stateNew.nextToDoActivity->x = (-1);
     }
+    stateNew.init();
+    //    }
     runMarkovRunTime = clock() - t1;
 
-    markovPriceCost = firstAction.getPriceCost();
-    markovTimeCost = firstAction.getTimeCost();
-    markovPosibility = firstAction.getPosibility();
+    calcacuteReward();
+
+    qDebug() << "LayerMarkovBackward::runMarkov() finished.";
 }
 
 double LayerMarkovBackward::maxUtility(int t, MarkovState & i)
@@ -311,7 +324,7 @@ double LayerMarkovBackward::maxUtility(int t, MarkovState & i)
             step[t] = makeStepString(t, a, u);
             markovPriceCost = stateTAction2ChildStateInfoMap[sta][0].getPrice();
             markovTimeCost = stateTAction2ChildStateInfoMap[sta][0].getTime();
-            //				posibility = stateTAction2ChildStateInfoMap.get(sta).get(0).getPosibility();
+            markovPosibility = stateTAction2ChildStateInfoMap[sta][0].getPosibility();
             firstAction = a;
             stateNew = stateTAction2ChildStateInfoMap[sta][0].getState();
         }
@@ -329,7 +342,7 @@ double LayerMarkovBackward::getNReward(int t, MarkovState & state)
     {
         return (- Config::Instance()->getPuinishmentFailed());
     }
-    return 0;
+    return Config::Instance()->getPuinishmentFailed();
 }
 
 /*
@@ -352,6 +365,64 @@ double LayerMarkovBackward::getTReward(StateTAndAction & sta, QList<ToStateInfo>
     }
     return  res; //- (1-tsi.get(0).getPosibility()) * Configs.FAILED_PUNISHMENT
 }
+
+void LayerMarkovBackward::calcacuteReward()
+{
+    qDebug() << "LayerMarkovBackward::calcacuteReward() ...";
+//    qDebug() << stateNew.toString();
+    if (firstAction.type == MarkovAction::A_TERMINATE)
+    {
+        markovPriceCost = Config::Instance()->getPuinishmentFailed();
+        markovTimeCost = 0;
+        markovPosibility = 1;
+    }
+    if (firstAction.type == MarkovAction::A_NO_ACTION)
+    {
+        if (stateNew.isFailed())
+            markovPriceCost = Config::Instance()->getPuinishmentFailed();
+        else
+            markovPriceCost = 0;
+
+        markovTimeCost = 0;
+        if (stateNew.nextToDoActivity && stateNew.nextToDoActivity->blindService)
+        {
+            markovPosibility = stateNew.nextToDoActivity->blindService->reliability / 100.0;
+        }
+        else
+        {
+            markovPosibility = 1;
+        }
+    }
+    if (firstAction.type == MarkovAction::A_RE_DO)
+    {
+        assert(stateNew.nextToDoActivity != NULL && stateNew.nextToDoActivity->blindService);
+        markovPriceCost = stateNew.nextToDoActivity->blindService->price;
+        markovTimeCost = stateNew.nextToDoActivity->blindService->execTime;
+        markovPosibility = stateNew.nextToDoActivity->blindService->reliability / 100.0;
+    }
+    if (firstAction.type == MarkovAction::A_REPLACE)
+    {
+        assert(firstAction.oldService != NULL && firstAction.newService != NULL);
+        markovPriceCost = firstAction.newService->price - firstAction.oldService->price;
+        markovTimeCost = firstAction.newService->execTime;
+        markovPosibility = firstAction.newService->reliability / 100.0;
+    }
+    if (firstAction.type == MarkovAction::A_RE_COMPOSITE)
+    {
+        markovPriceCost = 0;
+        markovTimeCost = 0;
+        assert(stateNew.nextToDoActivity != NULL && stateNew.nextToDoActivity->blindService);
+        markovPosibility = stateNew.nextToDoActivity->blindService->reliability / 100.0;
+        for (int i = 0; i < firstAction.oldNewServiceList.size(); i++)
+        {
+            markovPriceCost += (firstAction.oldNewServiceList[i].newService->price
+                                - firstAction.oldNewServiceList[i].oldService->price);
+            markovPriceCost += (firstAction.oldNewServiceList[i].newService->execTime
+                                - firstAction.oldNewServiceList[i].oldService->execTime);
+        }
+    }
+}
+
 
 // END MARKOV
 
@@ -447,4 +518,30 @@ double LayerMarkovBackward::getGreedyActionReward()
         temp = Config::Instance()->getPuinishmentFailed();
     }
     return greedyReward - temp;
+}
+
+QString LayerMarkovBackward::getResultString()
+{
+    QString res(QString("%1 Reward:%2 PriceCost:%3 TimeCost:%4 Posibility:%5 ")
+                .arg(this->getAction().toString())
+                .arg(this->getMarkovReward())
+                .arg(this->getMarkovCost())
+                .arg(this->getMarkovTimeCost())
+                .arg(this->getMarkovPosibility()));
+    res.append(stateNew.toString());
+    return res;
+}
+
+void LayerMarkovBackward::printAllLayerRecords()
+{
+    QString res;
+    for (int i = 0; i < allLayerRecords.size(); i++)
+    {
+        for (int j = 0; j < allLayerRecords[i].size(); j++)
+        {
+            res += allLayerRecords[i][j].toString();
+        }
+        res += "\n";
+    }
+    qDebug() << res;
 }

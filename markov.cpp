@@ -79,6 +79,9 @@ QList<MarkovRecord> Markov::noActionRecords(MarkovState & state)
         helper(stateAfter1);
         helper(stateAfter2);
         helper(noac);
+
+//        qDebug() << "Markov::noActionRecords(MarkovState & state)";
+//        qDebug() << state.toString();
         records.append(MarkovRecord(state, stateAfter1, noac,
                                  stateAfter.nextToDoActivity->blindService->reliability, 0, timeCost));
         records.append(MarkovRecord(state, stateAfter2, noac,

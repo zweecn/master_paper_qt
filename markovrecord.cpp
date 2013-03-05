@@ -2,6 +2,7 @@
 
 #include <QHash>
 #include <QDebug>
+#include <cmath>
 
 uint qHash(const StateAction & key)
 {
@@ -184,4 +185,31 @@ int MarkovRecord::getMaxLayerSize()
 void MarkovRecord::setMaxLayerSize(int _maxLayerSize)
 {
     maxLayerSize = _maxLayerSize;
+}
+
+QString MarkovRecord::toString()
+{
+    QString res(QString("Record: [%1 %2 %3 %4 %5 %6]")
+                .arg(stateBefore.toString())
+                .arg(stateAfter.toString())
+                .arg(action.toString())
+                .arg(priceCost)
+                .arg(timeCost)
+                .arg(posibility));
+    return res;
+}
+
+bool MarkovRecord::operator ==(const MarkovRecord & other)
+{
+    double e = 0.000001;
+    if (stateBefore == other.stateBefore
+            && stateAfter == other.stateAfter
+            && action == other.action
+            && fabs(priceCost - other.priceCost) < e
+            && fabs(timeCost - other.timeCost) < e
+            && fabs(posibility - other.posibility) < e)
+    {
+        return true;
+    }
+    return false;
 }

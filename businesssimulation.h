@@ -47,6 +47,9 @@ public:
 
     int getWorkflowCount();
 
+    static void sleepAMoment(int msec = 1000);
+    static std::vector<std::vector<int> > toGraph(Activity* a);
+
 signals:
     void normalEventSignal();
     void badEventSignal();
@@ -64,9 +67,6 @@ private:
     void updatePainter(int flowId, ServiceGraph & sg);
     void updatePainter();
 
-    void sleepAMoment(int msec = 1000);
-
-    std::vector<std::vector<int> > toGraph(Activity* a);
     SegMent* toSegMent(Activity* a);
 
 

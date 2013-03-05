@@ -49,12 +49,6 @@ public:
 
     enum
     {
-        TERMINATE = 0,
-        DO_NOTHING = 1,
-        RETRY = 2,
-        SUBSTITUTE = 3,
-        RECOMPOSE = 4,
-
         ACTION_COUNT = 5,
 
         MAX_REDO_COUNT = 1,

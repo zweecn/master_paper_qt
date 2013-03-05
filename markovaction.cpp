@@ -209,7 +209,15 @@ bool MarkovAction::operator <(const MarkovAction & other) const
 MarkovAction MarkovAction::noAction(MarkovState & state)
 {
     MarkovAction action;
-    action.bugActivityId = state.nextToDoActivity->number;
+//    action.bugActivityId = state.nextToDoActivity->number;
+//    qDebug() << state.toString();
+    if (state.faultActivity != NULL)
+    {
+        action.bugActivityId = state.faultActivity->number;
+        action.newService = action.oldService = state.faultActivity->blindService;
+    }
+    action.type = A_RE_DO;
+
     if (state.isFinished())
     {
         action.type = ERROR_ACTION;
@@ -291,14 +299,20 @@ MarkovAction MarkovAction::reComposite(MarkovState & state)
 
 double MarkovAction::getPosibility()
 {
-    if (type == MarkovAction::TERMINATE)
+    if (type == MarkovAction::A_TERMINATE)
     {
         return 1;
     }
-    if (type == MarkovAction::DO_NOTHING)
+    if (type == MarkovAction::A_NO_ACTION)
     {
-        assert(oldService != NULL);
-        return oldService->reliability;
+        if (oldService == NULL)
+        {
+            return 0;
+        }
+        else
+        {
+            return oldService->reliability;
+        }
     }
     if (type == MarkovAction::A_RE_DO)
     {
@@ -318,11 +332,11 @@ double MarkovAction::getPosibility()
 
 double MarkovAction::getPriceCost()
 {
-    if (type == MarkovAction::TERMINATE)
+    if (type == MarkovAction::A_TERMINATE)
     {
         return Config::Instance()->getPuinishmentFailed();
     }
-    if (type == MarkovAction::DO_NOTHING)
+    if (type == MarkovAction::A_NO_ACTION)
     {
         return 0;
     }
@@ -344,11 +358,11 @@ double MarkovAction::getPriceCost()
 
 double MarkovAction::getTimeCost()
 {
-    if (type == MarkovAction::TERMINATE)
+    if (type == MarkovAction::A_TERMINATE)
     {
         return 0;
     }
-    if (type == MarkovAction::DO_NOTHING)
+    if (type == MarkovAction::A_NO_ACTION)
     {
         return 0;
     }

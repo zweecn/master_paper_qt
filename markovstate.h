@@ -32,7 +32,8 @@ public:
         S_FAILED = 1,
         S_SUCCEED = 2,
         S_PRICE_UP = 3,
-        S_DELAYED = 4
+        S_DELAYED = 4,
+        STATE_COUNT = 5
     };
 
     bool finished;

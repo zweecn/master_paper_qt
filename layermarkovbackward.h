@@ -160,7 +160,10 @@ public:
     double getMarkovPosibility();
     MarkovAction & getAction();
     MarkovState & getStateNew();
+    void calcacuteReward();
 
+    QString getResultString();
+    void printAllLayerRecords();
 
     // Next is greedy
 
@@ -172,6 +175,7 @@ public:
     MarkovAction & getGreedyAction();
     void runGreedy();
 
+private:
     MarkovState state;
     MarkovState greedyState;
 
@@ -183,7 +187,6 @@ public:
     QHash<TAndState, QList<MarkovAction> > tState2ChildActionMap;
     QHash<StateTAndAction, QList<ToStateInfo> > stateTAction2ChildStateInfoMap;
 
-private:
     double** utility;
     QString* step;
     double markovPriceCost;

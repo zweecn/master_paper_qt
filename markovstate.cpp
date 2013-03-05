@@ -292,6 +292,12 @@ MarkovState & MarkovState::operator =(const MarkovState & other)
 
 bool MarkovState::operator ==(const MarkovState & other) const
 {
+    if (finished != other.finished
+            || globalState != other.globalState)
+    {
+        return false;
+    }
+
     if (faultActivity != NULL && other.faultActivity != NULL)
     {
         if (!(*faultActivity == *(other.faultActivity)))
@@ -320,6 +326,11 @@ bool MarkovState::operator ==(const MarkovState & other) const
 
 bool MarkovState::operator <(const MarkovState & other) const
 {
+    if (finished >= other.finished
+            || globalState >= other.globalState)
+    {
+        return false;
+    }
     if (faultActivity != NULL && other.faultActivity != NULL)
     {
         if (!(*faultActivity < *(other.faultActivity)))

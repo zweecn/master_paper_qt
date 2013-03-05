@@ -36,7 +36,9 @@ public:
                  double _posibility, double _priceCost, double _timeCost);
 
     MarkovRecord & operator =(const MarkovRecord& other);
+    bool operator ==(const MarkovRecord & other);
     bool init();
+    QString toString();
 
     MarkovState stateBefore;
     MarkovState stateAfter;

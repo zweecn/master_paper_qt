@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
     //    Widget w;
     //    w.show();
 
-//    LineChart lc;
-//    lc.show();
+    //    LineChart lc;
+    //    lc.show();
 
     //    ServiceInfoTable sit;
     //    sit.show();
@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
     //    BusinessSimulation bs;
     //    bs.run();
 
-//    BusinessMainWidget bmw;
-//    bmw.show();
+    //    BusinessMainWidget bmw;
+    //    bmw.show();
 
     //    CriticalPath cp;
     //    cp.runExample();
@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
     //    ServiceGraph sg;
     //    sg.show();
 
-//    WebServiceSimulation wss;
-//    wss.run();
-//    WebServiceFlow wsf;
-//    wsf.init();
+    //    WebServiceSimulation wss;
+    //    wss.run();
+    //    WebServiceFlow wsf;
+    //    wsf.init();
 
     Test t;
-    t.runLayerMarkovBackwardTest();
-//    return a.exec();
+
+    //    return a.exec();
 
     return 0;
 }
