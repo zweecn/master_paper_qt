@@ -33,7 +33,7 @@ WebServiceRecovery::~WebServiceRecovery()
     clearData();
 }
 
-void WebServiceRecovery::getResult()
+void WebServiceRecovery::runTest()
 {
     init();
     createStateTransTable();
@@ -45,7 +45,7 @@ void WebServiceRecovery::getResult()
     printResult();
 }
 
-QList<MarkovResultItem> WebServiceRecovery::getResult(WebServiceAtomState &state)
+QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState &state)
 {
     init();
     createStateTransTable();
@@ -73,6 +73,72 @@ QList<MarkovResultItem> WebServiceRecovery::getResult(WebServiceAtomState &state
         }
     }
 
+    return res;
+}
+
+WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
+{
+    WebServiceAtomState & s = state;
+    WebServiceAction* actions = new WebServiceAction[WebServiceAction::ACTION_SIZE];
+    for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)
+    {
+        actions[i].dc = actions[i].dt = INT_MAX;
+    }
+    if (s.stateType == WebServiceAtomState::READY_U)
+    {
+        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
+        actions[WebServiceAction::DO_NOTHING] = doNothing(s.activityId);
+        actions[WebServiceAction::REPLACE] = replace(s.activityId);
+        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
+    }
+    else if (s.stateType == WebServiceAtomState::READY_N)
+    {
+        actions[WebServiceAction::NO_NEED_DO] = noNeedDo(s.activityId);
+    }
+    else if (s.stateType == WebServiceAtomState::FAIL)
+    {
+        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
+        actions[WebServiceAction::RETRY] = retry(s.activityId);
+        actions[WebServiceAction::REPLACE] = replace(s.activityId);
+        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
+    }
+    else if (s.stateType == WebServiceAtomState::FINISH_U)
+    {
+        actions[WebServiceAction::DO_NOTHING] = doNothing(s.activityId);
+        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
+        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
+    }
+    else if (s.stateType == WebServiceAtomState::FINISH_N)
+    {
+        actions[WebServiceAction::NO_NEED_DO] = noNeedDo(s.activityId);
+    }
+
+    double *p = new double[WebServiceAction::ACTION_SIZE];
+
+    WebServiceAction resAction;
+    resAction.dc = resAction.dt = INT_MAX;
+    for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)
+    {
+        if (actions[i].dc != INT_MAX)
+        {
+
+            if (reward(resAction.dc, resAction.dt, 1) < reward(actions[i].dc, actions[i].dt, 1))
+            {
+                resAction = actions[i];
+            }
+
+        }
+        delete[] p;
+        delete[] actions;
+        return resAction;
+    }
+}
+
+double WebServiceRecovery::reward(int dc, int dt, double p)
+{
+    double res = - ((1 - p) * Config::Instance()->getPuinishmentFailed()
+                    + dt * Config::Instance()->getPuinishmentPerSecond()
+                    + dc);
     return res;
 }
 
@@ -795,7 +861,11 @@ AtomService* WebServiceRecovery::nextFreeService(int activityId)
             return &all_service[i];
         }
     }
-
     return NULL;
+}
+
+WebServiceFlow& WebServiceRecovery::getWebServiceFlow()
+{
+    return wsf;
 }
 

@@ -34,10 +34,13 @@ public:
     WebServiceRecovery();
     ~WebServiceRecovery();
 
-    void getResult();
+    QList<MarkovResultItem> getMarkovResult(WebServiceAtomState &state);
+    WebServiceAction getGreedyResult(WebServiceAtomState &state);
+    double reward(int dc, int dt, double p);
 
-    QList<MarkovResultItem> getResult(WebServiceAtomState &state);
+    WebServiceFlow& getWebServiceFlow();
 
+    void runTest();
     void printStateAction();
     void printActionState();
     void printPosibility();

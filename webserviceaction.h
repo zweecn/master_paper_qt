@@ -32,6 +32,8 @@ public:
     QString toString();
     QString name();
 
+    double getSucceedProbolity();
+
     enum
     {
         NO_NEED_DO = 0,

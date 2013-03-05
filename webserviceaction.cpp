@@ -126,3 +126,37 @@ QString WebServiceAction::toString()
 
     return res;
 }
+
+double WebServiceAction::getSucceedProbolity()
+{
+
+    if (type == NO_NEED_DO)
+    {
+
+    }
+    else if ( type == TERMINATE)
+    {
+
+    }
+    else if ( type == DO_NOTHING)
+    {
+
+    }
+    else if ( type == REPLACE)
+    {
+
+    }
+    else if ( type == RE_COMPOSE)
+    {
+
+    }
+    else if ( type == RETRY)
+    {
+
+    }
+    else
+    {
+
+    }
+    return 0;
+}
