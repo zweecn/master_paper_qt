@@ -13,6 +13,9 @@ public:
     ~WebServiceSimulation();
 
     void run();
+    void printStateAction();
+    void printActionState();
+    void printPosibility();
 
 private:
     bool clearData();
@@ -20,6 +23,8 @@ private:
     bool initUtility();
     bool createStateTransTable();
     bool runMarkov();
+
+    bool isActionStateHasTrue();
 
     void noNeedDo(WebServiceAtomState & s);
     WebServiceAction noNeedDo();

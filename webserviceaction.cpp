@@ -39,17 +39,62 @@ WebServiceAction & WebServiceAction::operator =(const WebServiceAction & other)
 
 bool WebServiceAction::operator ==(const WebServiceAction & other) const
 {
+//    if (type != other.type)
+//    {
+//        return false;
+//    }
+//    if (replaceList.size() != other.replaceList.size())
+//    {
+//        return false;
+//    }
+//    for (int i = 0; i < replaceList.size(); i++)
+//    {
+//    }
     return (type == other.type && replaceList == other.replaceList);
 }
 
-int WebServiceAction::hash()
+int WebServiceAction::getId()
 {
     return id;
 }
 
+QString WebServiceAction::name()
+{
+    QString res;
+    if (type == NO_NEED_DO)
+    {
+        res += "NO_NEED_DO";
+    }
+    else if ( type == TERMINATE)
+    {
+        res += "TERMINATE";
+    }
+    else if ( type == DO_NOTHING)
+    {
+        res += "DO_NOTHING";
+    }
+    else if ( type == REPLACE)
+    {
+        res += "REPLACE";
+    }
+    else if ( type == RE_COMPOSE)
+    {
+        res += "RE_COMPOSE";
+    }
+    else if ( type == RETRY)
+    {
+        res += "RETRY";
+    }
+    else
+    {
+        res += "NOT_ACTION";
+    }
+    return res;
+}
+
 QString WebServiceAction::toString()
 {
-    QString res(QString("Action: [%1 ").arg(id));
+    QString res(QString("Action: [%1 ").arg(getId()));
     if (type == NO_NEED_DO)
     {
         res += "NO_NEED_DO";
@@ -79,6 +124,13 @@ QString WebServiceAction::toString()
         res += "NOT_ACTION";
     }
 
+    for (int i = 0; i < replaceList.size(); i++)
+    {
+        res += QString(" %1:%2->%3 ")
+                .arg(replaceList[i].activityId)
+                .arg(replaceList[i].oldServiceId)
+                .arg(replaceList[i].newServiceId);
+    }
     res += QString(" dc=%1 dt=%2]").arg(dc).arg(dt);
 
     return res;

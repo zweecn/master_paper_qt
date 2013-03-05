@@ -21,7 +21,11 @@ int WebServiceAtomState::hash()
 QString WebServiceAtomState::toString()
 {
     QString res(QString("State [%1 ").arg(activityId));
-    if (stateType == READY_U)
+    if (stateType == READY_N)
+    {
+        res += "READY_N";
+    }
+    else if (stateType == READY_U)
     {
         res += "READY_U";
     }

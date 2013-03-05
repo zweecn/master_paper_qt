@@ -15,6 +15,8 @@
 #include <qmath.h>
 #include <QSet>
 #include <climits>
+#include <iostream>
+
 
 const QString start_filename = "data/business_start";
 const int start_member_size = 3;
@@ -36,25 +38,87 @@ WebServiceSimulation::~WebServiceSimulation()
 void WebServiceSimulation::run()
 {
     createStateTransTable();
+    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
     initUtility();
-    runMarkov();
+    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
+//    printPosibility();
+    //    printActionState();
+    //    runMarkov();
+    //    printStateAction();
+}
 
-    qDebug() << "Derect reward:" ;
-    for (int i = 0; i < 2*(WebServiceAtomState::STATE_SIZE); i++)
+void WebServiceSimulation::printStateAction()
+{
+    // Next print stateAction
+    std::cout <<",";
+    for (int j = 0; j < actionList.size(); j++)
     {
-        for (int j = 0; j < actionList.size(); j++)
-        {
-            if (stateAction[i][j])
-            {
-                qDebug() << stateList[i].toString() << actionList[j].toString();
-            }
-        }
+        std::cout << actionList[j].name().toStdString() << ",";
     }
-    qDebug() << "State utility:" ;
+    std::cout << std::endl;
     for (int i = 0; i < maxStateSize; i++)
     {
-        qDebug() << stateList[i].toString() << stateUtility[stateList[i].hash()];
+        std::cout << stateList[i].toString().toStdString() << ",";
+        for (int j = 0; j < actionList.size(); j++)
+        {
+            std::cout << stateAction[stateList[i].hash()][actionList[j].getId()] << ",";
+        }
+        std::cout << std::endl;
     }
+    std::cout << std::endl;
+}
+
+void WebServiceSimulation::printActionState()
+{
+    // Next print actionState
+    std::cout << ",";
+    for (int j = 0; j < stateList.size(); j++)
+    {
+        std::cout << stateList[j].toString().toStdString() << ",";
+    }
+    std::cout << std::endl;
+    for (int i = 0; i < actionList.size(); i++)
+    {
+        std::cout << actionList[i].toString().toStdString() << ",";
+        for (int j = 0; j < stateList.size(); j++)
+        {
+            std::cout << actionState[actionList[i].getId()][stateList[i].hash()] << ",";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void WebServiceSimulation::printPosibility()
+{
+    // Next print actionState
+    std::cout << ",";
+    for (int j = 0; j < stateList.size(); j++)
+    {
+        std::cout << stateList[j].toString().toStdString() << ",";
+    }
+    std::cout << std::endl;
+    for (int i = 0; i < actionList.size(); i++)
+    {
+        std::cout << actionList[i].toString().toStdString() << ",";
+        for (int j = 0; j < stateList.size(); j++)
+        {
+            std::cout << posibility[actionList[i].getId()][stateList[i].hash()] << ",";
+        }
+        std::cout << std::endl;
+    }
+}
+
+bool WebServiceSimulation::isActionStateHasTrue()
+{
+    for (int i = 0; i < actionList.size(); i++)
+    {
+        for (int j = 0; j < stateList.size(); j++)
+        {
+            if (actionState[actionList[i].getId()][stateList[i].hash()])
+                return true;
+        }
+    }
+    return false;
 }
 
 bool WebServiceSimulation::runMarkov()
@@ -62,27 +126,28 @@ bool WebServiceSimulation::runMarkov()
     qDebug() << "WebServiceSimulation::runMarkov() ...";
     for (int t = WorkFlow::Instance()->getActivitySize() - 2; t >= 0; t--)
     {
-        qDebug() << "t =" << t;
+        //        qDebug() << "t =" << t;
         for (int i = actionList.size() - 1; i >= 0; i--)
         {
-//            qDebug() << "i =" << i << actionList.size() << stateList.size() << maxStateSize;
             double actionUtilityTemp = 0;
             int sumP = 0;
             for (int j = 0; j < maxStateSize; j++)
             {
-                sumP += posibility[actionList[i].hash()][stateList[j].hash()];
+                sumP += posibility[actionList[i].getId()][stateList[j].hash()];
             }
             for (int j = 0; j < maxStateSize; j++)
             {
-                if (actionState[actionList[i].hash()][stateList[j].hash()])
+                if (actionState[actionList[i].getId()][stateList[j].hash()])
                 {
-                    double p = (double) posibility[actionList[i].hash()][stateList[j].hash()] / sumP;
+                    double p = (double) posibility[actionList[i].getId()][stateList[j].hash()] / sumP;
                     actionUtilityTemp += stateUtility[stateList[j].hash()] * p;
                 }
             }
-            if (actionUtility[actionList[i].hash()] < actionUtilityTemp)
+            //            qDebug() << "sumP =" << sumP;
+            if (sumP != 0 && actionUtility[actionList[i].getId()] < actionUtilityTemp)
             {
-                actionUtility[actionList[i].hash()] = actionUtilityTemp;
+                //                qDebug() << "actionUtilityTemp =" << actionUtilityTemp << sumP;
+                actionUtility[actionList[i].getId()] = actionUtilityTemp;
             }
         }
 
@@ -90,10 +155,10 @@ bool WebServiceSimulation::runMarkov()
         {
             for (int j = 0; j < actionList.size(); j++)
             {
-                if (stateAction[stateList[i].hash()][actionList[j].hash()]
-                        && stateUtility[stateList[i].hash()] < actionUtility[actionList[j].hash()])
+                if (stateAction[stateList[i].hash()][actionList[j].getId()]
+                        && stateUtility[stateList[i].hash()] < actionUtility[actionList[j].getId()])
                 {
-                    stateUtility[stateList[i].hash()] < actionUtility[actionList[j].hash()];
+                    stateUtility[stateList[i].hash()] < actionUtility[actionList[j].getId()];
                 }
             }
         }
@@ -245,6 +310,7 @@ bool WebServiceSimulation::createStateTransTable()
             doNothing(s);
             replace(s);
             recomposite(s);
+            qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
         }
         else if (s.stateType == WebServiceAtomState::READY_N)
         {
@@ -268,7 +334,7 @@ bool WebServiceSimulation::createStateTransTable()
             noNeedDo(s);
         }
     }
-
+    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
     return true;
 }
 
@@ -280,9 +346,10 @@ void WebServiceSimulation::noNeedDo(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    //    qDebug() << s.toString() <<"s.hash" << s.hash() << pAction->getId();
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -294,29 +361,29 @@ void WebServiceSimulation::noNeedDo(WebServiceAtomState & s)
         if (s.stateType == WebServiceAtomState::READY_N)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = wsf.activities[s.activityId].blindService->reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_N)
         {
             suffixState.stateType = WebServiceAtomState::READY_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
 
             suffixState.stateType = WebServiceAtomState::READY_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
         }
     }
 }
@@ -338,9 +405,9 @@ void WebServiceSimulation::recomposite(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -353,32 +420,55 @@ void WebServiceSimulation::recomposite(WebServiceAtomState & s)
                 || s.stateType == WebServiceAtomState::FAIL)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            qDebug() << "actionState[pAction->getId()][suffixState.hash()]"
+                    << pAction->getId() <<  suffixState.hash()
+                     << actionState[pAction->getId()][suffixState.hash()];
+            qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
+
+//            printActionState();
+
+//            std::cout << ",";
+//            for (int j = 0; j < stateList.size(); j++)
+//            {
+//                std::cout << stateList[j].toString().toStdString() << ",";
+//            }
+//            std::cout << std::endl;
+//            for (int i = 0; i < actionList.size(); i++)
+//            {
+//                std::cout << actionList[i].toString().toStdString() << ",";
+//                for (int j = 0; j < stateList.size(); j++)
+//                {
+//                    std::cout << actionState[actionList[i].getId()][stateList[i].hash()] << ",";
+//                }
+//                std::cout << std::endl;
+//            }
+
+            posibility[pAction->getId()][suffixState.hash()]
                     = WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_U)
         {
             suffixState.stateType = WebServiceAtomState::READY_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
 
             suffixState.stateType = WebServiceAtomState::READY_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
         }
     }
 }
@@ -410,9 +500,9 @@ void WebServiceSimulation::retry(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -424,17 +514,17 @@ void WebServiceSimulation::retry(WebServiceAtomState & s)
         if (s.stateType == WebServiceAtomState::FAIL)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = wsf.activities[s.activityId].blindService->reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
             suffixState.stateType = WebServiceAtomState::FAIL;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
         }
     }
@@ -457,9 +547,9 @@ void WebServiceSimulation::replace(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -472,20 +562,20 @@ void WebServiceSimulation::replace(WebServiceAtomState & s)
                 || s.stateType == WebServiceAtomState::FAIL)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - WorkFlow::Instance()
                     ->all_service[action.replaceList.first().newServiceId].reliability;
         }
@@ -524,9 +614,9 @@ void WebServiceSimulation::doNothing(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -538,25 +628,25 @@ void WebServiceSimulation::doNothing(WebServiceAtomState & s)
         if (s.stateType == WebServiceAtomState::READY_U)
         {
             suffixState.stateType = WebServiceAtomState::FINISH_N;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = wsf.activities[s.activityId].blindService->reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()]
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()]
                     = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_U)
         {
             suffixState.stateType = WebServiceAtomState::READY_U;
-            actionState[pAction->hash()][suffixState.hash()] = 1;
-            posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+            actionState[pAction->getId()][suffixState.hash()] = 1;
+            posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
         }
     }
 }
@@ -578,9 +668,9 @@ void WebServiceSimulation::terminate(WebServiceAtomState & s)
     {
         action.id = actionList.size();
         actionList.append(action);
-        pAction = &action;
+        pAction = &actionList.last();
     }
-    stateAction[s.hash()][pAction->hash()] = 1;
+    stateAction[s.hash()][pAction->getId()] = 1;
 
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(s.activityId);
     QSetIterator<int> it(suffix);
@@ -590,8 +680,10 @@ void WebServiceSimulation::terminate(WebServiceAtomState & s)
         WebServiceAtomState suffixState;
         suffixState.activityId = suffixId;
         suffixState.stateType = WebServiceAtomState::STOP; //Add here
-        actionState[pAction->hash()][suffixState.hash()] = 1;
-        posibility[pAction->hash()][suffixState.hash()] = MAX_POSIBILITY;
+        //        qDebug() << "suffixState=" << suffixState.toString();
+        actionState[pAction->getId()][suffixState.hash()] = 1;
+        //        qDebug() << "actionState " << actionState[pAction->hash()][suffixState.hash()];
+        posibility[pAction->getId()][suffixState.hash()] = MAX_POSIBILITY;
     }
 }
 
@@ -608,16 +700,18 @@ WebServiceAction* WebServiceSimulation::getAction(WebServiceAction & action)
 {
     for (int i = 0; i < actionList.size(); i++)
     {
-        if (actionList[i].hash() == action.hash())
+        if (actionList[i] == action)
         {
             return &actionList[i];
         }
     }
+
     return NULL;
 }
 
 QList<ReplaceNode> WebServiceSimulation::recomposeFreeService(int activityId)
 {
+    //    qDebug() << "WebServiceSimulation::recomposeFreeService(int activityId)...";
     QList<ReplaceNode> res;
     QSet<int> suffix = WorkFlow::Instance()->getSuffixs(activityId);
     suffix.insert(activityId);
@@ -626,15 +720,17 @@ QList<ReplaceNode> WebServiceSimulation::recomposeFreeService(int activityId)
     {
         int id = it.next();
         ReplaceNode node;
-        node.activityId = id;
         AtomService *newService = nextFreeService(id);
         if (newService != NULL)
         {
-            node.oldServiceId = wsf.activities[activityId].blindService->id;
+            node.activityId = id;
+            node.oldServiceId = wsf.activities[id].blindService->id;
             node.newServiceId = newService->id;
-            res.append(node);
+            if (!res.contains(node))
+                res.append(node);
         }
     }
+    //     qDebug() << "WebServiceSimulation::recomposeFreeService(int activityId) finished.";
     return res;
 }
 

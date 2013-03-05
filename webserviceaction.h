@@ -4,8 +4,9 @@
 #include <QList>
 #include <QString>
 
-struct ReplaceNode
+class ReplaceNode
 {
+public:
     int activityId;
     int oldServiceId;
     int newServiceId;
@@ -27,8 +28,9 @@ public:
     bool operator ==(const WebServiceAction & other) const;
     WebServiceAction & operator =(const WebServiceAction & other);
 
-    int hash();
+    int getId();
     QString toString();
+    QString name();
 
     enum
     {
