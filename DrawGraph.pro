@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     markovaction.cpp \
     layermarkovbackward.cpp \
     markov.cpp \
-    test.cpp
+    test.cpp \
+    webservicerecovery.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -77,9 +78,12 @@ HEADERS  += widget.h \
     markovaction.h \
     layermarkovbackward.h \
     markov.h \
-    test.h
+    test.h \
+    webservicerecovery.h
 
 FORMS    +=
+
+
 
 
 

@@ -4,7 +4,7 @@
 #include "markovaction.h"
 #include "businesssimulation.h"
 #include "criticalpath.h"
-#include "webservicesimulation.h"
+#include "webservicerecovery.h"
 
 #include <ctime>
 #include <QDebug>
@@ -82,11 +82,11 @@ void Test::runLayerMarkovBackwardTest()
 
 void Test::runMarkovTest()
 {
-    WebServiceSimulation wss;
+    WebServiceRecovery wsr;
     WebServiceAtomState s;
     s.activityId = 1;
     s.stateType = WebServiceAtomState::FAIL;
-    QList<MarkovResultItem> result = wss.getResult(s);
+    QList<MarkovResultItem> result = wsr.getResult(s);
     qDebug() << "result.size() =" << result.size();
     for (int i = 0; i < result.size(); i++)
     {
