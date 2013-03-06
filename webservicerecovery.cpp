@@ -112,7 +112,10 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
             }
             p = WorkFlow::Instance()->all_service[serviceId].reliability;
         }
+        double e = 0.00001;
         res[i].successProbility = (double)p/MAX_POSIBILITY;
+        if (fabs(res[i].successProbility) < e)
+            res[i].successProbility = 0;
         res[i].action.dc += dcAdd;
         res[i].action.dt += dtAdd;
 

@@ -16,6 +16,7 @@ public:
         potentialReward = other.potentialReward;
         suffixState = other.suffixState;
         suffixPosibility = other.suffixPosibility;
+        successProbility = other.successProbility;
     }
 
     MarkovResultItem& operator =(const MarkovResultItem &other)
@@ -26,6 +27,7 @@ public:
         potentialReward = other.potentialReward;
         suffixState = other.suffixState;
         suffixPosibility = other.suffixPosibility;
+        successProbility = other.successProbility;
         return *this;
     }
 
