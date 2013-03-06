@@ -73,6 +73,33 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
         }
     }
 
+    // If the state fault is the last activity, special.
+    if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
+    {
+        for (int i = 0; i < res.size(); i++)
+        {
+            int p = wsf.activities[state.activityId].blindService->reliability;
+            if (res[i].action.type == WebServiceAction::TERMINATE)
+            {
+                p = 0;
+            }
+            else if (res[i].action.type == WebServiceAction::REPLACE
+                     || res[i].action.type == WebServiceAction::RE_COMPOSE)
+            {
+                int serviceId = wsf.activities[state.activityId].blindService->id;
+                if (!res[i].action.replaceList.isEmpty())
+                {
+                    serviceId = res[i].action.replaceList.first().newServiceId;
+                }
+                p = WorkFlow::Instance()->all_service[serviceId].reliability;
+            }
+
+            res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
+                                            (double)p/MAX_POSIBILITY);
+//            qDebug() << res[i].action.toString() << p << res[i].potentialReward
+//                     << wsf.activities[state.activityId].blindService->reliability;
+        }
+    }
     return res;
 }
 
@@ -122,10 +149,10 @@ WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
         if (actions[i].dc != INT_MAX)
         {
 
-            if (reward(resAction.dc, resAction.dt, 1) < reward(actions[i].dc, actions[i].dt, 1))
-            {
-                resAction = actions[i];
-            }
+//            if (reward(resAction.dc, resAction.dt, 1) < reward(actions[i].dc, actions[i].dt, 1))
+//            {
+//                resAction = actions[i];
+//            }
 
         }
         delete[] p;
@@ -136,9 +163,9 @@ WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
 
 double WebServiceRecovery::reward(int dc, int dt, double p)
 {
-    double res = - ((1 - p) * Config::Instance()->getPuinishmentFailed()
-                    + dt * Config::Instance()->getPuinishmentPerSecond()
-                    + dc);
+    double res = - (1 - p) * Config::Instance()->getPuinishmentFailed();
+    res += - dt * Config::Instance()->getPuinishmentPerSecond();
+    res += - dc;
     return res;
 }
 
