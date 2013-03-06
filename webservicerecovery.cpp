@@ -68,6 +68,7 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
 
 QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &state)
 {
+    // Get the result
     QList<MarkovResultItem> res;
     for (int j = 0; j < actionList.size(); j++)
     {
@@ -90,9 +91,12 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
         }
     }
 
+    // Cal succees probility, add dc/dt when the service is already exec.
     for (int i = 0; i < res.size(); i++)
     {
         int p = wsf.activities[state.activityId].blindService->reliability;
+        int dcAdd = 0;
+        int dtAdd = 0;
         if (res[i].action.type == WebServiceAction::TERMINATE)
         {
             p = 0;
@@ -101,36 +105,38 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
                  || res[i].action.type == WebServiceAction::RE_COMPOSE)
         {
             int serviceId = wsf.activities[state.activityId].blindService->id;
+            // if the state is already done, add its costs.
+            if (state.stateType == WebServiceAtomState::FAIL
+                    || state.stateType == WebServiceAtomState::FINISH_N
+                    || state.stateType == WebServiceAtomState::FINISH_U)
+            {
+                dcAdd = WorkFlow::Instance()->all_service[serviceId].price;
+                dtAdd = WorkFlow::Instance()->all_service[serviceId].execTime;
+            }
             if (!res[i].action.replaceList.isEmpty())
             {
                 serviceId = res[i].action.replaceList.first().newServiceId;
+
             }
             p = WorkFlow::Instance()->all_service[serviceId].reliability;
         }
         res[i].successProbility = (double)p/MAX_POSIBILITY;
+        res[i].action.dc += dcAdd;
+        res[i].action.dt += dtAdd;
+
+        // If the state fault is the last activity, special.
+        if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
+        {
+            res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
+                                            (double)p/MAX_POSIBILITY);
+        }
     }
 
-    // Cal succees probility
-//    for (int i = 0; i < res.size(); i++)
-//    {
-//        res[i].successProbility = -1;
-//        for (int j = 0; j < res[i].suffixPosibility.size(); j++)
-//        {
-//            if (res[i].successProbility < res[i].suffixPosibility[j]
-//                    && res[i].suffixState[j].stateType != WebServiceAtomState::STOP
-//                    && res[i].suffixState[j].stateType != WebServiceAtomState::FAIL)
-//            {
-//                res[i].successProbility = res[i].suffixPosibility[j];
-//            }
-//        }
-//    }
-
-//    qDebug() << "Begin res 2...";
     // If the state fault is the last activity, special.
-    if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
-    {
-        doIfLastActivityError(res, state);
-    }
+//    if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
+//    {
+//        doIfLastActivityError(res, state);
+//    }
 
     return res;
 }
@@ -141,6 +147,8 @@ QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovR
     for (int i = 0; i < res.size(); i++)
     {
         int p = wsf.activities[state.activityId].blindService->reliability;
+        int dcAdd = 0;
+        int dtAdd = 0;
         if (res[i].action.type == WebServiceAction::TERMINATE)
         {
             p = 0;
@@ -149,6 +157,8 @@ QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovR
                  || res[i].action.type == WebServiceAction::RE_COMPOSE)
         {
             int serviceId = wsf.activities[state.activityId].blindService->id;
+            dcAdd = WorkFlow::Instance()->all_service[serviceId].price;
+            dtAdd = WorkFlow::Instance()->all_service[serviceId].execTime;
             if (!res[i].action.replaceList.isEmpty())
             {
                 serviceId = res[i].action.replaceList.first().newServiceId;
@@ -156,11 +166,13 @@ QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovR
             p = WorkFlow::Instance()->all_service[serviceId].reliability;
         }
 
+        // This is diff with Cal succees probility
         res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
                                         (double)p/MAX_POSIBILITY);
+
         res[i].successProbility = (double)p/MAX_POSIBILITY;
-//            qDebug() << res[i].action.toString() << p << res[i].potentialReward
-//                     << wsf.activities[state.activityId].blindService->reliability;
+        res[i].action.dc += dcAdd;
+        res[i].action.dt += dtAdd;
     }
     return res;
 }
@@ -186,61 +198,6 @@ WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
 
     return action;
 }
-//    WebServiceAction* actions = new WebServiceAction[WebServiceAction::ACTION_SIZE];
-//    for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)
-//    {
-//        actions[i].dc = actions[i].dt = INT_MAX;
-//    }
-//    if (s.stateType == WebServiceAtomState::READY_U)
-//    {
-//        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
-//        actions[WebServiceAction::DO_NOTHING] = doNothing(s.activityId);
-//        actions[WebServiceAction::REPLACE] = replace(s.activityId);
-//        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
-//    }
-//    else if (s.stateType == WebServiceAtomState::READY_N)
-//    {
-//        actions[WebServiceAction::NO_NEED_DO] = noNeedDo(s.activityId);
-//    }
-//    else if (s.stateType == WebServiceAtomState::FAIL)
-//    {
-//        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
-//        actions[WebServiceAction::RETRY] = retry(s.activityId);
-//        actions[WebServiceAction::REPLACE] = replace(s.activityId);
-//        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
-//    }
-//    else if (s.stateType == WebServiceAtomState::FINISH_U)
-//    {
-//        actions[WebServiceAction::DO_NOTHING] = doNothing(s.activityId);
-//        actions[WebServiceAction::TERMINATE] = terminate(s.activityId);
-//        actions[WebServiceAction::RE_COMPOSE] = recomposite(s.activityId);
-//    }
-//    else if (s.stateType == WebServiceAtomState::FINISH_N)
-//    {
-//        actions[WebServiceAction::NO_NEED_DO] = noNeedDo(s.activityId);
-//    }
-
-//    double *p = new double[WebServiceAction::ACTION_SIZE];
-
-//    WebServiceAction resAction;
-//    resAction.dc = resAction.dt = INT_MAX;
-//    for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)
-//    {
-//        if (actions[i].dc != INT_MAX)
-//        {
-
-////            if (reward(resAction.dc, resAction.dt, 1) < reward(actions[i].dc, actions[i].dt, 1))
-////            {
-////                resAction = actions[i];
-////            }
-
-//        }
-//        delete[] p;
-//        delete[] actions;
-//        return resAction;
-//    }
-
-//}
 
 double WebServiceRecovery::reward(int dc, int dt, double p)
 {

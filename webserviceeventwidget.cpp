@@ -51,7 +51,7 @@ void WebServiceEventWidget::createHistoryEventTable()
     historyEventTable->setColumnCount(columnCount);
     historyEventTable->setRowCount(1);
     QStringList header;
-    header << "时间编号" << "活动编号" << "事件类型" << "已采取的动作" << "潜在收益"
+    header << "时间编号" << "活动编号" << "不确定事件类型" << "采取的动作记录" << "潜在收益"
            << "成本消耗" << "时间延迟" << "成功概率";
     historyEventTable->setHorizontalHeaderLabels(header);
     historyEventTable->horizontalHeader()->setStretchLastSection(true);

@@ -87,8 +87,8 @@ void Test::runMarkovTest()
 {
     WebServiceRecovery wsr;
     WebServiceAtomState s;
-    s.activityId = 0;
-    s.stateType = WebServiceAtomState::FAIL;
+    s.activityId = 8;
+    s.stateType = WebServiceAtomState::READY_U;
     QList<MarkovResultItem> result = wsr.getMarkovResult(s);
     qDebug() << "result.size() =" << result.size();
     for (int i = 0; i < result.size(); i++)
