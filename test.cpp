@@ -18,8 +18,7 @@ Test::Test()
 
 //    runLayerMarkovBackwardTest();
 //    runMarkovTest();
-//    runWebServiceSimulation();
-    runWebServiceMainWidgetTest();
+    runWebServiceSimulation();
 
     qDebug() << "Test::test() finished.";
 }

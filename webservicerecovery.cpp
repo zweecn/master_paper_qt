@@ -49,10 +49,16 @@ void WebServiceRecovery::runTest()
 QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState &state)
 {
     time_t startTime = clock();
+//    qDebug() << "Begin init...";
     init();
+//    qDebug() << "Init finished. Begin createStateTransTable...";
     createStateTransTable();
+//    qDebug() << "Init createStateTransTable. Begin initUtility...";
     initUtility();
+//    qDebug() << "initUtility finished. Begin runMarkov...";
     runMarkov();
+
+//    qDebug() << "runMarkov finished. Begin res 1...";
     QList<MarkovResultItem> res;
     for (int j = 0; j < actionList.size(); j++)
     {
@@ -75,6 +81,7 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
         }
     }
 
+    qDebug() << "Begin res 2...";
     // If the state fault is the last activity, special.
     if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
     {
@@ -102,6 +109,7 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
 //                     << wsf.activities[state.activityId].blindService->reliability;
         }
     }
+    qDebug() << "res finished.";
     markovRuntime = clock() - startTime;
     return res;
 }
@@ -504,8 +512,11 @@ bool WebServiceRecovery::init()
 
 bool WebServiceRecovery::createStateTransTable()
 {
+//    qDebug() << "WebServiceRecovery::createStateTransTable()... stateList.size ="
+//                << stateList.size();
     for (int i = 0; i < stateList.size(); i++)
     {
+//        qDebug() << "i =" << i << stateList[i].toString();
         WebServiceAtomState & s = stateList[i];
         if (s.stateType == WebServiceAtomState::READY_U)
         {
@@ -537,11 +548,13 @@ bool WebServiceRecovery::createStateTransTable()
         }
     }
     //    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
+//    qDebug() << "WebServiceRecovery::createStateTransTable() finished.";
     return true;
 }
 
 void WebServiceRecovery::noNeedDo(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::noNeedDo(WebServiceAtomState & s)...";
     WebServiceAction action = noNeedDo(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -588,6 +601,7 @@ void WebServiceRecovery::noNeedDo(WebServiceAtomState & s)
             posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
         }
     }
+//    qDebug() << "WebServiceRecovery::noNeedDo(WebServiceAtomState & s)";
 }
 
 WebServiceAction WebServiceRecovery::noNeedDo(int activityId)
@@ -602,6 +616,7 @@ WebServiceAction WebServiceRecovery::noNeedDo(int activityId)
 
 void WebServiceRecovery::recomposite(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::recomposite(WebServiceAtomState & s))...";
     WebServiceAction action = recomposite(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -622,23 +637,28 @@ void WebServiceRecovery::recomposite(WebServiceAtomState & s)
         if (s.stateType == WebServiceAtomState::READY_U
                 || s.stateType == WebServiceAtomState::FAIL)
         {
+            int newServiceId = wsf.activities[s.activityId].blindService->id;
+            if (!action.replaceList.isEmpty())
+            {
+                newServiceId = action.replaceList.first().newServiceId;
+            }
             suffixState.stateType = WebServiceAtomState::FINISH_N;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    ->all_service[newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = (MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
+                    ->all_service[newServiceId].reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = (MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
+                    ->all_service[newServiceId].reliability) / 2;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_U)
         {
@@ -651,6 +671,7 @@ void WebServiceRecovery::recomposite(WebServiceAtomState & s)
             posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
         }
     }
+//    qDebug() << "WebServiceRecovery::recomposite(WebServiceAtomState & s))";
 }
 
 WebServiceAction WebServiceRecovery::recomposite(int activityId)
@@ -675,6 +696,7 @@ WebServiceAction WebServiceRecovery::recomposite(int activityId)
 
 void WebServiceRecovery::retry(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::retry(WebServiceAtomState & s)...";
     WebServiceAction action = retry(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -709,6 +731,7 @@ void WebServiceRecovery::retry(WebServiceAtomState & s)
                     = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
         }
     }
+//    qDebug() << "WebServiceRecovery::retry(WebServiceAtomState & s)";
 }
 
 WebServiceAction WebServiceRecovery::retry(int activityId)
@@ -723,6 +746,7 @@ WebServiceAction WebServiceRecovery::retry(int activityId)
 
 void WebServiceRecovery::replace(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::replace(WebServiceAtomState & s)...";
     WebServiceAction action = replace(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -743,25 +767,31 @@ void WebServiceRecovery::replace(WebServiceAtomState & s)
         if (s.stateType == WebServiceAtomState::READY_U
                 || s.stateType == WebServiceAtomState::FAIL)
         {
+            int newServiceId = wsf.activities[s.activityId].blindService->id;
+            if (!action.replaceList.isEmpty())
+            {
+                newServiceId = action.replaceList.first().newServiceId;
+            }
             suffixState.stateType = WebServiceAtomState::FINISH_N;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    ->all_service[newServiceId].reliability;
 
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = (MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
+                    ->all_service[newServiceId].reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = (MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
+                    ->all_service[newServiceId].reliability) / 2;
         }
     }
+//    qDebug() << "WebServiceRecovery::replace(WebServiceAtomState & s)";
 }
 
 WebServiceAction WebServiceRecovery::replace(int activityId)
@@ -791,6 +821,7 @@ WebServiceAction WebServiceRecovery::replace(int activityId)
 
 void WebServiceRecovery::doNothing(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::doNothing(WebServiceAtomState & s)...";
     WebServiceAction action = doNothing(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -832,6 +863,7 @@ void WebServiceRecovery::doNothing(WebServiceAtomState & s)
             posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
         }
     }
+//    qDebug() << "WebServiceRecovery::doNothing(WebServiceAtomState & s)";
 }
 
 WebServiceAction WebServiceRecovery::doNothing(int activityId)
@@ -846,6 +878,7 @@ WebServiceAction WebServiceRecovery::doNothing(int activityId)
 
 void WebServiceRecovery::terminate(WebServiceAtomState & s)
 {
+//    qDebug() << "WebServiceRecovery::terminate(WebServiceAtomState & s)...";
     WebServiceAction action = terminate(s.activityId);
     WebServiceAction *pAction = getAction(action);
     if (pAction == NULL)
@@ -869,6 +902,7 @@ void WebServiceRecovery::terminate(WebServiceAtomState & s)
         //        qDebug() << "actionState " << actionState[pAction->hash()][suffixState.hash()];
         posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
     }
+//    qDebug() << "WebServiceRecovery::terminate(WebServiceAtomState & s)";
 }
 
 WebServiceAction WebServiceRecovery::terminate(int activityId)

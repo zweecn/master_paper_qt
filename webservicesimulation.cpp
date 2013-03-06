@@ -30,6 +30,7 @@ WebServiceSimulation::~WebServiceSimulation()
 
 bool WebServiceSimulation::init()
 {
+    sg = NULL;
     currEvent = new WebServiceEvent();
     wsr = new WebServiceRecovery();
     wsf = &(wsr->getWebServiceFlow());
@@ -45,7 +46,7 @@ bool WebServiceSimulation::clearData()
 
 void WebServiceSimulation::run()
 {
-
+    autoRun();
 }
 
 void WebServiceSimulation::autoRun()
@@ -65,6 +66,7 @@ void WebServiceSimulation::autoRun()
 //        emit normalEventSignal();
 //        qDebug() << "At t =" << t << "...";
         printCurrState(t);
+        updatePainter();
         // [1] event
 //        eventWidgetMutex.lock();
         qDebug() << "Random event...";
@@ -74,8 +76,8 @@ void WebServiceSimulation::autoRun()
 //        eventWidgetMutex.unlock();
 
         // [2] update show
-//        bugActivities.insert(currEvent->a);
-//        updatePainter();
+        bugActivities.insert(currEvent->a);
+        updatePainter();
 //        bsw->setActivities(activities);
 
         // [3]
@@ -94,7 +96,8 @@ void WebServiceSimulation::autoRun()
         qDebug() << currEvent->toString() << currAction->toString();
         qDebug() << "recovery...";
         wsr->recovery(currAction);
-
+        bugActivities.clear();
+        updatePainter();
 
 //        actionWidgetMutex.lock();
 //        BusinessAction * action = operation(*currEvent);
@@ -126,7 +129,6 @@ void WebServiceSimulation::autoRun()
 
 //        updatePainter();
 //        bsw->setActivities(activities);
-        BusinessSimulation::sleepAMoment();
         // [7] next second
         t++;
     }
@@ -199,4 +201,37 @@ WebServiceAction* WebServiceSimulation::getBestAction()
     }
 //    qDebug() << "WebServiceSimulation::getBestAction() finished.";
     return &(res->action);
+}
+
+void WebServiceSimulation::setServiceGraph(ServiceGraph *_sg)
+{
+    sg = _sg;
+}
+
+// ¸üÐÂÏÔÊ¾
+void WebServiceSimulation::updatePainter()
+{
+    if (sg == NULL)
+    {
+        return;
+    }
+    QSet<int> & runningActivity = runningActivities;
+    QSet<int> & finishedActivity = finishedActivities;
+    QSet<int> & bugActivity = bugActivities;
+
+//    serviceGraphMutex.lock();
+    QList<QColor> colors = sg->getColors();
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
+        if (finishedActivity.contains(i)) {
+            colors[i].setRgb(0, 0, 255);
+        } else if (runningActivity.contains(i)) {
+            colors[i].setRgb(255, 255, 0);
+        } else if (bugActivity.contains(i)) {
+            colors[i].setRgb(255, 0, 0);
+        } else {
+            colors[i].setRgb(0, 255, 0);
+        }
+    }
+    sg->setColors(colors);
+//    serviceGraphMutex.unlock();
 }

@@ -29,7 +29,8 @@ void WebServiceActionWidget::createActionTable()
     actionTable->setColumnCount(columnCount);
     actionTable->setRowCount(WebServiceAction::ACTION_SIZE);
     QStringList header;
-    header << "动作类型" << "直接收益" << "潜在收益" << "成本消耗" << "时间延迟" << "继续概率" << "详细说明";
+    header << "动作类型" << "直接收益(Greedy)" << "潜在收益(MDP)"
+           << "成本消耗" << "时间延迟" << "继续概率" << "详细说明";
     actionTable->setHorizontalHeaderLabels(header);
     actionTable->horizontalHeader()->setStretchLastSection(true);
     actionTable->verticalHeader()->setHidden(true);
@@ -38,7 +39,7 @@ void WebServiceActionWidget::createActionTable()
     actionTable->setSelectionMode (QAbstractItemView::SingleSelection);
     actionTable->setSortingEnabled(false);
     actionTable->resizeColumnsToContents();
-//    actionTable->setColumnWidth(0, 150);
+    actionTable->setColumnWidth(0, 90);
 //    actionTable->setColumnWidth(1, 80);
 //    actionTable->resizeRowsToContents();
     for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)

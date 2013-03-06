@@ -3,6 +3,7 @@
 #include "webserviceflow.h"
 #include "webservicerecovery.h"
 #include "webserviceevent.h"
+#include "servicegraph.h"
 
 #include <QList>
 #include <QThread>
@@ -19,6 +20,8 @@ public:
 
     void autoRun();
 
+    void setServiceGraph(ServiceGraph *_sg);
+
 private:
     bool init();
     bool clearData();
@@ -27,6 +30,8 @@ private:
     WebServiceAction * getBestAction();
     void timePassed();
     void printCurrState(int t);
+
+    void updatePainter();
 
     WebServiceFlow * wsf;
     WebServiceRecovery * wsr;
@@ -40,6 +45,9 @@ private:
     WebServiceAction * currAction;
     QList<MarkovResultItem> markovResult;
     int selectActionId;
+
+    // UI
+    ServiceGraph *sg;
 };
 
 #endif // WEBSERVICESIMULATION_H
