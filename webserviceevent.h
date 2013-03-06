@@ -8,6 +8,8 @@ class WebServiceEvent
 public:
     WebServiceEvent();
 
+    bool operator ==(const WebServiceEvent & other);
+
     QString toString();
     QString name();
 

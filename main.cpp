@@ -16,6 +16,7 @@
 #include "webservicesimulation.h"
 #include "webserviceflow.h"
 #include "test.h"
+#include "webservicemainwidget.h"
 
 int main(int argc, char *argv[])
 {
@@ -42,8 +43,8 @@ int main(int argc, char *argv[])
     //    BusinessSimulation bs;
     //    bs.run();
 
-    //    BusinessMainWidget bmw;
-    //    bmw.show();
+//        BusinessMainWidget bmw;
+//        bmw.show();
 
     //    CriticalPath cp;
     //    cp.runExample();
@@ -54,9 +55,12 @@ int main(int argc, char *argv[])
     //    WebServiceFlow wsf;
     //    wsf.init();
 
-    Test t;
+//    Test t;
 
-    //    return a.exec();
+    WebServiceMainWidget w;
+    w.show();
 
-    return 0;
+    return a.exec();
+
+//    return 0;
 }

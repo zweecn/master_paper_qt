@@ -12,6 +12,8 @@ public:
     explicit ServiceGraph(QWidget *parent = 0);
     ~ServiceGraph();
 
+    void zoomOut(double multiple);
+
     void setPointsName(QList<QString>& _pointsName);
     void setPoints(QList<QPoint>& _points);
     void setColors(QList<QColor>& _colors);

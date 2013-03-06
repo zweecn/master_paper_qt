@@ -9,6 +9,11 @@ WebServiceEvent::WebServiceEvent()
 {
 }
 
+bool WebServiceEvent::operator ==(const WebServiceEvent & other)
+{
+    return t == other.t && type == other.type && a == other.a;
+}
+
 WebServiceEvent WebServiceEvent::random(int currTime, QSet<int>& runningActivities,
                                         QSet<int>& finishedActivities)
 {

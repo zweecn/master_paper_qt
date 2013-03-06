@@ -72,6 +72,18 @@ bool ServiceGraph::init()
     return true;
 }
 
+void ServiceGraph::zoomOut(double multiple)
+{
+    for (int i = 0; i < points.size(); i++) {
+        points[i].setX(points[i].x() * multiple);
+        points[i].setY(points[i].y() * multiple);
+    }
+    this->recommendHeight *= multiple;
+    this->recommendWidth *= multiple;
+
+    this->update();
+}
+
 void ServiceGraph::paintEvent(QPaintEvent *)
 {
     serviceGraphMutex.lock();

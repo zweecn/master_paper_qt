@@ -6,6 +6,7 @@
 #include "criticalpath.h"
 #include "webservicerecovery.h"
 #include "webservicesimulation.h"
+#include "webservicemainwidget.h"
 
 #include <ctime>
 #include <QDebug>
@@ -17,7 +18,8 @@ Test::Test()
 
 //    runLayerMarkovBackwardTest();
 //    runMarkovTest();
-    runWebServiceSimulation();
+//    runWebServiceSimulation();
+    runWebServiceMainWidgetTest();
 
     qDebug() << "Test::test() finished.";
 }
@@ -102,4 +104,10 @@ void Test::runWebServiceSimulation()
 {
     WebServiceSimulation wsm;
     wsm.autoRun();
+}
+
+void Test::runWebServiceMainWidgetTest()
+{
+    WebServiceMainWidget w;
+    w.show();
 }
