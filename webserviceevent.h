@@ -8,7 +8,7 @@ class WebServiceEvent
 public:
     WebServiceEvent();
 
-    bool operator ==(const WebServiceEvent & other);
+    bool operator ==(const WebServiceEvent & other) const;
 
     QString toString();
     QString name();

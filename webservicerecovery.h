@@ -31,13 +31,15 @@ public:
 
     WebServiceAction action;
     double potentialReward;
+    double successProbility;
     QList<WebServiceAtomState> suffixState;
     QList<double> suffixPosibility;
 
     QString toString()
     {
         QString res = action.toString();
-        res += QString(" PotentialReward:%1").arg(potentialReward);
+        res += QString(" PotentialReward:%1 SuccessProbility:%2")
+                .arg(potentialReward).arg(successProbility);
         res += QString(" Suffix:[");
         for (int i = 0; i < suffixState.size(); i++)
         {
@@ -76,7 +78,9 @@ private:
     bool initUtility();
     bool createStateTransTable();
     bool runMarkov();
-
+    QList<MarkovResultItem> doMarkovResult(WebServiceAtomState &state);
+    QList<MarkovResultItem>& doIfLastActivityError(QList<MarkovResultItem>& res,
+                                                   WebServiceAtomState &state);
     bool isActionStateHasTrue();
 
     void noNeedDo(WebServiceAtomState & s);

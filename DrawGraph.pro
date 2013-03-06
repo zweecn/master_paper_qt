@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     webservicerecovery.cpp \
     webserviceeventwidget.cpp \
     webserviceactionwidget.cpp \
-    webserviceflowinfowidget.cpp
+    webserviceflowinfowidget.cpp \
+    webserviceeventrecorditem.cpp
 
 HEADERS  += widget.h \
     drawgraph.h \
@@ -85,9 +86,12 @@ HEADERS  += widget.h \
     webservicerecovery.h \
     webserviceeventwidget.h \
     webserviceactionwidget.h \
-    webserviceflowinfowidget.h
+    webserviceflowinfowidget.h \
+    webserviceeventrecorditem.h
 
 FORMS    +=
+
+
 
 
 

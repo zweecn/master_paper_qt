@@ -17,6 +17,7 @@ class WebServiceMainWidget : public QWidget
     Q_OBJECT
 public:
     explicit WebServiceMainWidget(QWidget *parent = 0);
+    ~WebServiceMainWidget();
 
 signals:
 

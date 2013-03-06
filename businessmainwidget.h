@@ -17,6 +17,7 @@ class BusinessMainWidget : public QWidget
     Q_OBJECT
 public:
     explicit BusinessMainWidget(QWidget *parent = 0);
+    ~BusinessMainWidget();
 
 signals:
 

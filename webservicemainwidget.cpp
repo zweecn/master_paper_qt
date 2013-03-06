@@ -32,6 +32,11 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
 //    connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
 }
 
+WebServiceMainWidget::~WebServiceMainWidget()
+{
+    delete wss;
+}
+
 void WebServiceMainWidget::createFlowGroupBox()
 {
     flowGroupBox = new QGroupBox(tr("服务流程(Service Workflow)"));
@@ -100,10 +105,10 @@ void WebServiceMainWidget::autoRun()
     startButton->setEnabled(false);
     nextStepButton->setEnabled(false);
 
-//    wss->setAutoRun(true);
+    wss->setAutoRun(true);
     wss->setServiceGraph(sg);
-//    wss->setBusinessEventWidget(eventWidget);
-//    wss->setBusinessActionWidget(actionWidget);
-//    wss->setBusinessStateWidget(stateWidget);
+    wss->setWebServiceEventWidget(eventWidget);
+    wss->setWebServiceActionWidget(actionWidget);
+    wss->setWebServiceFlowInfoWidget(flowInfoWidget);
     wss->start();
 }

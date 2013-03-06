@@ -12,4 +12,6 @@ extern QMutex actionWidgetMutex;
 extern QMutex nextStepMutex;
 extern QMutex stateWidgetMutex;
 
+extern QMutex eventHistoryWidgetMutex;
+
 #endif // ALLMUTEX_H

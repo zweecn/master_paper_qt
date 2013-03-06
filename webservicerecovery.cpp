@@ -59,6 +59,15 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
     runMarkov();
 
 //    qDebug() << "runMarkov finished. Begin res 1...";
+
+    QList<MarkovResultItem> res = doMarkovResult(state);
+    qDebug() << "res finished.";
+    markovRuntime = clock() - startTime;
+    return res;
+}
+
+QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &state)
+{
     QList<MarkovResultItem> res;
     for (int j = 0; j < actionList.size(); j++)
     {
@@ -81,44 +90,34 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
         }
     }
 
-    qDebug() << "Begin res 2...";
+    // Cal succees probility
+    for (int i = 0; i < res.size(); i++)
+    {
+        res[i].successProbility = -1;
+        for (int j = 0; j < res[i].suffixPosibility.size(); j++)
+        {
+            if (res[i].successProbility < res[i].suffixPosibility[j]
+                    && res[i].suffixState[j].stateType != WebServiceAtomState::STOP
+                    && res[i].suffixState[j].stateType != WebServiceAtomState::FAIL)
+            {
+                res[i].successProbility = res[i].suffixPosibility[j];
+            }
+        }
+    }
+
+//    qDebug() << "Begin res 2...";
     // If the state fault is the last activity, special.
     if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
     {
-        for (int i = 0; i < res.size(); i++)
-        {
-            int p = wsf.activities[state.activityId].blindService->reliability;
-            if (res[i].action.type == WebServiceAction::TERMINATE)
-            {
-                p = 0;
-            }
-            else if (res[i].action.type == WebServiceAction::REPLACE
-                     || res[i].action.type == WebServiceAction::RE_COMPOSE)
-            {
-                int serviceId = wsf.activities[state.activityId].blindService->id;
-                if (!res[i].action.replaceList.isEmpty())
-                {
-                    serviceId = res[i].action.replaceList.first().newServiceId;
-                }
-                p = WorkFlow::Instance()->all_service[serviceId].reliability;
-            }
-
-            res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
-                                            (double)p/MAX_POSIBILITY);
-//            qDebug() << res[i].action.toString() << p << res[i].potentialReward
-//                     << wsf.activities[state.activityId].blindService->reliability;
-        }
+        doIfLastActivityError(res, state);
     }
-    qDebug() << "res finished.";
-    markovRuntime = clock() - startTime;
+
     return res;
 }
 
-WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
+QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovResultItem>& res,
+                                                                   WebServiceAtomState &state)
 {
-    QList<MarkovResultItem> res = getMarkovResult(state);
-    time_t startTime = clock();
-    MarkovResultItem * item = NULL;
     for (int i = 0; i < res.size(); i++)
     {
         int p = wsf.activities[state.activityId].blindService->reliability;
@@ -139,7 +138,21 @@ WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
 
         res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
                                         (double)p/MAX_POSIBILITY);
+        res[i].successProbility = (double)p/MAX_POSIBILITY;
+//            qDebug() << res[i].action.toString() << p << res[i].potentialReward
+//                     << wsf.activities[state.activityId].blindService->reliability;
+    }
+    return res;
+}
 
+WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
+{
+    QList<MarkovResultItem> res = getMarkovResult(state);
+    time_t startTime = clock();
+    doIfLastActivityError(res, state);
+    MarkovResultItem * item = NULL;
+    for (int i = 0; i < res.size(); i++)
+    {
         if (item == NULL || item->potentialReward < res[i].potentialReward)
         {
             item = &res[i];

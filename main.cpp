@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
     //    WebServiceFlow wsf;
     //    wsf.init();
 
-    Test t;
+//    Test t;
 
-//    WebServiceMainWidget w;
-//    w.show();
+    WebServiceMainWidget w;
+    w.show();
 
-//    return a.exec();
+    return a.exec();
 
-    return 0;
+//    return 0;
 }

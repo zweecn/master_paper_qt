@@ -40,6 +40,11 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
 }
 
+BusinessMainWidget::~BusinessMainWidget()
+{
+    delete bs;
+}
+
 void BusinessMainWidget::createFlowGroupBox()
 {
     flowGroupBox = new QGroupBox(tr("服务流程(Service Workflow)"));

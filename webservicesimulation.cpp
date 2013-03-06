@@ -31,6 +31,12 @@ WebServiceSimulation::~WebServiceSimulation()
 bool WebServiceSimulation::init()
 {
     sg = NULL;
+    wsew = NULL;
+    wsaw = NULL;
+    wsfiw = NULL;
+    bestPotentialReward = 0;
+    bestProbility = 0;
+    eventHistoryItem = new WebServiceEventRecordItem();
     currEvent = new WebServiceEvent();
     wsr = new WebServiceRecovery();
     wsf = &(wsr->getWebServiceFlow());
@@ -39,6 +45,7 @@ bool WebServiceSimulation::init()
 
 bool WebServiceSimulation::clearData()
 {
+    delete eventHistoryItem;
     delete currEvent;
     delete wsr;
     return true;
@@ -68,12 +75,12 @@ void WebServiceSimulation::autoRun()
         printCurrState(t);
         updatePainter();
         // [1] event
-//        eventWidgetMutex.lock();
+        eventWidgetMutex.lock();
         qDebug() << "Random event...";
         *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
         qDebug() << "event=" << currEvent->toString();
-//        bew->setEvent(currEvent);
-//        eventWidgetMutex.unlock();
+        wsew->setEvent(currEvent);
+        eventWidgetMutex.unlock();
 
         // [2] update show
         bugActivities.insert(currEvent->a);
@@ -93,7 +100,20 @@ void WebServiceSimulation::autoRun()
 
         if (currAction == NULL)
             break;
+
+        eventHistoryWidgetMutex.lock();
+        eventHistoryItem->action = *currAction;
+        eventHistoryItem->event = *currEvent;
+        eventHistoryItem->potentialReward = bestPotentialReward;
+        eventHistoryItem->probility = bestProbility;
+        wsew->addWebServiceEventRecordItem(eventHistoryItem);
+        eventHistoryWidgetMutex.unlock();
+
+
         qDebug() << currEvent->toString() << currAction->toString();
+
+
+
         qDebug() << "recovery...";
         wsr->recovery(currAction);
         bugActivities.clear();
@@ -127,7 +147,7 @@ void WebServiceSimulation::autoRun()
         printCurrState(t);
 //        stateWidgetMutex.unlock();
 
-//        updatePainter();
+        updatePainter();
 //        bsw->setActivities(activities);
         // [7] next second
         t++;
@@ -200,6 +220,8 @@ WebServiceAction* WebServiceSimulation::getBestAction()
         }
     }
 //    qDebug() << "WebServiceSimulation::getBestAction() finished.";
+    bestPotentialReward = res->potentialReward;
+    bestProbility = res->successProbility;
     return &(res->action);
 }
 
@@ -219,7 +241,7 @@ void WebServiceSimulation::updatePainter()
     QSet<int> & finishedActivity = finishedActivities;
     QSet<int> & bugActivity = bugActivities;
 
-//    serviceGraphMutex.lock();
+    serviceGraphMutex.lock();
     QList<QColor> colors = sg->getColors();
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++) {
         if (finishedActivity.contains(i)) {
@@ -233,5 +255,25 @@ void WebServiceSimulation::updatePainter()
         }
     }
     sg->setColors(colors);
-//    serviceGraphMutex.unlock();
+    serviceGraphMutex.unlock();
+}
+
+void WebServiceSimulation::setWebServiceEventWidget(WebServiceEventWidget* _wsew)
+{
+    wsew = _wsew;
+}
+
+void WebServiceSimulation::setWebServiceActionWidget(WebServiceActionWidget* _wsaw)
+{
+    wsaw = _wsaw;
+}
+
+void WebServiceSimulation::setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget* _wsfiw)
+{
+    wsfiw = _wsfiw;
+}
+
+void WebServiceSimulation::setAutoRun(bool _isAutoRun)
+{
+    isAutoRun = _isAutoRun;
 }

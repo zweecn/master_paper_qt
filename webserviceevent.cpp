@@ -9,7 +9,7 @@ WebServiceEvent::WebServiceEvent()
 {
 }
 
-bool WebServiceEvent::operator ==(const WebServiceEvent & other)
+bool WebServiceEvent::operator ==(const WebServiceEvent & other) const
 {
     return t == other.t && type == other.type && a == other.a;
 }

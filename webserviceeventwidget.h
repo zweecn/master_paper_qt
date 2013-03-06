@@ -8,6 +8,7 @@
 
 #include "allmutex.h"
 #include "webserviceevent.h"
+#include "webserviceeventrecorditem.h"
 
 class QTableWidget;
 class WebServiceEvent;
@@ -20,12 +21,15 @@ public:
     explicit WebServiceEventWidget(QWidget *parent = 0);
 
     void setEvent(WebServiceEvent *_event);
+    void addWebServiceEventRecordItem(WebServiceEventRecordItem* _eventHistoryItem);
     WebServiceEvent * getEvent();
 
 signals:
     void updateEventSignal();
+    void updateHistoryEventSignal();
 public slots:
     void updateEvent();
+    void updateHistoryEvent();
 private:
     void createEventTable();
     void createHistoryEventTable();
@@ -35,10 +39,10 @@ private:
     QLabel *currEventLabel;
     QLabel *historyEventLabel;
 
-    QList<WebServiceEvent> historyEventList;
-
+//    QList<WebServiceEvent> historyEventList;
+    QList<WebServiceEventRecordItem> historyEventList;
     WebServiceEvent *event;
-
+    WebServiceEventRecordItem *eventHistoryItem;
 };
 
 #endif // WEBSERVICEEVENTWIDGET_H

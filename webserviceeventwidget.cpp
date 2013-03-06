@@ -73,37 +73,31 @@ void WebServiceEventWidget::updateEvent()
     eventTable->item(0, 0)->setText(tr("%1").arg(event->t));
     eventTable->item(0, 1)->setText(tr("%1").arg(event->a));
     eventTable->item(0, 2)->setText(event->name());
-
-    bool flag = false;
-    for (int i = 0; i < historyEventList.size(); i++) {
-        if (historyEventList[i] == *event) {
-            flag = true;
-            break;
-        }
-    }
-    if (!flag) {
-        historyEventList.append(*event);
-    }
-
-    historyEventTable->setRowCount(historyEventList.size());
-    for (int i = 0; i < historyEventTable->rowCount(); i++) {
-        for (int j = 0; j < historyEventTable->columnCount(); j++) {
-            if (historyEventTable->item(i, j) == (QTableWidgetItem*)NULL) {
-                historyEventTable->setItem(i, j, new QTableWidgetItem());
-                historyEventTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
-            }
-        }
-        historyEventTable->item(i, 0)->setText(tr("%1").arg(historyEventList[i].t));
-        historyEventTable->item(i, 1)->setText(tr("%1").arg(historyEventList[i].a));
-        historyEventTable->item(i, 2)->setText(historyEventList[i].name());
-        historyEventTable->item(i, 3)->setText(tr(""));
-        historyEventTable->item(i, 4)->setText(tr(""));
-        historyEventTable->item(i, 5)->setText(tr(""));
-        historyEventTable->item(i, 6)->setText(tr(""));
-        historyEventTable->item(i, 7)->setText(tr(""));
-    }
     qDebug() << "WebServiceEventWidget::updateEvent() finished.";
     eventWidgetMutex.unlock();
+}
+
+void WebServiceEventWidget::updateHistoryEvent()
+{
+    eventHistoryWidgetMutex.lock();
+//    historyEventTable->setRowCount(historyEventList.size());
+//    for (int i = 0; i < historyEventTable->rowCount(); i++) {
+//        for (int j = 0; j < historyEventTable->columnCount(); j++) {
+//            if (historyEventTable->item(i, j) == (QTableWidgetItem*)NULL) {
+//                historyEventTable->setItem(i, j, new QTableWidgetItem());
+//                historyEventTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
+//            }
+//        }
+//        historyEventTable->item(i, 0)->setText(tr("%1").arg(historyEventList[i].t));
+//        historyEventTable->item(i, 1)->setText(tr("%1").arg(historyEventList[i].a));
+//        historyEventTable->item(i, 2)->setText(historyEventList[i].name());
+//        historyEventTable->item(i, 3)->setText(tr(""));
+//        historyEventTable->item(i, 4)->setText(tr(""));
+//        historyEventTable->item(i, 5)->setText(tr(""));
+//        historyEventTable->item(i, 6)->setText(tr(""));
+//        historyEventTable->item(i, 7)->setText(tr(""));
+//    }
+    eventHistoryWidgetMutex.unlock();
 }
 
 void WebServiceEventWidget::setEvent(WebServiceEvent *_event)
@@ -115,4 +109,19 @@ void WebServiceEventWidget::setEvent(WebServiceEvent *_event)
 WebServiceEvent * WebServiceEventWidget::getEvent()
 {
     return event;
+}
+
+void WebServiceEventWidget::addWebServiceEventRecordItem(WebServiceEventRecordItem* _eventHistoryItem)
+{
+    bool flag = false;
+    for (int i = 0; i < historyEventList.size(); i++) {
+        if (historyEventList[i] == (*_eventHistoryItem)) {
+            flag = true;
+            break;
+        }
+    }
+    if (!flag) {
+        historyEventList.append(*_eventHistoryItem);
+    }
+    emit updateHistoryEventSignal();
 }

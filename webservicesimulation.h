@@ -4,6 +4,9 @@
 #include "webservicerecovery.h"
 #include "webserviceevent.h"
 #include "servicegraph.h"
+#include "webserviceeventwidget.h"
+#include "webserviceactionwidget.h"
+#include "webserviceflowinfowidget.h"
 
 #include <QList>
 #include <QThread>
@@ -21,6 +24,10 @@ public:
     void autoRun();
 
     void setServiceGraph(ServiceGraph *_sg);
+    void setWebServiceEventWidget(WebServiceEventWidget* _wsew);
+    void setWebServiceActionWidget(WebServiceActionWidget* _wsaw);
+    void setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget* _wsfiw);
+    void setAutoRun(bool _isAutoRun);
 
 private:
     bool init();
@@ -42,12 +49,20 @@ private:
 
     // Below is the data should be lock when they are read/write
     WebServiceEvent * currEvent;
+    WebServiceEventRecordItem * eventHistoryItem;
     WebServiceAction * currAction;
     QList<MarkovResultItem> markovResult;
+    double bestPotentialReward;
+    double bestProbility;
     int selectActionId;
+
 
     // UI
     ServiceGraph *sg;
+    WebServiceEventWidget* wsew;
+    WebServiceActionWidget* wsaw;
+    WebServiceFlowInfoWidget* wsfiw;
+    bool isAutoRun;
 };
 
 #endif // WEBSERVICESIMULATION_H
