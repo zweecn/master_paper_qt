@@ -5,12 +5,17 @@
 #include "webserviceevent.h"
 
 #include <QList>
+#include <QThread>
 
-class WebServiceSimulation
+class WebServiceSimulation : public  QThread
 {
+    Q_OBJECT
+
 public:
     WebServiceSimulation();
     ~WebServiceSimulation();
+
+    void run();
 
     void autoRun();
 

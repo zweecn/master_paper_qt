@@ -56,6 +56,9 @@ public:
 
     QList<MarkovResultItem> getMarkovResult(WebServiceAtomState &state);
     WebServiceAction getGreedyResult(WebServiceAtomState &state);
+
+    time_t getMarkovRuntime();
+    time_t getGreedyRuntime();
     double reward(int dc, int dt, double p);
 
     WebServiceFlow& getWebServiceFlow();
@@ -117,6 +120,9 @@ private:
 
     int maxStateSize;
     int maxActionSize;
+
+    time_t markovRuntime;
+    time_t greedyRuntime;
 };
 
 #endif // WEBSERVICERECOVERY_H

@@ -73,6 +73,6 @@ QString WebServiceEvent::name()
 
 QString WebServiceEvent::toString()
 {
-    QString res(QString("Event: [%1 %2 %3]").arg(t).arg(a).arg(name()));
+    QString res(QString("Event: [T%1 A%2 %3]").arg(t).arg(a).arg(name()));
     return res;
 }

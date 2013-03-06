@@ -89,7 +89,7 @@ QString WebServiceFlow::toString()
     QString res = "[";
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
     {
-        res += QString("%1:%2:%3 ")
+        res += QString("A%1:S%2,X%3 ")
                 .arg(activities[i].number)
                 .arg(activities[i].blindService->id)
                 .arg(activities[i].x);

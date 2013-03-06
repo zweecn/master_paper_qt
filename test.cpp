@@ -16,8 +16,8 @@ Test::Test()
     qDebug() << "Test::Test() ...";
 
 //    runLayerMarkovBackwardTest();
-    runMarkovTest();
-//    runWebServiceSimulation();
+//    runMarkovTest();
+    runWebServiceSimulation();
 
     qDebug() << "Test::test() finished.";
 }
@@ -86,14 +86,16 @@ void Test::runMarkovTest()
 {
     WebServiceRecovery wsr;
     WebServiceAtomState s;
-    s.activityId = 3;
-    s.stateType = WebServiceAtomState::FINISH_U;
+    s.activityId = 0;
+    s.stateType = WebServiceAtomState::FAIL;
     QList<MarkovResultItem> result = wsr.getMarkovResult(s);
     qDebug() << "result.size() =" << result.size();
     for (int i = 0; i < result.size(); i++)
     {
         qDebug() << result[i].toString();
     }
+    wsr.recovery(&result[1].action);
+
 }
 
 void Test::runWebServiceSimulation()

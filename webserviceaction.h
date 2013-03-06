@@ -55,6 +55,7 @@ public:
 
     enum
     {
+        NOT_ACTION = -1,
         NO_NEED_DO = 0,
         TERMINATE = 1,
         DO_NOTHING = 2,

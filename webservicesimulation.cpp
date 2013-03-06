@@ -17,7 +17,7 @@
 #include <climits>
 #include <iostream>
 
-WebServiceSimulation::WebServiceSimulation()
+WebServiceSimulation::WebServiceSimulation() : QThread()
 {
     init();
 }
@@ -43,6 +43,11 @@ bool WebServiceSimulation::clearData()
     return true;
 }
 
+void WebServiceSimulation::run()
+{
+
+}
+
 void WebServiceSimulation::autoRun()
 {
     qDebug() << "WebServiceSimulation::autoRun() ...";
@@ -58,11 +63,13 @@ void WebServiceSimulation::autoRun()
     while (!isFinished())
     {
 //        emit normalEventSignal();
-        qDebug() << "At t =" << t << "...";
-
+//        qDebug() << "At t =" << t << "...";
+        printCurrState(t);
         // [1] event
 //        eventWidgetMutex.lock();
+        qDebug() << "Random event...";
         *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        qDebug() << "event=" << currEvent->toString();
 //        bew->setEvent(currEvent);
 //        eventWidgetMutex.unlock();
 
@@ -75,14 +82,19 @@ void WebServiceSimulation::autoRun()
         WebServiceAtomState state;
         state.activityId = currEvent->a;
         state.stateType = currEvent->type;
+        qDebug() << "state=" << state.toString();
+        qDebug() << "getMarkovresult...";
         markovResult = wsr->getMarkovResult(state);
+
+        qDebug() << "getBestAction...";
         currAction = getBestAction();
 
         if (currAction == NULL)
             break;
         qDebug() << currEvent->toString() << currAction->toString();
+        qDebug() << "recovery...";
         wsr->recovery(currAction);
-        printCurrState(t);
+
 
 //        actionWidgetMutex.lock();
 //        BusinessAction * action = operation(*currEvent);
@@ -107,6 +119,7 @@ void WebServiceSimulation::autoRun()
 //        bugActivities.clear();
 
 //        stateWidgetMutex.lock();
+        qDebug() << "timePassed...";
         timePassed();
         printCurrState(t);
 //        stateWidgetMutex.unlock();
@@ -171,19 +184,19 @@ void WebServiceSimulation::printCurrState(int t)
 
 WebServiceAction* WebServiceSimulation::getBestAction()
 {
-    qDebug() << "WebServiceSimulation::getBestAction() ...";
+//    qDebug() << "WebServiceSimulation::getBestAction() ...";
     if (markovResult.isEmpty())
         return NULL;
 
     MarkovResultItem * res = NULL;
     for (int i = 0; i < markovResult.size(); i++)
     {
-        qDebug() << markovResult[i].toString();
+//        qDebug() << markovResult[i].toString();
         if (res == NULL || res->potentialReward < markovResult[i].potentialReward)
         {
             res = &markovResult[i];
         }
     }
-    qDebug() << "WebServiceSimulation::getBestAction() finished.";
+//    qDebug() << "WebServiceSimulation::getBestAction() finished.";
     return &(res->action);
 }

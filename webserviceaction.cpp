@@ -121,7 +121,7 @@ QString WebServiceAction::toString()
     {
 
         const ReplaceNode & node = it.next();
-        res += QString(" %1:%2->%3 ")
+        res += QString(" A%1:S%2->S%3 ")
                         .arg(node.activityId)
                         .arg(node.oldServiceId)
                         .arg(node.newServiceId);
