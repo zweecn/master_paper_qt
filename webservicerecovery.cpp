@@ -49,21 +49,13 @@ void WebServiceRecovery::runTest()
 QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState &state)
 {
     time_t startTime = clock();
-//    qDebug() << "Begin init...";
     init();
-//    qDebug() << "Init finished. Begin createStateTransTable...";
     createStateTransTable();
-//    qDebug() << "Init createStateTransTable. Begin initUtility...";
     initUtility();
-//    qDebug() << "initUtility finished. Begin runMarkov...";
     runMarkov();
-
-//    qDebug() << "runMarkov finished. Begin res 1...";
-
-    QList<MarkovResultItem> res = doMarkovResult(state);
-    qDebug() << "res finished.";
+    markovResult = doMarkovResult(state);
     markovRuntime = clock() - startTime;
-    return res;
+    return markovResult;
 }
 
 QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &state)
@@ -132,23 +124,16 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
         }
     }
 
-    // If the state fault is the last activity, special.
-//    if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
-//    {
-//        doIfLastActivityError(res, state);
-//    }
-
     return res;
 }
 
-QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovResultItem>& res,
-                                                                   WebServiceAtomState &state)
+WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
 {
+    QList<MarkovResultItem> res = getMarkovResult(state);
+    time_t startTime = clock();
     for (int i = 0; i < res.size(); i++)
     {
         int p = wsf.activities[state.activityId].blindService->reliability;
-        int dcAdd = 0;
-        int dtAdd = 0;
         if (res[i].action.type == WebServiceAction::TERMINATE)
         {
             p = 0;
@@ -157,31 +142,19 @@ QList<MarkovResultItem>& WebServiceRecovery::doIfLastActivityError(QList<MarkovR
                  || res[i].action.type == WebServiceAction::RE_COMPOSE)
         {
             int serviceId = wsf.activities[state.activityId].blindService->id;
-            dcAdd = WorkFlow::Instance()->all_service[serviceId].price;
-            dtAdd = WorkFlow::Instance()->all_service[serviceId].execTime;
             if (!res[i].action.replaceList.isEmpty())
             {
                 serviceId = res[i].action.replaceList.first().newServiceId;
+
             }
             p = WorkFlow::Instance()->all_service[serviceId].reliability;
         }
-
-        // This is diff with Cal succees probility
+        // ReCal potentialReward with currAction dc and dt.
+        // Not only the state fault is the last activity, special.
         res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,
-                                        (double)p/MAX_POSIBILITY);
-
-        res[i].successProbility = (double)p/MAX_POSIBILITY;
-        res[i].action.dc += dcAdd;
-        res[i].action.dt += dtAdd;
+                                            (double)p/MAX_POSIBILITY);
     }
-    return res;
-}
 
-WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
-{
-    QList<MarkovResultItem> res = getMarkovResult(state);
-    time_t startTime = clock();
-    doIfLastActivityError(res, state);
     MarkovResultItem * item = NULL;
     for (int i = 0; i < res.size(); i++)
     {

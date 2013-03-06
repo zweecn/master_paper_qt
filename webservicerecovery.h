@@ -79,8 +79,7 @@ private:
     bool createStateTransTable();
     bool runMarkov();
     QList<MarkovResultItem> doMarkovResult(WebServiceAtomState &state);
-    QList<MarkovResultItem>& doIfLastActivityError(QList<MarkovResultItem>& res,
-                                                   WebServiceAtomState &state);
+
     bool isActionStateHasTrue();
 
     void noNeedDo(WebServiceAtomState & s);
@@ -107,6 +106,7 @@ private:
 
     QList<WebServiceAtomState> stateList;
     QList<WebServiceAction> actionList;
+    QList<MarkovResultItem> markovResult;
     WebServiceFlow wsf;
 
     int ** stateAction;
