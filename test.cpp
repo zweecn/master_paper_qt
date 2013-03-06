@@ -17,8 +17,8 @@ Test::Test()
     qDebug() << "Test::Test() ...";
 
 //    runLayerMarkovBackwardTest();
-//    runMarkovTest();
-    runWebServiceSimulation();
+    runMarkovTest();
+//    runWebServiceSimulation();
 
     qDebug() << "Test::test() finished.";
 }
@@ -95,7 +95,7 @@ void Test::runMarkovTest()
     {
         qDebug() << result[i].toString();
     }
-    wsr.recovery(&result[1].action);
+//    wsr.recovery(&result[1].action);
 
 }
 

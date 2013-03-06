@@ -90,20 +90,40 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
         }
     }
 
-    // Cal succees probility
     for (int i = 0; i < res.size(); i++)
     {
-        res[i].successProbility = -1;
-        for (int j = 0; j < res[i].suffixPosibility.size(); j++)
+        int p = wsf.activities[state.activityId].blindService->reliability;
+        if (res[i].action.type == WebServiceAction::TERMINATE)
         {
-            if (res[i].successProbility < res[i].suffixPosibility[j]
-                    && res[i].suffixState[j].stateType != WebServiceAtomState::STOP
-                    && res[i].suffixState[j].stateType != WebServiceAtomState::FAIL)
-            {
-                res[i].successProbility = res[i].suffixPosibility[j];
-            }
+            p = 0;
         }
+        else if (res[i].action.type == WebServiceAction::REPLACE
+                 || res[i].action.type == WebServiceAction::RE_COMPOSE)
+        {
+            int serviceId = wsf.activities[state.activityId].blindService->id;
+            if (!res[i].action.replaceList.isEmpty())
+            {
+                serviceId = res[i].action.replaceList.first().newServiceId;
+            }
+            p = WorkFlow::Instance()->all_service[serviceId].reliability;
+        }
+        res[i].successProbility = (double)p/MAX_POSIBILITY;
     }
+
+    // Cal succees probility
+//    for (int i = 0; i < res.size(); i++)
+//    {
+//        res[i].successProbility = -1;
+//        for (int j = 0; j < res[i].suffixPosibility.size(); j++)
+//        {
+//            if (res[i].successProbility < res[i].suffixPosibility[j]
+//                    && res[i].suffixState[j].stateType != WebServiceAtomState::STOP
+//                    && res[i].suffixState[j].stateType != WebServiceAtomState::FAIL)
+//            {
+//                res[i].successProbility = res[i].suffixPosibility[j];
+//            }
+//        }
+//    }
 
 //    qDebug() << "Begin res 2...";
     // If the state fault is the last activity, special.

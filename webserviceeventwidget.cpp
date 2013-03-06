@@ -18,6 +18,7 @@ WebServiceEventWidget::WebServiceEventWidget(QWidget *parent) :
     resize(400, 300);
 
     connect(this, SIGNAL(updateEventSignal()), this, SLOT(updateEvent()));
+    connect(this, SIGNAL(updateHistoryEventSignal()), this, SLOT(updateHistoryEvent()));
 }
 
 void WebServiceEventWidget::createEventTable()
@@ -50,7 +51,7 @@ void WebServiceEventWidget::createHistoryEventTable()
     historyEventTable->setColumnCount(columnCount);
     historyEventTable->setRowCount(1);
     QStringList header;
-    header << "时间编号" << "活动编号" << "不确定性事件类型" << "已采取动作" << "潜在收益"
+    header << "时间编号" << "活动编号" << "事件类型" << "已采取的动作" << "潜在收益"
            << "成本消耗" << "时间延迟" << "成功概率";
     historyEventTable->setHorizontalHeaderLabels(header);
     historyEventTable->horizontalHeader()->setStretchLastSection(true);
@@ -80,23 +81,23 @@ void WebServiceEventWidget::updateEvent()
 void WebServiceEventWidget::updateHistoryEvent()
 {
     eventHistoryWidgetMutex.lock();
-//    historyEventTable->setRowCount(historyEventList.size());
-//    for (int i = 0; i < historyEventTable->rowCount(); i++) {
-//        for (int j = 0; j < historyEventTable->columnCount(); j++) {
-//            if (historyEventTable->item(i, j) == (QTableWidgetItem*)NULL) {
-//                historyEventTable->setItem(i, j, new QTableWidgetItem());
-//                historyEventTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
-//            }
-//        }
-//        historyEventTable->item(i, 0)->setText(tr("%1").arg(historyEventList[i].t));
-//        historyEventTable->item(i, 1)->setText(tr("%1").arg(historyEventList[i].a));
-//        historyEventTable->item(i, 2)->setText(historyEventList[i].name());
-//        historyEventTable->item(i, 3)->setText(tr(""));
-//        historyEventTable->item(i, 4)->setText(tr(""));
-//        historyEventTable->item(i, 5)->setText(tr(""));
-//        historyEventTable->item(i, 6)->setText(tr(""));
-//        historyEventTable->item(i, 7)->setText(tr(""));
-//    }
+    historyEventTable->setRowCount(historyEventList.size());
+    for (int i = 0; i < historyEventTable->rowCount(); i++) {
+        for (int j = 0; j < historyEventTable->columnCount(); j++) {
+            if (historyEventTable->item(i, j) == (QTableWidgetItem*)NULL) {
+                historyEventTable->setItem(i, j, new QTableWidgetItem());
+                historyEventTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
+            }
+        }
+        historyEventTable->item(i, 0)->setText(tr("%1").arg(historyEventList[i].event.t));
+        historyEventTable->item(i, 1)->setText(tr("%1").arg(historyEventList[i].event.a));
+        historyEventTable->item(i, 2)->setText(historyEventList[i].event.name());
+        historyEventTable->item(i, 3)->setText(historyEventList[i].action.name());
+        historyEventTable->item(i, 4)->setText(tr("%1").arg(historyEventList[i].potentialReward));
+        historyEventTable->item(i, 5)->setText(tr("%1").arg(historyEventList[i].action.dc));
+        historyEventTable->item(i, 6)->setText(tr("%1").arg(historyEventList[i].action.dt));
+        historyEventTable->item(i, 7)->setText(tr("%1").arg(historyEventList[i].probility));
+    }
     eventHistoryWidgetMutex.unlock();
 }
 
