@@ -283,7 +283,10 @@ bool WebServiceRecovery::runMarkov()
             if (sumP != 0 && actionUtility[actionList[i].getId()] < actionUtilityTemp)
             {
                 //                qDebug() << "actionUtilityTemp =" << actionUtilityTemp << sumP;
-                actionUtility[actionList[i].getId()] = actionUtilityTemp;
+//                actionUtility[actionList[i].getId()] = actionUtilityTemp;
+                actionUtility[actionList[i].getId()] = actionUtilityTemp
+                        - actionList[i].dc
+                        - actionList[i].dt * Config::Instance()->getPuinishmentPerSecond();
             }
         }
 
@@ -497,27 +500,25 @@ void WebServiceRecovery::noNeedDo(WebServiceAtomState & s)
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
                     = wsf.activities[s.activityId].blindService->reliability;
-            //            qDebug() << pAction->getId() << suffixState.getId()
-            //                     << actionState[pAction->getId()][suffixState.getId()];
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_N)
         {
             suffixState.stateType = WebServiceAtomState::READY_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
-            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
+            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
 
             suffixState.stateType = WebServiceAtomState::READY_N;
             actionState[pAction->getId()][suffixState.getId()] = 1;
-            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
+            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
         }
     }
 }
@@ -563,24 +564,24 @@ void WebServiceRecovery::recomposite(WebServiceAtomState & s)
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    = (MAX_POSIBILITY - WorkFlow::Instance()
+                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    = (MAX_POSIBILITY - WorkFlow::Instance()
+                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_U)
         {
             suffixState.stateType = WebServiceAtomState::READY_N;
             actionState[pAction->getId()][suffixState.getId()] = 1;
-            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
+            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
 
             suffixState.stateType = WebServiceAtomState::READY_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
-            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY;
+            posibility[pAction->getId()][suffixState.getId()] = MAX_POSIBILITY / 2;
         }
     }
 }
@@ -634,11 +635,11 @@ void WebServiceRecovery::retry(WebServiceAtomState & s)
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
         }
     }
 }
@@ -684,14 +685,14 @@ void WebServiceRecovery::replace(WebServiceAtomState & s)
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    = (MAX_POSIBILITY - WorkFlow::Instance()
+                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - WorkFlow::Instance()
-                    ->all_service[action.replaceList.first().newServiceId].reliability;
+                    = (MAX_POSIBILITY - WorkFlow::Instance()
+                    ->all_service[action.replaceList.first().newServiceId].reliability) / 2;
         }
     }
 }
@@ -750,12 +751,12 @@ void WebServiceRecovery::doNothing(WebServiceAtomState & s)
             suffixState.stateType = WebServiceAtomState::FINISH_U;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
 
             suffixState.stateType = WebServiceAtomState::FAIL;
             actionState[pAction->getId()][suffixState.getId()] = 1;
             posibility[pAction->getId()][suffixState.getId()]
-                    = MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability;
+                    = (MAX_POSIBILITY - wsf.activities[s.activityId].blindService->reliability) / 2;
         }
         else if (s.stateType == WebServiceAtomState::FINISH_U)
         {
