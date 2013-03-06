@@ -83,7 +83,7 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
         }
     }
 
-    // Cal succees probility, add dc/dt when the service is already exec.
+    // Cal succees probility, direct reward. add dc/dt when the service is already exec.
     for (int i = 0; i < res.size(); i++)
     {
         int p = wsf.activities[state.activityId].blindService->reliability;
@@ -118,8 +118,9 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
             res[i].successProbility = 0;
         res[i].action.dc += dcAdd;
         res[i].action.dt += dtAdd;
+        res[i].directReward = reward(res[i].action.dc, res[i].action.dt,(double)p/MAX_POSIBILITY);
 
-        // If the state fault is the last activity, special.
+        // If the state fault is the last activity, special. Equals to derect reward
         if (state.activityId == WorkFlow::Instance()->getActivitySize() - 1)
         {
             res[i].potentialReward = reward(res[i].action.dc, res[i].action.dt,

@@ -22,12 +22,15 @@ public:
     void run();
 
     void autoRun();
+    void manualRun();
 
     void setServiceGraph(ServiceGraph *_sg);
     void setWebServiceEventWidget(WebServiceEventWidget* _wsew);
     void setWebServiceActionWidget(WebServiceActionWidget* _wsaw);
     void setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget* _wsfiw);
     void setAutoRun(bool _isAutoRun);
+    void setSelectActionId(int _selectActionId);
+    void setSleepMSecond(int _sleepMSecond);
 
 private:
     bool init();
@@ -55,7 +58,7 @@ private:
     double bestPotentialReward;
     double bestProbility;
     int selectActionId;
-
+    int sleepMSecond;
 
     // UI
     ServiceGraph *sg;

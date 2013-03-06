@@ -9,3 +9,4 @@ QMutex nextStepMutex;
 QMutex stateWidgetMutex;
 
 QMutex eventHistoryWidgetMutex;
+QMutex serviceFlowInfoWidgetMutex;

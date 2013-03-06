@@ -11,6 +11,7 @@
 class QPushButton;
 class QGroupBox;
 class WebServiceFlowInfoWidget;
+class QLineEdit;
 
 class WebServiceMainWidget : public QWidget
 {
@@ -23,6 +24,12 @@ signals:
 
 public slots:
     void autoRun();
+
+    void manualRun();
+    void nextStep();
+
+    void enableNextStepButton();
+    void disableNextStepButton();
 
 private:
     void createFlowGroupBox();
@@ -46,6 +53,8 @@ private:
     QPushButton *autoStartButton;
     QPushButton *startButton;
     QPushButton *nextStepButton;
+    QLineEdit *sleepEdit;
+    QLabel *sleepLabel;
 
     void init();
     ServiceGraph *sg;

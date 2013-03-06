@@ -1,6 +1,7 @@
 #ifndef WEBSERVICEACTIONWIDGET_H
 #define WEBSERVICEACTIONWIDGET_H
 #include "webserviceaction.h"
+#include "webservicerecovery.h"
 
 #include <QWidget>
 #include <QMutex>
@@ -14,6 +15,8 @@ class WebServiceActionWidget : public QWidget
     Q_OBJECT
 public:
     explicit WebServiceActionWidget(QWidget *parent = 0);
+
+    void setMarkovResult(QList<MarkovResultItem>& _markovResult);
 
     void setWebServiceAction(WebServiceAction* _actions);
     void setAutoWebServiceAction(WebServiceAction* _autoAction);
@@ -32,10 +35,13 @@ private:
     void createActionTable();
 
     QTableWidget* actionTable;
-    QLabel* autoActionLabel;
+    QLabel* markovActionLabel;
+    QLabel* greedyActionLabel;
 
     WebServiceAction *actions;
     WebServiceAction *autoAction;
+
+    QList<MarkovResultItem> markovResult;
 };
 
 #endif // WEBSERVICEACTIONWIDGET_H

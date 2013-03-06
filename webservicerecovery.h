@@ -14,6 +14,7 @@ public:
     {
         action = other.action;
         potentialReward = other.potentialReward;
+        directReward = other.directReward;
         suffixState = other.suffixState;
         suffixPosibility = other.suffixPosibility;
         successProbility = other.successProbility;
@@ -25,6 +26,7 @@ public:
             return *this;
         action = other.action;
         potentialReward = other.potentialReward;
+        directReward = other.directReward;
         suffixState = other.suffixState;
         suffixPosibility = other.suffixPosibility;
         successProbility = other.successProbility;
@@ -32,6 +34,7 @@ public:
     }
 
     WebServiceAction action;
+    double directReward;
     double potentialReward;
     double successProbility;
     QList<WebServiceAtomState> suffixState;
@@ -74,6 +77,13 @@ public:
     void printPosibility();
     void printResult();
     void printFirstStateResult();
+
+    enum
+    {
+        MIN_POSIBILITY = 0,
+        MAX_POSIBILITY = 100
+    };
+
 private:
     bool clearData();
     bool init();
@@ -114,12 +124,6 @@ private:
     int ** stateAction;
     int ** actionState;
     int ** posibility;
-
-    enum
-    {
-        MIN_POSIBILITY = 0,
-        MAX_POSIBILITY = 100
-    };
 
     double * actionUtility;
     double * stateUtility;

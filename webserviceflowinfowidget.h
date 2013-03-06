@@ -1,6 +1,8 @@
 #ifndef WEBSERVICEFLOWINFOWIDGET_H
 #define WEBSERVICEFLOWINFOWIDGET_H
 
+#include "webserviceflow.h"
+
 #include <QWidget>
 #include <QMutex>
 
@@ -13,18 +15,21 @@ class WebServiceFlowInfoWidget : public QWidget
 public:
     explicit WebServiceFlowInfoWidget(QWidget *parent = 0);
 
+    void setWebServiceFlow(WebServiceFlow * _wsf);
 
 signals:
-
+    void updateFlowInfoTableSignal();
 
 public slots:
-
+    void updateFlowInfo();
 
 private:
     void createFlowInfoTable();
 
     QTableWidget* flowInfoTable;
     QLabel* flowInfoLabel;
+
+    WebServiceFlow *wsf;
 
 };
 

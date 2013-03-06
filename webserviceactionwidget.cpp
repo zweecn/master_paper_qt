@@ -11,9 +11,10 @@ WebServiceActionWidget::WebServiceActionWidget(QWidget *parent) :
 {
     createActionTable();
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(autoActionLabel);
-    mainLayout->addWidget(actionTable);
+    QGridLayout *mainLayout = new QGridLayout;
+    mainLayout->addWidget(markovActionLabel, 0, 0);
+    mainLayout->addWidget(greedyActionLabel, 0, 1);
+    mainLayout->addWidget(actionTable, 1, 0, 1, 2);
     setLayout(mainLayout);
 
     setWindowTitle(tr("软件服务不确定事件动作"));
@@ -50,44 +51,63 @@ void WebServiceActionWidget::createActionTable()
             actionTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
         }
     }
-//    QList<QString> nameList = WebServiceAction::nameList();
-//    for (int i = 0; i < nameList.size(); i++)
-//    {
-//        actionTable->item(i, 0)->setText(nameList[i]);
-//    }
-
-    autoActionLabel = new QLabel(tr("无动作"));
+    markovActionLabel = new QLabel(tr("MDP决策动作"));
+    greedyActionLabel = new QLabel(tr("Greedy决策动作"));
     autoAction = NULL;
 }
 
 void WebServiceActionWidget::updateActionTable()
 {
-//    actionWidgetMutex.lock();
-    for (int i = 0; i < WebServiceAction::ACTION_SIZE; i++)
+    actionWidgetMutex.lock();
+    int markovActionId = -1;
+    int greedyActionId = -1;
+    for (int i = 0; i < markovResult.size(); i++)
     {
-//        if (actions[i].isActive)
-//        {
-//            actionTable->item(i, 1)->setText(tr("%1").arg(actions[i].reward));
-//            actionTable->item(i, 2)->setText(tr("%1").arg(actions[i].toString()));
-//        }
-//        else
-//        {
-//            actionTable->item(i, 1)->setText(tr(""));
-//            actionTable->item(i, 2)->setText(tr(""));
-//        }
+        actionTable->item(i, 0)->setText(markovResult[i].action.name());
+        actionTable->item(i, 1)->setText(tr("%1").arg(markovResult[i].directReward));
+        actionTable->item(i, 2)->setText(tr("%1").arg(markovResult[i].potentialReward));
+        actionTable->item(i, 3)->setText(tr("%1").arg(markovResult[i].action.dc));
+        actionTable->item(i, 4)->setText(tr("%1").arg(markovResult[i].action.dt));
+        actionTable->item(i, 5)->setText(tr("%1").arg(markovResult[i].successProbility));
+        actionTable->item(i, 6)->setText(tr("%1").arg(markovResult[i].action.toString()));
+        if (markovActionId == -1 || markovResult[markovActionId].potentialReward
+                < markovResult[i].potentialReward)
+        {
+            markovActionId = i;
+        }
+        if (greedyActionId == -1 || markovResult[greedyActionId].directReward
+                < markovResult[i].directReward)
+        {
+            greedyActionId = i;
+        }
     }
-
-
-    if (autoAction != NULL)
+    if (markovActionId == -1)
     {
-        autoActionLabel->setText(tr("自动选择动作: %1").arg(autoAction->name()));
+        markovActionLabel->setText(tr("MDP无动作"));
     }
     else
     {
-        autoActionLabel->setText(tr("无动作"));
+        markovActionLabel->setText(tr("MDP最优动作: %1")
+                                   .arg(markovResult[markovActionId].action.name()));
+    }
+    if (greedyActionId == -1)
+    {
+        greedyActionLabel->setText(tr("Greedy无动作"));
+    }
+    else
+    {
+        greedyActionLabel->setText(tr("Greedy最优动作: %1")
+                                   .arg(markovResult[greedyActionId].action.name()));
     }
 
-//    actionWidgetMutex.unlock();
+    actionWidgetMutex.unlock();
+}
+
+
+void WebServiceActionWidget::setMarkovResult(QList<MarkovResultItem>& _markovResult)
+{
+    markovResult = _markovResult;
+    emit updateActionsSignal();
 }
 
 void WebServiceActionWidget::setWebServiceAction(WebServiceAction *_actions)

@@ -2,6 +2,8 @@
 #include "servicegraph.h"
 #include "webserviceeventwidget.h"
 #include "webserviceflowinfowidget.h"
+#include "allmutex.h"
+
 #include <QtGui>
 
 WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
@@ -28,8 +30,10 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     showMaximized();
 
     connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
-//    connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
-//    connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
+    connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
+    connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
+//    connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
+//    connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
 }
 
 WebServiceMainWidget::~WebServiceMainWidget()
@@ -85,8 +89,14 @@ void WebServiceMainWidget::createButtonGroupBox()
     autoStartButton = new QPushButton(tr("自动仿真"));
     startButton = new QPushButton(tr("开始"));
     nextStepButton = new QPushButton(tr("下一步"));
+    sleepEdit = new QLineEdit();
+    sleepLabel = new QLabel(tr("设定间隔时间(ms)"));
+    sleepEdit->setFixedWidth(60);
+    sleepEdit->setText(tr("1000"));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(sleepLabel);
+    buttonLayout->addWidget(sleepEdit);
     buttonLayout->addWidget(autoStartButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(startButton);
@@ -105,10 +115,52 @@ void WebServiceMainWidget::autoRun()
     startButton->setEnabled(false);
     nextStepButton->setEnabled(false);
 
+    int sleepMsecond = sleepEdit->text().toInt() * 1000;
+    wss->setSleepMSecond(sleepMsecond);
+    sleepEdit->setEnabled(false);
     wss->setAutoRun(true);
     wss->setServiceGraph(sg);
     wss->setWebServiceEventWidget(eventWidget);
     wss->setWebServiceActionWidget(actionWidget);
     wss->setWebServiceFlowInfoWidget(flowInfoWidget);
     wss->start();
+}
+
+void WebServiceMainWidget::manualRun()
+{
+    autoStartButton->setEnabled(false);
+    startButton->setEnabled(false);
+    nextStepButton->setEnabled(false);
+
+    wss->setAutoRun(false);
+    wss->setServiceGraph(sg);
+    wss->setWebServiceEventWidget(eventWidget);
+    wss->setWebServiceActionWidget(actionWidget);
+    wss->setWebServiceFlowInfoWidget(flowInfoWidget);
+    wss->start();
+}
+
+void WebServiceMainWidget::nextStep()
+{
+    int res = actionWidget->getCurrentRow();
+    qDebug() << "Select Row: " << res ;
+    if (res == -1)
+    {
+        QMessageBox::critical(this, tr("错误"), tr("请选中一个[有效]的动作! "), QMessageBox::Ok);
+    }
+    else
+    {
+        wss->setSelectActionId(res);
+        nextStepCond.wakeOne();
+    }
+}
+
+void WebServiceMainWidget::enableNextStepButton()
+{
+    nextStepButton->setEnabled(true);
+}
+
+void WebServiceMainWidget::disableNextStepButton()
+{
+    nextStepButton->setEnabled(false);
 }
