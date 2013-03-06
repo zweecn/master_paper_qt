@@ -6,7 +6,9 @@
 #include "markovaction.h"
 #include "businesssimulation.h"
 #include "criticalpath.h"
+#include "allmutex.h"
 
+#include <cassert>
 #include <QDebug>
 #include <QFile>
 #include <QIODevice>
@@ -55,7 +57,10 @@ bool WebServiceSimulation::clearData()
 
 void WebServiceSimulation::run()
 {
-    autoRun();
+    if (isAutoRun)
+        autoRun();
+    else
+        manualRun();
 }
 
 void WebServiceSimulation::autoRun()
@@ -129,6 +134,10 @@ void WebServiceSimulation::autoRun()
         serviceFlowInfoWidgetMutex.lock();
         wsr->recovery(currAction);
         wsfiw->setWebServiceFlow(wsf);
+        if (wsf->isFinished())
+        {
+            break;
+        }
         serviceFlowInfoWidgetMutex.unlock();
 
         // [7]
@@ -165,13 +174,124 @@ void WebServiceSimulation::autoRun()
 
 void WebServiceSimulation::manualRun()
 {
+    qDebug() << "WebServiceSimulation::manualRun() ...";
 
+    runningActivities.clear();
+    finishedActivities.clear();
+    bugActivities.clear();
+
+    runningActivities.insert(0);
+
+    serviceFlowInfoWidgetMutex.lock();
+    wsfiw->setWebServiceFlow(wsf);
+    serviceFlowInfoWidgetMutex.unlock();
+
+    int t = 0;
+    qDebug() << t << isFinished() ;
+    while (!isFinished())
+    {
+        emit normalEventSignal();
+        printCurrState(t);
+        // [0]
+        qDebug() << "[0] Update service flow show...";
+        updatePainter();
+        serviceFlowInfoWidgetMutex.lock();
+        wsfiw->setWebServiceFlow(wsf);
+        serviceFlowInfoWidgetMutex.unlock();
+        usleep(sleepMSecond);
+
+        // [1] event
+        qDebug() << "[1] Random event...";
+        eventWidgetMutex.lock();
+        *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        wsew->setEvent(currEvent);
+        qDebug() << " Event:" << currEvent->toString();
+        eventWidgetMutex.unlock();
+        emit badEventSignal();
+
+        // [2] update show
+        qDebug() << "[2] Update show...";
+        bugActivities.insert(currEvent->a);
+        updatePainter();
+
+        // [3]
+
+
+        // [4]
+        makeMarkov();
+
+        // [5]
+        qDebug() << "[5] GetBestAction..." ;
+        assert(selectActionId >=0 && selectActionId < markovResult.size());
+        currAction = &markovResult[selectActionId].action;
+        if (currAction == NULL)
+        {
+            qDebug() << "GetBestAction failed.";
+            break;
+        }
+        qDebug() << " Action:" << currAction->toString();
+        usleep(sleepMSecond);
+
+        // [6]
+        qDebug() << "[6] Recovery with action...";
+        serviceFlowInfoWidgetMutex.lock();
+        wsr->recovery(currAction);
+        wsfiw->setWebServiceFlow(wsf);
+        serviceFlowInfoWidgetMutex.unlock();
+
+        // [7]
+        qDebug() << "[7] Show service flow after recovery...";
+        bugActivities.clear();
+        updatePainter();
+        usleep(sleepMSecond);
+
+        // [8]
+        qDebug() << "[8] Update event history...";
+        eventHistoryWidgetMutex.lock();
+        eventHistoryItem->action = *currAction;
+        eventHistoryItem->event = *currEvent;
+        eventHistoryItem->potentialReward = bestPotentialReward;
+        eventHistoryItem->probility = bestProbility;
+        wsew->addWebServiceEventRecordItem(eventHistoryItem);
+        eventHistoryWidgetMutex.unlock();
+
+        // [9]
+        qDebug() << "[9] One second passed...";
+        serviceFlowInfoWidgetMutex.lock();
+        timePassed();
+        wsfiw->setWebServiceFlow(wsf);
+        serviceFlowInfoWidgetMutex.unlock();
+
+        // [10]
+        qDebug() << "[10] One second passed, update service flow...";
+        updatePainter();
+
+        t++;
+    }
+    qDebug() << "WebServiceSimulation::manualRun() finished.";
+}
+
+void WebServiceSimulation::makeMarkov()
+{
+    qDebug() << "[3] Cause bad state...";
+    WebServiceAtomState state;
+    state.activityId = currEvent->a;
+    state.stateType = currEvent->type;
+    qDebug() << " State:" << state.toString();
+
+    qDebug() << "[4] Find markov solution...";
+    actionWidgetMutex.lock();
+    markovResult = wsr->getMarkovResult(state);
+    wsaw->setMarkovResult(markovResult);
+    nextStepCond.wait(&actionWidgetMutex);
+    actionWidgetMutex.unlock();
 }
 
 bool WebServiceSimulation::isFinished()
 {
     if (runningActivities.isEmpty() || wsf->isFinished())
     {
+        qDebug() << "WebServiceSimulation::isFinished() ... true";
         return true;
     }
     return false;

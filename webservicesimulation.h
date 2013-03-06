@@ -32,6 +32,10 @@ public:
     void setSelectActionId(int _selectActionId);
     void setSleepMSecond(int _sleepMSecond);
 
+signals:
+    void normalEventSignal();
+    void badEventSignal();
+
 private:
     bool init();
     bool clearData();
@@ -42,6 +46,8 @@ private:
     void printCurrState(int t);
 
     void updatePainter();
+
+    void makeMarkov();
 
     WebServiceFlow * wsf;
     WebServiceRecovery * wsr;

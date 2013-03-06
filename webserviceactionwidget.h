@@ -30,6 +30,7 @@ signals:
 
 public slots:
     void updateActionTable();
+    void updateUserSelectAction();
 
 private:
     void createActionTable();
@@ -37,6 +38,7 @@ private:
     QTableWidget* actionTable;
     QLabel* markovActionLabel;
     QLabel* greedyActionLabel;
+    QLabel* userActionLabel;
 
     WebServiceAction *actions;
     WebServiceAction *autoAction;

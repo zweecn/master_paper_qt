@@ -32,8 +32,8 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
     connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
-//    connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
-//    connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
+    connect(wss, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
+    connect(wss, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
 }
 
 WebServiceMainWidget::~WebServiceMainWidget()
@@ -131,6 +131,10 @@ void WebServiceMainWidget::manualRun()
     autoStartButton->setEnabled(false);
     startButton->setEnabled(false);
     nextStepButton->setEnabled(false);
+
+    int sleepMsecond = sleepEdit->text().toInt() * 1000;
+    wss->setSleepMSecond(sleepMsecond);
+    sleepEdit->setEnabled(false);
 
     wss->setAutoRun(false);
     wss->setServiceGraph(sg);

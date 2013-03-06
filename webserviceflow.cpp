@@ -103,7 +103,10 @@ bool WebServiceFlow::isFinished()
     if (globalState == WebServiceAtomState::STOP
             || globalState == WebServiceAtomState::FINISH_N
             || globalState == WebServiceAtomState::FINISH_U)
+    {
+        qDebug() << "WebServiceFlow::isFinished()... " << globalState;
         return true;
+    }
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
     {
         if (activities[i].x < 1.0)

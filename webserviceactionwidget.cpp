@@ -3,6 +3,7 @@
 #include "businessevent.h"
 #include "allmutex.h"
 
+#include <cassert>
 #include <QtGui>
 #include <QDebug>
 
@@ -14,13 +15,15 @@ WebServiceActionWidget::WebServiceActionWidget(QWidget *parent) :
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(markovActionLabel, 0, 0);
     mainLayout->addWidget(greedyActionLabel, 0, 1);
-    mainLayout->addWidget(actionTable, 1, 0, 1, 2);
+    mainLayout->addWidget(userActionLabel, 0, 2);
+    mainLayout->addWidget(actionTable, 1, 0, 1, 3);
     setLayout(mainLayout);
 
     setWindowTitle(tr("软件服务不确定事件动作"));
     resize(400, 300);
 
     connect(this, SIGNAL(updateActionsSignal()), this, SLOT(updateActionTable()));
+    connect(actionTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateUserSelectAction()));
 }
 
 void WebServiceActionWidget::createActionTable()
@@ -53,6 +56,7 @@ void WebServiceActionWidget::createActionTable()
     }
     markovActionLabel = new QLabel(tr("MDP决策动作"));
     greedyActionLabel = new QLabel(tr("Greedy决策动作"));
+    userActionLabel = new QLabel(tr("用户选择动作"));
     autoAction = NULL;
 }
 
@@ -61,6 +65,18 @@ void WebServiceActionWidget::updateActionTable()
     actionWidgetMutex.lock();
     int markovActionId = -1;
     int greedyActionId = -1;
+    actionTable->setRowCount(markovResult.size());
+    for (int i = 0; i < actionTable->rowCount(); i++)
+    {
+        for (int j = 0; j < actionTable->columnCount(); j++)
+        {
+            if (actionTable->item(i,j) == (QTableWidgetItem*)NULL)
+            {
+                actionTable->setItem(i, j, new QTableWidgetItem());
+                actionTable->item(i, j)->setTextAlignment(Qt::AlignCenter);
+            }
+        }
+    }
     for (int i = 0; i < markovResult.size(); i++)
     {
         actionTable->item(i, 0)->setText(markovResult[i].action.name());
@@ -103,6 +119,15 @@ void WebServiceActionWidget::updateActionTable()
     actionWidgetMutex.unlock();
 }
 
+void WebServiceActionWidget::updateUserSelectAction()
+{
+    actionWidgetMutex.lock();
+    int userSelect = actionTable->currentRow();
+    if (userSelect != -1 && userSelect < markovResult.size()) {
+        userActionLabel->setText(tr("用户选择:%1").arg(markovResult[userSelect].action.name()));
+    }
+    actionWidgetMutex.unlock();
+}
 
 void WebServiceActionWidget::setMarkovResult(QList<MarkovResultItem>& _markovResult)
 {
