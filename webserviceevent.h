@@ -1,6 +1,7 @@
 #ifndef WEBSERVICEEVENT_H
 #define WEBSERVICEEVENT_H
 #include <QString>
+#include <QSet>
 
 class WebServiceEvent
 {
@@ -10,7 +11,8 @@ public:
     QString toString();
     QString name();
 
-    static WebServiceEvent random(int currTime);
+    static WebServiceEvent random(int currTime, QSet<int>& runningActivities,
+                                                   QSet<int>& finishedActivities);
 
     int t;      // time
     int a;      // activity id

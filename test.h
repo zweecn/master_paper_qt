@@ -9,6 +9,7 @@ public:
 
     void runLayerMarkovBackwardTest();
     void runMarkovTest();
+    void runWebServiceSimulation();
 
 private:
 

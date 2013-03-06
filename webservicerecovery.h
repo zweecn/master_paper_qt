@@ -9,6 +9,26 @@
 class MarkovResultItem
 {
 public:
+    MarkovResultItem(){}
+    MarkovResultItem(const MarkovResultItem &other)
+    {
+        action = other.action;
+        potentialReward = other.potentialReward;
+        suffixState = other.suffixState;
+        suffixPosibility = other.suffixPosibility;
+    }
+
+    MarkovResultItem& operator =(const MarkovResultItem &other)
+    {
+        if (this == &other)
+            return *this;
+        action = other.action;
+        potentialReward = other.potentialReward;
+        suffixState = other.suffixState;
+        suffixPosibility = other.suffixPosibility;
+        return *this;
+    }
+
     WebServiceAction action;
     double potentialReward;
     QList<WebServiceAtomState> suffixState;
@@ -39,6 +59,7 @@ public:
     double reward(int dc, int dt, double p);
 
     WebServiceFlow& getWebServiceFlow();
+    bool recovery(WebServiceAction * action);
 
     void runTest();
     void printStateAction();

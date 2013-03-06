@@ -1,5 +1,7 @@
 #include "webserviceaction.h"
 
+#include <QDebug>
+
 WebServiceAction::WebServiceAction()
 {
     id = -1;
@@ -114,13 +116,15 @@ QString WebServiceAction::toString()
     {
         res += "NOT_ACTION";
     }
-
-    for (int i = 0; i < replaceList.size(); i++)
+    QListIterator<ReplaceNode> it(replaceList);
+    while (it.hasNext())
     {
+
+        const ReplaceNode & node = it.next();
         res += QString(" %1:%2->%3 ")
-                .arg(replaceList[i].activityId)
-                .arg(replaceList[i].oldServiceId)
-                .arg(replaceList[i].newServiceId);
+                        .arg(node.activityId)
+                        .arg(node.oldServiceId)
+                        .arg(node.newServiceId);
     }
     res += QString(" dc=%1 dt=%2]").arg(dc).arg(dt);
 

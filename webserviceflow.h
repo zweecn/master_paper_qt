@@ -11,8 +11,11 @@ public:
 
     WebServiceFlow & operator = (const WebServiceFlow & other);
 
+    QString toString();
+    bool isFinished();
 
     Activity* activities;
+    int globalState;
 };
 
 #endif // WEBSERVICEFLOW_H

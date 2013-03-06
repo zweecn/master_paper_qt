@@ -19,6 +19,8 @@ public:
 
     enum
     {
+        EXEC = -1,
+
         READY_U = 0,
         READY_N = 1,
         FAIL = 2,

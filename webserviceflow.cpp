@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "workflow.h"
 #include "activity.h"
+#include "webserviceatomstate.h"
 
 #include <QDebug>
 #include <QFile>
@@ -65,7 +66,7 @@ bool WebServiceFlow::init()
         }
     }
     file.close();
-
+    globalState = WebServiceAtomState::READY_N;
 //    qDebug() << "WebServiceFlow::init() finised.";
     return true;
 }
@@ -81,4 +82,34 @@ WebServiceFlow & WebServiceFlow::operator = (const WebServiceFlow & other)
         activities[i] = other.activities[i];
     }
     return *this;
+}
+
+QString WebServiceFlow::toString()
+{
+    QString res = "[";
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        res += QString("%1:%2:%3 ")
+                .arg(activities[i].number)
+                .arg(activities[i].blindService->id)
+                .arg(activities[i].x);
+    }
+    res = res.trimmed() + "]";
+    return res;
+}
+
+bool WebServiceFlow::isFinished()
+{
+    if (globalState == WebServiceAtomState::STOP
+            || globalState == WebServiceAtomState::FINISH_N
+            || globalState == WebServiceAtomState::FINISH_U)
+        return true;
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        if (activities[i].x < 1.0)
+        {
+            return false;
+        }
+    }
+    return true;
 }

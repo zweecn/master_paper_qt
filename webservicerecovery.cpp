@@ -870,3 +870,66 @@ WebServiceFlow& WebServiceRecovery::getWebServiceFlow()
     return wsf;
 }
 
+bool WebServiceRecovery::recovery(WebServiceAction *action)
+{
+    if (action == NULL)
+        return false;
+    if (action->type == WebServiceAction::NO_NEED_DO)
+    {
+    }
+    else if ( action->type == WebServiceAction::TERMINATE)
+    {
+        wsf.globalState = WebServiceAtomState::STOP;
+    }
+    else if ( action->type == WebServiceAction::DO_NOTHING)
+    {
+    }
+    else if ( action->type == WebServiceAction::REPLACE)
+    {
+        int activityId = action->replaceList.first().activityId;
+        int newServiceId = action->replaceList.first().newServiceId;
+        AtomService* newService = & WorkFlow::Instance()->all_service[newServiceId];
+        wsf.activities[activityId].blindService = newService;
+        newService->free = false;
+        wsf.activities[activityId].x = 0;
+    }
+    else if ( action->type == WebServiceAction::RE_COMPOSE)
+    {
+        for (int i = 0; i < action->replaceList.size(); i++)
+        {
+            int activityId = action->replaceList[i].activityId;
+            int newServiceId = action->replaceList[i].newServiceId;
+            AtomService* newService = & WorkFlow::Instance()->all_service[newServiceId];
+            wsf.activities[activityId].blindService = newService;
+            newService->free = false;
+            wsf.activities[activityId].x = 0;
+        }
+    }
+    else if ( action->type == WebServiceAction::RETRY)
+    {
+        int activityId = action->replaceList.first().activityId;
+        wsf.activities[activityId].x = 0;
+    }
+
+    if (wsf.globalState == WebServiceAtomState::STOP)
+    {
+        return false;
+    }
+
+    bool finish = true;
+    for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
+    {
+        if (wsf.activities[i].x < 1.0)
+        {
+            wsf.globalState = WebServiceAtomState::EXEC;
+            finish = false;
+            break;
+        }
+    }
+    if (finish)
+    {
+        wsf.globalState = WebServiceAtomState::FINISH_N;
+    }
+    return true;
+}
+

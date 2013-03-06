@@ -7,6 +7,14 @@
 class ReplaceNode
 {
 public:
+    ReplaceNode(){}
+    ReplaceNode(const ReplaceNode &other)
+    {
+        activityId = other.activityId;
+        oldServiceId = other.oldServiceId;
+        newServiceId = other.newServiceId;
+    }
+
     int activityId;
     int oldServiceId;
     int newServiceId;
@@ -16,6 +24,17 @@ public:
         return (activityId == other.activityId
                 && oldServiceId == other.oldServiceId
                 && newServiceId == other.newServiceId);
+    }
+    ReplaceNode& operator =(const ReplaceNode & other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+        activityId = other.activityId;
+        oldServiceId = other.oldServiceId;
+        newServiceId = other.newServiceId;
+        return *this;
     }
 };
 

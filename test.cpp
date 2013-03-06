@@ -5,6 +5,7 @@
 #include "businesssimulation.h"
 #include "criticalpath.h"
 #include "webservicerecovery.h"
+#include "webservicesimulation.h"
 
 #include <ctime>
 #include <QDebug>
@@ -15,7 +16,8 @@ Test::Test()
     qDebug() << "Test::Test() ...";
 
 //    runLayerMarkovBackwardTest();
-    runMarkovTest();
+//    runMarkovTest();
+    runWebServiceSimulation();
 
     qDebug() << "Test::test() finished.";
 }
@@ -92,4 +94,10 @@ void Test::runMarkovTest()
     {
         qDebug() << result[i].toString();
     }
+}
+
+void Test::runWebServiceSimulation()
+{
+    WebServiceSimulation wsm;
+    wsm.autoRun();
 }
