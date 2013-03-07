@@ -19,6 +19,30 @@
 #include "webservicemainwidget.h"
 #include "simulationmainwidget.h"
 
+void customMessageHandler(QtMsgType type, const char* msg)
+{
+    QString txt;
+    switch(type)
+    {
+    case QtDebugMsg:
+        txt = QString("Debug: %1").arg(msg);
+        break;
+    case QtWarningMsg:
+        txt = QString("Warning: %1").arg(msg);
+        break;
+    case QtCriticalMsg:
+        txt = QString("Critical: %1").arg(msg);
+        break;
+    case QtFatalMsg:
+        txt = QString("Critical: %1").arg(msg);
+        abort();
+    }
+    QFile outFile("sim.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt << endl;
+}
+
 int main(int argc, char *argv[])
 {
     setlocale(LC_CTYPE, "zh_CN.GB2312");
@@ -27,44 +51,11 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
 
     QApplication a(argc, argv);
-    //    Widget w;
-    //    w.show();
 
-    //    LineChart lc;
-    //    lc.show();
-
-    //    ServiceInfoTable sit;
-    //    sit.show();
-
-    //    WorkFlow::Instance()->makeService();
-    //    WorkFlow::Instance()->makeResource();
-
-    //    IntervalCoverage::runExample();
-
-    //    BusinessSimulation bs;
-    //    bs.run();
-
-//        BusinessMainWidget bmw;
-//        bmw.show();
-
-    //    CriticalPath cp;
-    //    cp.runExample();
-
-    //    ServiceGraph sg;
-    //    sg.show();
-
-    //    WebServiceFlow wsf;
-    //    wsf.init();
-
-//    Test t;
-
-//    WebServiceMainWidget w;
-//    w.show();
+    qInstallMsgHandler(customMessageHandler);
 
     SimulationMainWidget w;
     w.show();
 
     return a.exec();
-
-    return 0;
 }
