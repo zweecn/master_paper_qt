@@ -62,7 +62,8 @@ void WebServiceActionWidget::createActionTable()
 
 void WebServiceActionWidget::updateActionTable()
 {
-    actionWidgetMutex.lock();
+//    actionWidgetMutex.lock();
+    actionWidgetReadWriteMutex.lockForRead();
     int markovActionId = -1;
     int greedyActionId = -1;
     actionTable->setRowCount(markovResult.size());
@@ -116,17 +117,20 @@ void WebServiceActionWidget::updateActionTable()
                                    .arg(markovResult[greedyActionId].action.name()));
     }
 
-    actionWidgetMutex.unlock();
+//    actionWidgetMutex.unlock();
+    actionWidgetReadWriteMutex.unlock();
 }
 
 void WebServiceActionWidget::updateUserSelectAction()
 {
-    actionWidgetMutex.lock();
+//    actionWidgetMutex.lock();
+    actionWidgetReadWriteMutex.lockForRead();
     int userSelect = actionTable->currentRow();
     if (userSelect != -1 && userSelect < markovResult.size()) {
         userActionLabel->setText(tr("”√ªß—°‘Ò:%1").arg(markovResult[userSelect].action.name()));
     }
-    actionWidgetMutex.unlock();
+//    actionWidgetMutex.unlock();
+    actionWidgetReadWriteMutex.unlock();
 }
 
 void WebServiceActionWidget::setMarkovResult(QList<MarkovResultItem>& _markovResult)

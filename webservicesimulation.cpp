@@ -280,11 +280,15 @@ void WebServiceSimulation::makeMarkov()
     qDebug() << " State:" << state.toString();
 
     qDebug() << "[4] Find markov solution...";
-    actionWidgetMutex.lock();
+//    actionWidgetMutex.lock();
+
+    actionWidgetReadWriteMutex.lockForWrite();
     markovResult = wsr->getMarkovResult(state);
     wsaw->setMarkovResult(markovResult);
-    nextStepCond.wait(&actionWidgetMutex);
-    actionWidgetMutex.unlock();
+    nextStepCond.wait(&actionWidgetReadWriteMutex);
+    actionWidgetReadWriteMutex.unlock();
+
+//    actionWidgetMutex.unlock();
 }
 
 bool WebServiceSimulation::isFinished()

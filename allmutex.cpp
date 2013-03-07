@@ -10,3 +10,4 @@ QMutex stateWidgetMutex;
 
 QMutex eventHistoryWidgetMutex;
 QMutex serviceFlowInfoWidgetMutex;
+QReadWriteLock actionWidgetReadWriteMutex;

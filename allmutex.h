@@ -3,6 +3,7 @@
 
 #include <QMutex>
 #include <QWaitCondition>
+#include <QReadWriteLock>
 
 extern QWaitCondition nextStepCond;
 
@@ -14,5 +15,5 @@ extern QMutex stateWidgetMutex;
 
 extern QMutex eventHistoryWidgetMutex;
 extern QMutex serviceFlowInfoWidgetMutex;
-
+extern QReadWriteLock actionWidgetReadWriteMutex;
 #endif // ALLMUTEX_H
