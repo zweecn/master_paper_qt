@@ -43,6 +43,9 @@ BusinessSimulation::~BusinessSimulation()
     delete[] finishedActivities;
     delete[] bugActivities;
     delete currEvent;
+    if (eventHistoryItem != NULL)
+        delete eventHistoryItem;
+
     qDebug() << "BusinessSimulation::~BusinessSimulation() finished.";
 }
 
@@ -106,6 +109,17 @@ void BusinessSimulation::autoRun()
         baw->setBusinessAction(actions);
         baw->setAutoBusinessAction(action);
         actionWidgetMutex.unlock();
+
+        qDebug() << "action" << action;
+
+        if (action != NULL)
+        {
+            eventHistoryWidgetMutex.lock();
+            eventHistoryItem->event = *currEvent;
+            eventHistoryItem->action = *action;
+            bew->addBusinessEventRecordItem(eventHistoryItem);
+            eventHistoryWidgetMutex.unlock();
+        }
 
         // [4]
         stateWidgetMutex.lock();
@@ -176,10 +190,19 @@ void BusinessSimulation::manualRun()
         }
         actionWidgetMutex.unlock();
 
-        // [4]
-        stateWidgetMutex.lock();
-        recovery(&actions[selectActionId]);
-        stateWidgetMutex.unlock();
+        if (action != NULL)
+        {
+            eventHistoryWidgetMutex.lock();
+            eventHistoryItem->event = *currEvent;
+            eventHistoryItem->action = *action;
+            bew->addBusinessEventRecordItem(eventHistoryItem);
+            eventHistoryWidgetMutex.unlock();
+
+            // [4]
+            stateWidgetMutex.lock();
+            recovery(&actions[selectActionId]);
+            stateWidgetMutex.unlock();
+        }
 
         emit normalEventSignal();
         usleep(sleepMSecond);
@@ -540,6 +563,7 @@ void BusinessSimulation::printCurrState(int t, int flowId)
 bool BusinessSimulation::init()
 {
     qDebug() << "BusinessSimulation.init() begin...";
+    eventHistoryItem = new BusinessEventRecordItem();
     sleepMSecond = 0;
     //    connect(sg, SIGNAL(destroyed()), this, SLOT(deleteLater()));
     QFile file(start_filename);

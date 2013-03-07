@@ -11,6 +11,11 @@ class BusinessAction
 public:
     BusinessAction();
 
+    BusinessAction(const BusinessAction& other);
+    BusinessAction& operator ==(const BusinessAction & other);
+    bool operator ==(const BusinessAction& other) const;
+
+
     QString name();
     QString toString();
 

@@ -7,6 +7,7 @@
 
 #include "allmutex.h"
 #include "businessevent.h"
+#include "businesseventrecorditem.h"
 
 class QTableWidget;
 class BusinessEvent;
@@ -18,13 +19,16 @@ class BusinessEventWidget : public QWidget
 public:
     explicit BusinessEventWidget(QWidget *parent = 0);
 
+    void addBusinessEventRecordItem(BusinessEventRecordItem* _historyEventItem);
     void setEvent(BusinessEvent *_event);
     BusinessEvent * getEvent();
 
 signals:
     void updateEventSignal();
+    void updateHistoryEventSignal();
 public slots:
     void updateEvent();
+    void updateEventHistory();
 private:
     void createEventTable();
     void createHistoryEventTable();
@@ -33,8 +37,8 @@ private:
     QTableWidget *historyEventTable;
     QLabel *currEventLabel;
     QLabel *historyEventLabel;
-    QList<BusinessEvent> historyEventList;
-
+//    QList<BusinessEvent> historyEventList;
+    QList<BusinessEventRecordItem> historyEventList;
     BusinessEvent *event;
 
 };

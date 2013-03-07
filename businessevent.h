@@ -11,7 +11,7 @@ public:
     BusinessEvent();
 
     QString name();
-    bool operator ==(BusinessEvent &other);
+    bool operator ==(const BusinessEvent &other) const;
 
     static BusinessEvent random(int currTime, Activity ** activities, int workflowCount);
 

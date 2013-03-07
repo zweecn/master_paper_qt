@@ -7,6 +7,7 @@
 #include <QWaitCondition>
 
 #include "intervalcoverage.h"
+#include "businesseventrecorditem.h"
 
 class Activity;
 class ServiceGraph;
@@ -93,11 +94,11 @@ private:
 
     // Below is the data should be lock when they are read/write
     BusinessEvent* currEvent;
+    BusinessEventRecordItem * eventHistoryItem;
     BusinessAction *actions;
     int selectActionId;
 
     // UI
-
     ServiceGraph* sg;
     BusinessEventWidget* bew;
     BusinessActionWidget* baw;

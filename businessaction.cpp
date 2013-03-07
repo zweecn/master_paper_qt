@@ -15,6 +15,60 @@ BusinessAction::BusinessAction()
     event = NULL;
 }
 
+BusinessAction::BusinessAction(const BusinessAction& other)
+{
+    type = other.type;
+    reward = other.reward;
+    event = other.event;
+
+    bug = other.bug;
+    oldResource = other.oldResource;
+    newResource = other.newResource;
+
+    otherFlowId = other.otherFlowId;
+    otherFlowResource = other.otherFlowResource;
+    otherFlowActivities = other.otherFlowActivities;
+
+    isActive = other.isActive;
+}
+
+BusinessAction& BusinessAction::operator ==(const BusinessAction & other)
+{
+    if (this == &other)
+        return *this;
+    type = other.type;
+    reward = other.reward;
+    event = other.event;
+
+    bug = other.bug;
+    oldResource = other.oldResource;
+    newResource = other.newResource;
+
+    otherFlowId = other.otherFlowId;
+    otherFlowResource = other.otherFlowResource;
+    otherFlowActivities = other.otherFlowActivities;
+
+    isActive = other.isActive;
+
+    return *this;
+}
+
+bool BusinessAction::operator ==(const BusinessAction& other) const
+{
+    return (type == other.type
+            && reward == other.reward
+            && event == other.event
+
+            && bug == other.bug
+            && oldResource == other.oldResource
+            && newResource == other.newResource
+
+            && otherFlowId == other.otherFlowId
+            && otherFlowResource == other.otherFlowResource
+            && otherFlowActivities == other.otherFlowActivities
+            && isActive == other.isActive);
+}
+
 QString BusinessAction::name()
 {
     QString res;

@@ -46,7 +46,7 @@ BusinessEvent BusinessEvent::random(int currTime, Activity ** activities, int wo
     return e;
 }
 
-bool BusinessEvent::operator ==(BusinessEvent &other)
+bool BusinessEvent::operator ==(const BusinessEvent &other) const
 {
     if (t != other.t) {
         return false;
