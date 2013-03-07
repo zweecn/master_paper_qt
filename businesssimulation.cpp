@@ -121,6 +121,7 @@ void BusinessSimulation::autoRun()
             if (currEvent->type != BusinessEvent::NORMAIL)
             {
                 emit badEventSignal(currEvent->a);
+                emit badEventSignal();
             }
             qDebug() << "[3.1] Update event history...";
             eventHistoryWidgetMutex.lock();
@@ -199,6 +200,7 @@ void BusinessSimulation::manualRun()
         if (currEvent->type != BusinessEvent::NORMAIL)
         {
             emit badEventSignal(currEvent->a);
+            emit badEventSignal();
             if (isStop)
             {
                 qDebug()<< "User stop BusinessSimulation.";
@@ -771,6 +773,12 @@ void BusinessSimulation::setAutoRun(bool _isAutoRun)
 void BusinessSimulation::setSelectActionId(int _selectActionId)
 {
     selectActionId = _selectActionId;
+}
+
+BusinessAction* BusinessSimulation::getSelectAction()
+{
+    assert(selectActionId < BusinessAction::ACTIONS_COUNT && selectActionId >= 0);
+    return &actions[selectActionId];
 }
 
 void BusinessSimulation::setBusinessStateWidget(BusinessStateWidget *_bsw)

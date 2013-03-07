@@ -42,6 +42,7 @@ public:
 
     void setAutoRun(bool _isAutoRun);
     void setSelectActionId(int _selectActionId);
+    BusinessAction* getSelectAction();
     BusinessAction* operation(BusinessEvent & event);
     bool recovery(BusinessAction *action);
 

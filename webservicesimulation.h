@@ -34,6 +34,8 @@ public:
     void setSelectActionId(int _selectActionId);
     void setSleepMSecond(int _sleepMSecond);
 
+    MarkovResultItem* getSelectItem();
+
 signals:
     void normalEventSignal();
     void badEventSignal();

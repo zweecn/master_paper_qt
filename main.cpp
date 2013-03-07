@@ -56,7 +56,6 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(gbk);
     QTextCodec::setCodecForCStrings(gbk);
 
-
     qInstallMsgHandler(customMessageHandler);
 
     SimulationMainWidget w;

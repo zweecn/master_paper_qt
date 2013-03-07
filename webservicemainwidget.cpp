@@ -166,8 +166,19 @@ void WebServiceMainWidget::nextStep()
     else
     {
         wss->setSelectActionId(res);
-        nextStepCond.wakeOne();
+        QString q = wss->getSelectItem()->toString();
+        int ret = QMessageBox::question(this, tr("选择确认"), tr("您选择的是动作：%1").arg(q),
+                              QMessageBox::Ok, QMessageBox::Cancel);
+        switch (ret)
+        {
+        case QMessageBox::Ok:
+            nextStepCond.wakeOne();
+            break;
+        case QMessageBox::Cancel:
+            break;
+        }
     }
+
 }
 
 void WebServiceMainWidget::enableNextStepButton()
