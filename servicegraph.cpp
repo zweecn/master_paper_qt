@@ -22,6 +22,7 @@ ServiceGraph::~ServiceGraph()
 
 bool ServiceGraph::init()
 {
+    execState = "准备";
     flowId = 0;
     recommendHeight = 180;
     recommendWidth = 300;
@@ -87,10 +88,16 @@ void ServiceGraph::zoomOut(double multiple)
 void ServiceGraph::paintEvent(QPaintEvent *)
 {
     serviceGraphMutex.lock();
-    DrawGraph::DrawAll(this, points, pointsName, colors, graph, tr("流程 %1").arg(flowId));
+    DrawGraph::DrawAll(this, points, pointsName, colors, graph,
+                       tr("流程 %1 %2").arg(flowId).arg(execState));
     serviceGraphMutex.unlock();
 }
 
+void ServiceGraph::setExecState(QString _execState)
+{
+    execState = _execState;
+    emit updateGraphSignal();
+}
 
 void ServiceGraph::setPointsName(QList<QString>& _pointsName)
 {

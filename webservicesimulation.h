@@ -35,6 +35,7 @@ public:
 signals:
     void normalEventSignal();
     void badEventSignal();
+    void execFinishedSignal();
 
 private:
     bool init();
@@ -42,6 +43,7 @@ private:
     bool isFinished();
 
     WebServiceAction * getBestAction();
+    MarkovResultItem* getBestMarkovResult();
     void timePassed();
     void printCurrState(int t);
 

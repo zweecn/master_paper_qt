@@ -34,6 +34,10 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
     connect(wss, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
     connect(wss, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
+    connect(wss, SIGNAL(execFinishedSignal()), this, SLOT(disableNextStepButton()));
+    connect(wss, SIGNAL(normalEventSignal()), this, SLOT(updateStateToExec()));
+    connect(wss, SIGNAL(badEventSignal()), this, SLOT(updateStateToFault()));
+    connect(wss, SIGNAL(execFinishedSignal()), this, SLOT(upadteStateToFinished()));
 }
 
 WebServiceMainWidget::~WebServiceMainWidget()
@@ -135,7 +139,6 @@ void WebServiceMainWidget::manualRun()
     int sleepMsecond = sleepEdit->text().toInt() * 1000;
     wss->setSleepMSecond(sleepMsecond);
     sleepEdit->setEnabled(false);
-
     wss->setAutoRun(false);
     wss->setServiceGraph(sg);
     wss->setWebServiceEventWidget(eventWidget);
@@ -168,3 +171,19 @@ void WebServiceMainWidget::disableNextStepButton()
 {
     nextStepButton->setEnabled(false);
 }
+
+void WebServiceMainWidget::upadteStateToFinished()
+{
+    sg->setExecState(QString("执行结束"));
+}
+
+void WebServiceMainWidget::updateStateToFault()
+{
+    sg->setExecState(QString("发生不确定性事件..."));
+}
+
+void WebServiceMainWidget::updateStateToExec()
+{
+    sg->setExecState(QString("执行中..."));
+}
+

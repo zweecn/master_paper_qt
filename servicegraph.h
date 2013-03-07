@@ -14,6 +14,8 @@ public:
 
     void zoomOut(double multiple);
 
+    void setExecState(QString _execState);
+
     void setPointsName(QList<QString>& _pointsName);
     void setPoints(QList<QPoint>& _points);
     void setColors(QList<QColor>& _colors);
@@ -38,6 +40,8 @@ protected:
     void paintEvent(QPaintEvent *);
     bool init();
 private:
+
+    QString execState;
 
     QList<QString> pointsName;
     QList<QPoint> points;

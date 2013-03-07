@@ -5,10 +5,22 @@ WebServiceEventRecordItem::WebServiceEventRecordItem()
 {
 }
 
+WebServiceEventRecordItem::WebServiceEventRecordItem(const WebServiceEventRecordItem & other)
+{
+    this->event = other.event;
+    this->result = other.result;
+}
+
+WebServiceEventRecordItem & WebServiceEventRecordItem::operator =(const WebServiceEventRecordItem& other)
+{
+    if (this == &other)
+        return *this;
+    this->event = other.event;
+    this->result = other.result;
+    return *this;
+}
+
 bool WebServiceEventRecordItem::operator ==(const WebServiceEventRecordItem& other) const
 {
-    double e = 0.00001;
-    return other.event == event && other.action == action
-            && fabs(other.potentialReward - potentialReward) < e
-            && fabs(other.probility - probility) < e;
+    return other.event == event && result == other.result;
 }

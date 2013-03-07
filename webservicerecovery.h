@@ -2,6 +2,8 @@
 #define WEBSERVICERECOVERY_H
 
 #include <QList>
+#include <cmath>
+
 #include "webserviceatomstate.h"
 #include "webserviceaction.h"
 #include "webserviceflow.h"
@@ -31,6 +33,27 @@ public:
         suffixPosibility = other.suffixPosibility;
         successProbility = other.successProbility;
         return *this;
+    }
+
+    bool operator ==(const MarkovResultItem &other) const
+    {
+        double e = 0.00001;
+        if (!(action == other.action))
+            return false;
+        if (fabs(directReward - other.directReward) > e
+                || fabs(potentialReward - other.potentialReward) > e
+                || fabs(successProbility - other.successProbility) > e)
+            return false;
+        if (!(suffixState == other.suffixState))
+            return false;
+        if (suffixPosibility.size() != other.suffixPosibility.size())
+            return false;
+        for (int i = 0; i < suffixPosibility.size(); i++)
+        {
+            if (fabs(suffixPosibility[i] - other.suffixPosibility[i]) > e)
+                return false;
+        }
+        return true;
     }
 
     WebServiceAction action;

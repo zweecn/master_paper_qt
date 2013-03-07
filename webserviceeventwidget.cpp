@@ -92,11 +92,11 @@ void WebServiceEventWidget::updateHistoryEvent()
         historyEventTable->item(i, 0)->setText(tr("%1").arg(historyEventList[i].event.t));
         historyEventTable->item(i, 1)->setText(tr("%1").arg(historyEventList[i].event.a));
         historyEventTable->item(i, 2)->setText(historyEventList[i].event.name());
-        historyEventTable->item(i, 3)->setText(historyEventList[i].action.name());
-        historyEventTable->item(i, 4)->setText(tr("%1").arg(historyEventList[i].potentialReward));
-        historyEventTable->item(i, 5)->setText(tr("%1").arg(historyEventList[i].action.dc));
-        historyEventTable->item(i, 6)->setText(tr("%1").arg(historyEventList[i].action.dt));
-        historyEventTable->item(i, 7)->setText(tr("%1").arg(historyEventList[i].probility));
+        historyEventTable->item(i, 3)->setText(historyEventList[i].result.action.name());
+        historyEventTable->item(i, 4)->setText(tr("%1").arg(historyEventList[i].result.potentialReward));
+        historyEventTable->item(i, 5)->setText(tr("%1").arg(historyEventList[i].result.action.dc));
+        historyEventTable->item(i, 6)->setText(tr("%1").arg(historyEventList[i].result.action.dt));
+        historyEventTable->item(i, 7)->setText(tr("%1").arg(historyEventList[i].result.successProbility));
     }
     eventHistoryWidgetMutex.unlock();
 }

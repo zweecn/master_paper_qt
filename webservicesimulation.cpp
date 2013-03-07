@@ -49,9 +49,12 @@ bool WebServiceSimulation::init()
 
 bool WebServiceSimulation::clearData()
 {
-    delete eventHistoryItem;
-    delete currEvent;
-    delete wsr;
+    if (eventHistoryItem != NULL)
+        delete eventHistoryItem;
+    if (currEvent != NULL)
+        delete currEvent;
+    if (wsr != NULL)
+        delete wsr;
     return true;
 }
 
@@ -81,7 +84,7 @@ void WebServiceSimulation::autoRun()
     qDebug() << t << isFinished() ;
     while (!isFinished())
     {
-//        emit normalEventSignal();
+        emit normalEventSignal();
         printCurrState(t);
         // [0]
         qDebug() << "[0] Update service flow show...";
@@ -98,6 +101,7 @@ void WebServiceSimulation::autoRun()
         wsew->setEvent(currEvent);
         qDebug() << " Event:" << currEvent->toString();
         eventWidgetMutex.unlock();
+        emit badEventSignal();
 
         // [2] update show
         qDebug() << "[2] Update show...";
@@ -119,11 +123,13 @@ void WebServiceSimulation::autoRun()
         actionWidgetMutex.unlock();
 
         // [5]
-        qDebug() << "[5] GetBestAction..." ;
-        currAction = getBestAction();
-        if (currAction == NULL)
+        qDebug() << "[5] GetBestMarkovResult..." ;
+//        currAction = getBestAction();
+        MarkovResultItem* currItem = getBestMarkovResult();
+        currAction = &(currItem->action);
+        if (currItem == NULL)
         {
-            qDebug() << "GetBestAction failed.";
+            qDebug() << "getBestMarkovResult() failed.";
             break;
         }
         qDebug() << " Action:" << currAction->toString();
@@ -149,10 +155,12 @@ void WebServiceSimulation::autoRun()
         // [8]
         qDebug() << "[8] Update event history...";
         eventHistoryWidgetMutex.lock();
-        eventHistoryItem->action = *currAction;
         eventHistoryItem->event = *currEvent;
-        eventHistoryItem->potentialReward = bestPotentialReward;
-        eventHistoryItem->probility = bestProbility;
+        eventHistoryItem->result = *currItem;
+//        eventHistoryItem->action = *currAction;
+//        eventHistoryItem->event = *currEvent;
+//        eventHistoryItem->potentialReward = bestPotentialReward;
+//        eventHistoryItem->probility = bestProbility;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 
@@ -169,6 +177,7 @@ void WebServiceSimulation::autoRun()
 
         t++;
     }
+    emit execFinishedSignal();
     qDebug() << "WebServiceSimulation::autoRun() finished.";
 }
 
@@ -214,16 +223,14 @@ void WebServiceSimulation::manualRun()
         bugActivities.insert(currEvent->a);
         updatePainter();
 
-        // [3]
-
-
-        // [4]
+        // [3] [4]
         makeMarkov();
 
         // [5]
-        qDebug() << "[5] GetBestAction..." ;
+        qDebug() << "[5] GetBestMarkovResult..." ;
         assert(selectActionId >=0 && selectActionId < markovResult.size());
         currAction = &markovResult[selectActionId].action;
+        MarkovResultItem resItem = markovResult[selectActionId];
         if (currAction == NULL)
         {
             qDebug() << "GetBestAction failed.";
@@ -248,10 +255,12 @@ void WebServiceSimulation::manualRun()
         // [8]
         qDebug() << "[8] Update event history...";
         eventHistoryWidgetMutex.lock();
-        eventHistoryItem->action = *currAction;
         eventHistoryItem->event = *currEvent;
-        eventHistoryItem->potentialReward = bestPotentialReward;
-        eventHistoryItem->probility = bestProbility;
+        eventHistoryItem->result = resItem;
+//        eventHistoryItem->action = *currAction;
+//        eventHistoryItem->event = *currEvent;
+//        eventHistoryItem->potentialReward = bestPotentialReward;
+//        eventHistoryItem->probility = bestProbility;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 
@@ -268,6 +277,7 @@ void WebServiceSimulation::manualRun()
 
         t++;
     }
+    emit execFinishedSignal();
     qDebug() << "WebServiceSimulation::manualRun() finished.";
 }
 
@@ -360,6 +370,24 @@ WebServiceAction* WebServiceSimulation::getBestAction()
     bestPotentialReward = res->potentialReward;
     bestProbility = res->successProbility;
     return &(res->action);
+}
+
+MarkovResultItem* WebServiceSimulation::getBestMarkovResult()
+{
+    if (markovResult.isEmpty())
+        return NULL;
+
+    MarkovResultItem * res = NULL;
+    for (int i = 0; i < markovResult.size(); i++)
+    {
+        if (res == NULL || res->potentialReward < markovResult[i].potentialReward)
+        {
+            res = &markovResult[i];
+        }
+    }
+    bestPotentialReward = res->potentialReward;
+    bestProbility = res->successProbility;
+    return res;
 }
 
 void WebServiceSimulation::setServiceGraph(ServiceGraph *_sg)
