@@ -38,6 +38,10 @@ BusinessMainWidget::BusinessMainWidget(QWidget *parent) :
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
     connect(bs, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
     connect(bs, SIGNAL(badEventSignal()), this, SLOT(enableNextStepButton()));
+    connect(bs, SIGNAL(normalEventSignal()), this, SLOT(updateStateToExec()));
+    connect(bs, SIGNAL(badEventSignal()), this, SLOT(updateStateToFault()));
+    connect(bs, SIGNAL(execFinishedSignal()), this, SLOT(upadteStateToFinished()));
+    connect(bs, SIGNAL(badEventSignal(int)), this, SLOT(updateStateToFault(int)));
 }
 
 BusinessMainWidget::~BusinessMainWidget()
@@ -204,6 +208,29 @@ void BusinessMainWidget::enableNextStepButton()
 void BusinessMainWidget::disableNextStepButton()
 {
     nextStepButton->setEnabled(false);
+}
+
+void BusinessMainWidget::upadteStateToFinished()
+{
+    for (int i = 0; i < workflowCount; i++)
+        sg[i].setExecState(QString("结束"));
+}
+
+void BusinessMainWidget::updateStateToFault()
+{
+    for (int i = 0; i < workflowCount; i++)
+    sg[i].setExecState(QString("不确定事件.."));
+}
+
+void BusinessMainWidget::updateStateToFault(int _flowId)
+{
+    sg[_flowId].setExecState(QString("不确定事件.."));
+}
+
+void BusinessMainWidget::updateStateToExec()
+{
+    for (int i = 0; i < workflowCount; i++)
+    sg[i].setExecState(QString("执行中..."));
 }
 
 void BusinessMainWidget::stop()

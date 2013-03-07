@@ -417,6 +417,7 @@ void WebServiceSimulation::setServiceGraph(ServiceGraph *_sg)
 // ¸üÐÂÏÔÊ¾
 void WebServiceSimulation::updatePainter()
 {
+    qDebug() << "void WebServiceSimulation::updatePainter() ...";
     if (sg == NULL)
     {
         return;
@@ -440,6 +441,7 @@ void WebServiceSimulation::updatePainter()
     }
     sg->setColors(colors);
     serviceGraphMutex.unlock();
+    qDebug() << "void WebServiceSimulation::updatePainter() finished.";
 }
 
 void WebServiceSimulation::setWebServiceEventWidget(WebServiceEventWidget* _wsew)

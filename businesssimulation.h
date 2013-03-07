@@ -58,7 +58,12 @@ public:
 signals:
     void normalEventSignal();
     void badEventSignal();
+    void execFinishedSignal();
+
+    void badEventSignal(int _flowId);
+
     void stopSignal();
+
 
 private:
     bool init();

@@ -20,10 +20,11 @@ BusinessStateWidget::BusinessStateWidget(QWidget *parent) :
 
 void BusinessStateWidget::createStateable()
 {
+    const int rowCount = 3;
     stateTable = new QTableWidget();
     stateTable->setColumnCount(Config::Instance()->getWorkflowCount()
                                * WorkFlow::Instance()->getActivitySize());
-    stateTable->setRowCount(2);
+    stateTable->setRowCount(rowCount);
     QStringList header;
     for (int i = 0; i < stateTable->columnCount(); i++)
     {
@@ -37,7 +38,7 @@ void BusinessStateWidget::createStateable()
     stateTable->setEditTriggers (QAbstractItemView::NoEditTriggers);
     stateTable->setSelectionMode (QAbstractItemView::NoSelection);
     QStringList vHeader;
-    vHeader << "服务编号" << "资源编号";
+    vHeader << "服务编号" << "资源编号" << "资源价格";
     stateTable->setVerticalHeaderLabels(vHeader);
     for (int i = 0; i < stateTable->rowCount(); i++)
     {
@@ -67,6 +68,7 @@ void BusinessStateWidget::updateStateTable()
         int activityId = j % WorkFlow::Instance()->getActivitySize();
         stateTable->item(0, j)->setText(QString("%1").arg(activities[flowId][activityId].blindService->id));
         stateTable->item(1, j)->setText(QString("%1").arg(activities[flowId][activityId].resource->id));
+        stateTable->item(2, j)->setText(QString("%1").arg(activities[flowId][activityId].resource->price));
     }
     stateWidgetMutex.unlock();
     qDebug() << "BusinessStateWidget::updateStateTable() finished.";

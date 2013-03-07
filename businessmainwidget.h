@@ -36,6 +36,12 @@ public slots:
     void enableNextStepButton();
     void disableNextStepButton();
 
+    void upadteStateToFinished();
+    void updateStateToFault();
+    void updateStateToExec();
+    void updateStateToFault(int _flowId);
+
+
 private:
 
     // UI

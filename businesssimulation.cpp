@@ -16,6 +16,7 @@
 #include "allmutex.h"
 #include "businessstatewidget.h"
 
+#include <cassert>
 #include <QApplication>
 #include <QTime>
 #include <QtGui>
@@ -117,6 +118,10 @@ void BusinessSimulation::autoRun()
         // [4]
         if (action != NULL)
         {
+            if (currEvent->type != BusinessEvent::NORMAIL)
+            {
+                emit badEventSignal(currEvent->a);
+            }
             qDebug() << "[3.1] Update event history...";
             eventHistoryWidgetMutex.lock();
             eventHistoryItem->event = *currEvent;
@@ -151,6 +156,7 @@ void BusinessSimulation::autoRun()
 
         t++;
     }
+    emit execFinishedSignal();
     qDebug() << "BusinessSimulation::autoRun() finished.";
 }
 
@@ -192,7 +198,7 @@ void BusinessSimulation::manualRun()
         baw->setAutoBusinessAction(action);
         if (currEvent->type != BusinessEvent::NORMAIL)
         {
-            emit badEventSignal();
+            emit badEventSignal(currEvent->a);
             if (isStop)
             {
                 qDebug()<< "User stop BusinessSimulation.";
@@ -242,6 +248,7 @@ void BusinessSimulation::manualRun()
         t++;
     }
 
+    emit execFinishedSignal();
     qDebug() << "BusinessSimulation::manualRun() finished.";
 }
 
@@ -539,6 +546,8 @@ void BusinessSimulation::timePassed()
 // ¸üÐÂÏÔÊ¾
 void BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg)
 {
+    qDebug() << "BusinessSimulation::updatePainter. flowId =" << flowId << " ...";
+    assert(flowId < workflowCount);
     QSet<int> & runningActivity = runningActivities[flowId];
     QSet<int> & finishedActivity = finishedActivities[flowId];
     QSet<int> & bugActivity = bugActivities[flowId];
@@ -558,6 +567,7 @@ void BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg)
     }
     sg.setColors(colors);
     serviceGraphMutex.unlock();
+    qDebug() << "BusinessSimulation::updatePainter(int flowId, ServiceGraph & sg) finished.";
 }
 
 void BusinessSimulation::updatePainter()
