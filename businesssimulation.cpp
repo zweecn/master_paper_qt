@@ -61,15 +61,15 @@ void BusinessSimulation::clearData()
 
 void BusinessSimulation::run()
 {
+    qDebug() << "BusinessSimulation::run() ...";
     isStop = false;
-    qDebug() << "BusinessSimulation::run() begin...";
     if (isAutoRun) {
         autoRun();
     } else {
         manualRun();
     }
-    qDebug() << "BusinessSimulation::run() finished.";
     emit stopSignal();
+    qDebug() << "BusinessSimulation::run() finished.";
 }
 
 void BusinessSimulation::stop()
@@ -79,8 +79,9 @@ void BusinessSimulation::stop()
 
 void BusinessSimulation::autoRun()
 {
-    clearData();
+    qDebug() << "BusinessSimulation::autoRun() ...";
 
+    clearData();
     for (int i = 0; i < workflowCount; i++) {
         runningActivities[i].insert(0);
         qDebug() << runningActivities[i] << finishedActivities[i];
@@ -90,30 +91,33 @@ void BusinessSimulation::autoRun()
     while (!isStop && !isFinished())
     {
         emit normalEventSignal();
-        qDebug() << "At t =" << t << "...";
+        qDebug() << " At t =" << t << "...";
 
         // [1] event
+        qDebug() << "[1] Random event...";
         eventWidgetMutex.lock();
         *currEvent = BusinessEvent::random(t, activities, workflowCount);
         bew->setEvent(currEvent);
         eventWidgetMutex.unlock();
 
         // [2] update show
+        qDebug() << "[2] Show random event...";
         bugActivities[currEvent->n].insert(currEvent->a);
         updatePainter();
         bsw->setActivities(activities);
 
         // [3]
+        qDebug() << "[3] Find best action for event...";
         actionWidgetMutex.lock();
         BusinessAction * action = operation(*currEvent);
         baw->setBusinessAction(actions);
         baw->setAutoBusinessAction(action);
         actionWidgetMutex.unlock();
 
-        qDebug() << "action" << action;
-
+        // [4]
         if (action != NULL)
         {
+            qDebug() << "[3.1] Update event history...";
             eventHistoryWidgetMutex.lock();
             eventHistoryItem->event = *currEvent;
             eventHistoryItem->action = *action;
@@ -122,32 +126,38 @@ void BusinessSimulation::autoRun()
         }
 
         // [4]
+        qDebug() << "[4] Recovery with action...";
         stateWidgetMutex.lock();
         recovery(action);
         stateWidgetMutex.unlock();
 
-        usleep(sleepMSecond);
         // [5] update show
+        qDebug() << "[5] Update show when recovery is finished...";
+        usleep(sleepMSecond);
         updatePainter();
         bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
+        qDebug() << "[6] One second passed...";
         usleep(sleepMSecond);
-
         stateWidgetMutex.lock();
         timePassed();
         stateWidgetMutex.unlock();
 
+        // [7] next second
+        qDebug() << "[7] Update show when 1 second is passed..";
         updatePainter();
         bsw->setActivities(activities);
 
-        // [7] next second
         t++;
     }
+    qDebug() << "BusinessSimulation::autoRun() finished.";
 }
 
 void BusinessSimulation::manualRun()
 {
+    qDebug() << "BusinessSimulation::manualRun() ...";
+
     clearData();
 
     for (int i = 0; i < workflowCount; i++) {
@@ -162,17 +172,20 @@ void BusinessSimulation::manualRun()
         qDebug() << "At t =" << t << "...";
 
         // [1] event
+        qDebug() << "[1] Random event...";
         eventWidgetMutex.lock();
         *currEvent = BusinessEvent::random(t, activities, workflowCount);
         bew->setEvent(currEvent);
         eventWidgetMutex.unlock();
 
         // [2] update show
+        qDebug() << "[2] Show random event...";
         bugActivities[currEvent->n].insert(currEvent->a);
         updatePainter();
         bsw->setActivities(activities);
 
         // [3]
+        qDebug() << "[3] Find best action for event...";
         actionWidgetMutex.lock();
         BusinessAction * action = operation(*currEvent);
         baw->setBusinessAction(actions);
@@ -192,38 +205,44 @@ void BusinessSimulation::manualRun()
 
         if (action != NULL)
         {
+            // [4]
+            qDebug() << "[4] Recovery with action...";
+            stateWidgetMutex.lock();
+            recovery(&actions[selectActionId]);
+            stateWidgetMutex.unlock();
+
+            qDebug() << "[4.1] Recovery with action...";
             eventHistoryWidgetMutex.lock();
             eventHistoryItem->event = *currEvent;
             eventHistoryItem->action = *action;
             bew->addBusinessEventRecordItem(eventHistoryItem);
             eventHistoryWidgetMutex.unlock();
-
-            // [4]
-            stateWidgetMutex.lock();
-            recovery(&actions[selectActionId]);
-            stateWidgetMutex.unlock();
         }
 
         emit normalEventSignal();
         usleep(sleepMSecond);
 
         // [5] update show
+        qDebug() << "[5] Update show when recovery is finished...";
         updatePainter();
         bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
-
+        qDebug() << "[6] One second passed...";
         stateWidgetMutex.lock();
         timePassed();
         stateWidgetMutex.unlock();
 
+        // [7] next second
+        qDebug() << "[7] Update show when 1 second is passed..";
         usleep(sleepMSecond);
         updatePainter();
         bsw->setActivities(activities);
 
-        // [7] next second
         t++;
     }
+
+    qDebug() << "BusinessSimulation::manualRun() finished.";
 }
 
 bool BusinessSimulation::isFinished()
@@ -242,9 +261,10 @@ bool BusinessSimulation::isFinished()
 
 BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
 {
+    qDebug() << "BusinessSimulation::operation(BusinessEvent &event) ...";
     // [4] do sth
     if (event.type == BusinessEvent::RESOUCE_NOT_USE) { // 资源不可用
-        qDebug() << "RESOUCE_NOT_USE";
+        qDebug() << " RESOUCE_NOT_USE";
         resourceReplace(event);
         termateDemand(event);
         actions[BusinessAction::RESOURCE_REPLACE].isActive = true;
@@ -254,7 +274,7 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
         actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
     } else if (event.type == BusinessEvent::NEED_ADD) { //需求增加
-        qDebug() << "NEED_ADD";
+        qDebug() << " NEED_ADD";
         resourceReplace(event);
         termateDemand(event);
 
@@ -272,7 +292,7 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
         actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = false;
         actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
-        qDebug() << "NEED_REDUCE";
+        qDebug() << " NEED_REDUCE";
     } else if (event.type == BusinessEvent::NEED_CANCEL) { // 需求取消
         termateDemand(event);
         actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = true;
@@ -281,9 +301,9 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         actions[BusinessAction::RESOURCE_REPLACE].isActive = false;
         actions[BusinessAction::RESOURCE_TRANSPORT].isActive = false;
         actions[BusinessAction::RESOURCE_ADD_NEW_NEED].isActive = false;
-        qDebug() << "NEED_CANCEL";
+        qDebug() << " NEED_CANCEL";
     } else {
-        qDebug() << "Normal event";
+        qDebug() << " NORMAIL EVENT";
         actions[BusinessAction::RESOURCE_TERMINATE_NEED].isActive = false;
         actions[BusinessAction::RESOURCE_DO_NOTHING].isActive = false;
         actions[BusinessAction::RESOURCE_REPLACE].isActive = false;
@@ -300,6 +320,7 @@ BusinessAction* BusinessSimulation::operation(BusinessEvent &event)
         }
     }
 
+    qDebug() << "BusinessSimulation::operation(BusinessEvent &event) finished.";
     return resAction;
 }
 
@@ -506,13 +527,13 @@ void BusinessSimulation::timePassed(int flowId)
 
 void BusinessSimulation::timePassed()
 {
+    qDebug() << "BusinessSimulation::timePassed()...";
     for (int i = 0; i < workflowCount; i++) {
-//        if (workflowState[i] == WORKFLOW_FAILED)
-//            continue;
         timePassed(i);
         qDebug() << "Flow" << i << ", runningActivities =" << runningActivities[i]
                  << "finishedActivities =" << finishedActivities[i];
     }
+    qDebug() << "BusinessSimulation::timePassed() finished.";
 }
 
 // 更新显示

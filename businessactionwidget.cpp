@@ -60,6 +60,7 @@ void BusinessActionWidget::createActionTable()
 
 void BusinessActionWidget::updateActionTable()
 {
+    qDebug() << "BusinessActionWidget::updateActionTable() ...";
     actionWidgetMutex.lock();
     for (int i = 0; i < BusinessAction::ACTIONS_COUNT; i++)
     {
@@ -86,8 +87,8 @@ void BusinessActionWidget::updateActionTable()
     {
         autoActionLabel->setText(tr("ÎÞ¶¯×÷"));
     }
-
     actionWidgetMutex.unlock();
+    qDebug() << "BusinessActionWidget::updateActionTable() finished.";
 }
 
 void BusinessActionWidget::setBusinessAction(BusinessAction *_actions)

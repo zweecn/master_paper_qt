@@ -52,6 +52,7 @@ void WebServiceFlowInfoWidget::setWebServiceFlow(WebServiceFlow *_wsf)
 
 void WebServiceFlowInfoWidget::updateFlowInfo()
 {
+    qDebug() << "WebServiceFlowInfoWidget::updateFlowInfo() ...";
     serviceFlowInfoWidgetMutex.lock();
     for (int i = 0; i < flowInfoTable->rowCount(); i++)
     {
@@ -63,4 +64,5 @@ void WebServiceFlowInfoWidget::updateFlowInfo()
         flowInfoTable->item(i, 5)->setText(tr("%1 %").arg(wsf->activities[i].x * 100));
     }
     serviceFlowInfoWidgetMutex.unlock();
+    qDebug() << "WebServiceFlowInfoWidget::updateFlowInfo() finished.";
 }

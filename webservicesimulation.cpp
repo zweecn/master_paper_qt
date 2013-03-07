@@ -60,12 +60,14 @@ bool WebServiceSimulation::clearData()
 
 void WebServiceSimulation::run()
 {
+    qDebug() << "WebServiceSimulation::run() ...";
     isStop = false;
     if (isAutoRun)
         autoRun();
     else
         manualRun();
     emit stopSignal();
+    qDebug() << "WebServiceSimulation::run() finished.";
 }
 
 void WebServiceSimulation::stop()
@@ -164,10 +166,6 @@ void WebServiceSimulation::autoRun()
         eventHistoryWidgetMutex.lock();
         eventHistoryItem->event = *currEvent;
         eventHistoryItem->result = *currItem;
-//        eventHistoryItem->action = *currAction;
-//        eventHistoryItem->event = *currEvent;
-//        eventHistoryItem->potentialReward = bestPotentialReward;
-//        eventHistoryItem->probility = bestProbility;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 
@@ -282,10 +280,6 @@ void WebServiceSimulation::manualRun()
         eventHistoryWidgetMutex.lock();
         eventHistoryItem->event = *currEvent;
         eventHistoryItem->result = resItem;
-//        eventHistoryItem->action = *currAction;
-//        eventHistoryItem->event = *currEvent;
-//        eventHistoryItem->potentialReward = bestPotentialReward;
-//        eventHistoryItem->probility = bestProbility;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 
@@ -372,7 +366,7 @@ void WebServiceSimulation::timePassed()
 
 void WebServiceSimulation::printCurrState(int t)
 {
-    qDebug() << "At " << t << ", running: " << runningActivities
+    qDebug() << "At t =" << t << ", running: " << runningActivities
              << wsf->toString();
 }
 

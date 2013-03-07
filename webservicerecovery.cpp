@@ -60,6 +60,7 @@ QList<MarkovResultItem> WebServiceRecovery::getMarkovResult(WebServiceAtomState 
 
 QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &state)
 {
+    qDebug() << "WebServiceRecovery::doMarkovResult(WebServiceAtomState &state) ...";
     // Get the result
     QList<MarkovResultItem> res;
     for (int j = 0; j < actionList.size(); j++)
@@ -128,11 +129,13 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
         }
     }
 
+    qDebug() << "WebServiceRecovery::doMarkovResult(WebServiceAtomState &state) finished.";
     return res;
 }
 
 WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
 {
+    qDebug() << "WebServiceRecovery::getGreedyResult(WebServiceAtomState &state) ...";
     QList<MarkovResultItem> res = getMarkovResult(state);
     time_t startTime = clock();
     for (int i = 0; i < res.size(); i++)
@@ -173,6 +176,7 @@ WebServiceAction WebServiceRecovery::getGreedyResult(WebServiceAtomState &state)
         action = item->action;
     greedyRuntime = clock() - startTime;
 
+    qDebug() << "WebServiceRecovery::getGreedyResult(WebServiceAtomState &state) finished.";
     return action;
 }
 
@@ -301,7 +305,7 @@ void WebServiceRecovery::printResult()
 
 bool WebServiceRecovery::runMarkov()
 {
-//    qDebug() << "WebServiceRecovery::runMarkov() ...";
+    qDebug() << "WebServiceRecovery::runMarkov() ...";
     for (int t = WorkFlow::Instance()->getActivitySize() - 2; t >= 0; t--)
     {
         //        qDebug() << "t =" << t;
@@ -344,12 +348,13 @@ bool WebServiceRecovery::runMarkov()
             }
         }
     }
-//    qDebug() << "WebServiceRecovery::runMarkov() finished.";
+    qDebug() << "WebServiceRecovery::runMarkov() finished.";
     return true;
 }
 
 bool WebServiceRecovery::initUtility()
 {
+    qDebug() << "WebServiceRecovery::initUtility() ...";
     stateUtility = new double[maxStateSize];
     for (int i = 0; i < maxStateSize; i++)
     {
@@ -402,11 +407,13 @@ bool WebServiceRecovery::initUtility()
             }
         }
     }
+    qDebug() << "WebServiceRecovery::initUtility() finished.";
     return true;
 }
 
 bool WebServiceRecovery::clearData()
 {
+    qDebug() << "WebServiceRecovery::clearData() ...";
     for (int i = 0; i < maxStateSize; i++)
     {
         if (stateAction && stateAction[i])
@@ -434,12 +441,13 @@ bool WebServiceRecovery::clearData()
 
     stateList.clear();
     actionList.clear();
+    qDebug() << "WebServiceRecovery::clearData() finished.";
     return true;
 }
 
 bool WebServiceRecovery::init()
 {
-//    qDebug() << "WebServiceRecovery::init() begin...";
+    qDebug() << "WebServiceRecovery::init() ...";
     clearData();
 
     for (int i = 0; i < WorkFlow::Instance()->getActivitySize(); i++)
@@ -472,15 +480,14 @@ bool WebServiceRecovery::init()
         memset(posibility[i], 0, sizeof(int) * maxStateSize);
     }
 
-//    qDebug() << "WebServiceRecovery::init() finised.";
+    qDebug() << "WebServiceRecovery::init() finised.";
     return true;
 }
 
 
 bool WebServiceRecovery::createStateTransTable()
 {
-//    qDebug() << "WebServiceRecovery::createStateTransTable()... stateList.size ="
-//                << stateList.size();
+    qDebug() << "WebServiceRecovery::createStateTransTable() ...";
     for (int i = 0; i < stateList.size(); i++)
     {
 //        qDebug() << "i =" << i << stateList[i].toString();
@@ -515,7 +522,7 @@ bool WebServiceRecovery::createStateTransTable()
         }
     }
     //    qDebug() << "isActionStateHasTrue()" << isActionStateHasTrue();
-//    qDebug() << "WebServiceRecovery::createStateTransTable() finished.";
+    qDebug() << "WebServiceRecovery::createStateTransTable() finished.";
     return true;
 }
 
@@ -940,6 +947,7 @@ WebServiceFlow& WebServiceRecovery::getWebServiceFlow()
 
 bool WebServiceRecovery::recovery(WebServiceAction *action)
 {
+    qDebug() << "WebServiceRecovery::recovery(WebServiceAction *action) ...";
     if (action == NULL)
         return false;
     if (action->type == WebServiceAction::NO_NEED_DO)
@@ -1001,6 +1009,7 @@ bool WebServiceRecovery::recovery(WebServiceAction *action)
     {
         wsf.globalState = WebServiceAtomState::FINISH_N;
     }
+    qDebug() << "WebServiceRecovery::recovery(WebServiceAction *action) finished.";
     return true;
 }
 

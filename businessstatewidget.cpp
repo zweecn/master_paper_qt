@@ -59,8 +59,8 @@ void BusinessStateWidget::setActivities(Activity **_activities)
 
 void BusinessStateWidget::updateStateTable()
 {
+    qDebug() << "BusinessStateWidget::updateStateTable() ...";
     stateWidgetMutex.lock();
-
     for (int j = 0; j < stateTable->columnCount(); j++)
     {
         int flowId = j / WorkFlow::Instance()->getActivitySize();
@@ -68,6 +68,6 @@ void BusinessStateWidget::updateStateTable()
         stateTable->item(0, j)->setText(QString("%1").arg(activities[flowId][activityId].blindService->id));
         stateTable->item(1, j)->setText(QString("%1").arg(activities[flowId][activityId].resource->id));
     }
-
     stateWidgetMutex.unlock();
+    qDebug() << "BusinessStateWidget::updateStateTable() finished.";
 }

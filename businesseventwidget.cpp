@@ -67,21 +67,9 @@ void BusinessEventWidget::createHistoryEventTable()
 
 void BusinessEventWidget::updateEvent()
 {
-    eventWidgetMutex.lock();
     qDebug() << "BusinessEventWidget::updateEvent() ..." << event->t ;
+    eventWidgetMutex.lock();
     eventTable->item(0, 0)->setText(tr("%1").arg(event->t));
-//    QString type;
-//    if (event->type == BusinessEvent::NORMAIL) {
-//        type = "正常";
-//    } else if (event->type == BusinessEvent::RESOUCE_NOT_USE) {
-//        type = "资源不可用";
-//    } else if (event->type == BusinessEvent::NEED_ADD) {
-//        type = "需求增加";
-//    } else if (event->type == BusinessEvent::NEED_REDUCE) {
-//        type = "需求减少";
-//    } else if (event->type == BusinessEvent::NEED_CANCEL) {
-//        type = "需求取消";
-//    }
     eventTable->item(0, 3)->setText(event->name());
     if (event->type != BusinessEvent::NORMAIL) {
         eventTable->item(0, 1)->setText(tr("%1").arg(event->n));
@@ -94,12 +82,13 @@ void BusinessEventWidget::updateEvent()
         eventTable->item(0, 4)->setText(tr(""));
         eventTable->item(0, 5)->setText(tr(""));
     }
-    qDebug() << "BusinessEventWidget::updateEvent() finished.";
     eventWidgetMutex.unlock();
+    qDebug() << "BusinessEventWidget::updateEvent() finished.";
 }
 
 void BusinessEventWidget::updateEventHistory()
 {
+    qDebug() << "BusinessEventWidget::updateEventHistory() ...";
     eventHistoryWidgetMutex.lock();
     if (!historyEventList.isEmpty())
     {
@@ -121,6 +110,7 @@ void BusinessEventWidget::updateEventHistory()
         }
     }
     eventHistoryWidgetMutex.unlock();
+    qDebug() << "BusinessEventWidget::updateEventHistory() finished.";
 }
 
 void BusinessEventWidget::setEvent(BusinessEvent *_event)
