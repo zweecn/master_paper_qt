@@ -45,12 +45,17 @@ void customMessageHandler(QtMsgType type, const char* msg)
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_CTYPE, "zh_CN.GB2312");
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("GBK"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("GBK"));
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
-
     QApplication a(argc, argv);
+
+//    setlocale(LC_CTYPE, "zh_CN.GB2312");
+    QTextCodec *gbk = QTextCodec::codecForName("GBK");
+    QTextCodec::setCodecForTr(gbk);
+    QTextCodec::setCodecForCStrings(gbk);
+    QTextCodec::setCodecForLocale(gbk);
+    QTextCodec::setCodecForTr(gbk);
+    QTextCodec::setCodecForLocale(gbk);
+    QTextCodec::setCodecForCStrings(gbk);
+
 
     qInstallMsgHandler(customMessageHandler);
 

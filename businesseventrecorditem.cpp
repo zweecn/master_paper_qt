@@ -16,6 +16,8 @@ BusinessEventRecordItem & BusinessEventRecordItem::operator =(const BusinessEven
         return *this;
     this->action = other.action;
     this->event = other.event;
+
+    return *this;
 }
 
 bool BusinessEventRecordItem::operator ==(const BusinessEventRecordItem& other) const

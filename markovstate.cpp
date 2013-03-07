@@ -114,7 +114,7 @@ bool MarkovState::init()
             if (failed) {
                 globalState = S_FAILED;
             }
-            if (finished && !failed || (activities[WorkFlow::Instance()->getActivitySize()-1].x >= 1)) {
+            if ((finished && !failed) || (activities[WorkFlow::Instance()->getActivitySize()-1].x >= 1)) {
                 globalState = S_SUCCEED;
             }
             if (!finished && !failed) {

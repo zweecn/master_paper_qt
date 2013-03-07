@@ -28,6 +28,7 @@ WebServiceState & WebServiceState::operator =(const WebServiceState & other)
 //        firstActivity[i] = other.firstActivity[i];
 //        globalState = other.globalState;
 //    }
+    return *this;
 }
 
 bool WebServiceState::init()

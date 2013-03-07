@@ -43,6 +43,8 @@ bool MarkovAction::init()
     newService = NULL;
 
     oldNewServiceList.clear();
+
+    return true;
 }
 
 QString MarkovAction::name()
