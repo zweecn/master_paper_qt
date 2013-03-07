@@ -66,14 +66,14 @@ public:
     QString toString()
     {
         QString res = action.toString();
-        res += QString(" PotentialReward:%1 SuccessProbility:%2")
+        res += QString(" <p>潜在收益:%1 成功概率:%2</p>")
                 .arg(potentialReward).arg(successProbility);
-        res += QString(" Suffix:[");
+        res += QString(" 可能的后续状态: ");
         for (int i = 0; i < suffixState.size(); i++)
         {
             res += (suffixState[i].toString().append(QString(",%1 ").arg(suffixPosibility[i])));
         }
-        res += "]";
+
         return res;
     }
 };

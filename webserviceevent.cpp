@@ -47,37 +47,37 @@ QString WebServiceEvent::name()
     QString res;
     if (type == WebServiceAtomState::READY_N)
     {
-        res += "READY_N";
+        res += "准备(N)";
     }
     else if (type == WebServiceAtomState::READY_U)
     {
-        res += "READY_U";
+        res += "准备(U)";
     }
     else if ( type == WebServiceAtomState::FAIL)
     {
-        res += "FAIL";
+        res += "失败";
     }
     else if ( type == WebServiceAtomState::FINISH_U)
     {
-        res += "FINISH_U";
+        res += "完成(U)";
     }
     else if ( type == WebServiceAtomState::FINISH_N)
     {
-        res += "FINISH_N";
+        res += "完成(N)";
     }
     else if ( type == WebServiceAtomState::STOP)
     {
-        res += "STOP";
+        res += "停止";
     }
     else
     {
-        res += "NOT_STATE";
+        res += "非事件";
     }
     return res;
 }
 
 QString WebServiceEvent::toString()
 {
-    QString res(QString("Event: [T%1 A%2 %3]").arg(t).arg(a).arg(name()));
+    QString res(QString("事件: [T%1 A%2 %3]").arg(t).arg(a).arg(name()));
     return res;
 }

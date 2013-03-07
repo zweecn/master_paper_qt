@@ -40,37 +40,42 @@ void WebServiceAtomState::setStateType(int _stateType)
     stateType = _stateType;
 }
 
-QString WebServiceAtomState::toString()
+QString WebServiceAtomState::name()
 {
-    QString res(QString("State [%1 ").arg(activityId));
+    QString res;
     if (stateType == READY_N)
     {
-        res += "READY_N";
+        res += "准备(N)";
     }
     else if (stateType == READY_U)
     {
-        res += "READY_U";
+        res += "准备(U)";
     }
     else if ( stateType == FAIL)
     {
-        res += "FAIL";
+        res += "失败";
     }
     else if ( stateType == FINISH_U)
     {
-        res += "FINISH_U";
+        res += "完成(U)";
     }
     else if ( stateType == FINISH_N)
     {
-        res += "FINISH_N";
+        res += "完成(N)";
     }
     else if ( stateType == STOP)
     {
-        res += "STOP";
+        res += "终止";
     }
     else
     {
-        res += "NOT_STATE";
+        res += "非状态";
     }
-    res += "]";
+    return res;
+}
+
+QString WebServiceAtomState::toString()
+{
+    QString res(QString("状态: [A=%1 %2]").arg(activityId).arg(name()));
     return res;
 }

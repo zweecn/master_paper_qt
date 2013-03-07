@@ -11,6 +11,7 @@ public:
     WebServiceAtomState(const WebServiceAtomState & other);
     bool operator ==(const WebServiceAtomState & other) const;
     QString toString();
+    QString name();
 
     int getId();
     void setId(int _id);

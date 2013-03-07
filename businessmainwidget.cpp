@@ -196,16 +196,20 @@ void BusinessMainWidget::nextStep()
     else
     {
         bs->setSelectActionId(res);
-        QString q = bs->getSelectAction()->toString();
-        int ret = QMessageBox::question(this, tr("选择确认"), tr("您选择的是动作：%1").arg(q),
-                              QMessageBox::Ok, QMessageBox::Cancel);
-        switch (ret)
+        BusinessAction *actionTmp = bs->getSelectAction();
+        if (actionTmp != NULL)
         {
-        case QMessageBox::Ok:
-            nextStepCond.wakeOne();
-            break;
-        case QMessageBox::Cancel:
-            break;
+            QString q = actionTmp->toString();
+            int ret = QMessageBox::question(this, tr("选择确认"), tr("<p>您选择的是：</p>%1").arg(q),
+                                            QMessageBox::Ok, QMessageBox::Cancel);
+            switch (ret)
+            {
+            case QMessageBox::Ok:
+                nextStepCond.wakeOne();
+                break;
+            case QMessageBox::Cancel:
+                break;
+            }
         }
     }
 }

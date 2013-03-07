@@ -56,70 +56,42 @@ QString WebServiceAction::name()
     QString res;
     if (type == NO_NEED_DO)
     {
-        res += "NO_NEED_DO";
+        res += "无需决策";
     }
     else if ( type == TERMINATE)
     {
-        res += "TERMINATE";
+        res += "终止";
     }
     else if ( type == DO_NOTHING)
     {
-        res += "DO_NOTHING";
+        res += "不作为";
     }
     else if ( type == REPLACE)
     {
-        res += "REPLACE";
+        res += "替换";
     }
     else if ( type == RE_COMPOSE)
     {
-        res += "RE_COMPOSE";
+        res += "重组";
     }
     else if ( type == RETRY)
     {
-        res += "RETRY";
+        res += "重试";
     }
     else
     {
-        res += "NOT_ACTION";
+        res += "非动作";
     }
     return res;
 }
 
 QString WebServiceAction::toString()
 {
-    QString res(QString("Action: [%1 ").arg(getId()));
-    if (type == NO_NEED_DO)
-    {
-        res += "NO_NEED_DO";
-    }
-    else if ( type == TERMINATE)
-    {
-        res += "TERMINATE";
-    }
-    else if ( type == DO_NOTHING)
-    {
-        res += "DO_NOTHING";
-    }
-    else if ( type == REPLACE)
-    {
-        res += "REPLACE";
-    }
-    else if ( type == RE_COMPOSE)
-    {
-        res += "RE_COMPOSE";
-    }
-    else if ( type == RETRY)
-    {
-        res += "RETRY";
-    }
-    else
-    {
-        res += "NOT_ACTION";
-    }
+    QString res(QString("动作: [id=%1 %2").arg(getId()).arg(name()));
+
     QListIterator<ReplaceNode> it(replaceList);
     while (it.hasNext())
     {
-
         const ReplaceNode & node = it.next();
         res += QString(" A%1:S%2->S%3 ")
                         .arg(node.activityId)

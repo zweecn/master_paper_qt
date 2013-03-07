@@ -471,8 +471,11 @@ void WebServiceSimulation::setSelectActionId(int _selectActionId)
 
 MarkovResultItem* WebServiceSimulation::getSelectItem()
 {
-    assert(selectActionId < markovResult.size() && selectActionId >= 0);
-    return  &markovResult[selectActionId];
+    if (selectActionId < markovResult.size() && selectActionId >= 0)
+    {
+        return  &markovResult[selectActionId];
+    }
+    return NULL;
 }
 
 void WebServiceSimulation::setSleepMSecond(int _sleepMSecond)

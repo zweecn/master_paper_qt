@@ -777,8 +777,9 @@ void BusinessSimulation::setSelectActionId(int _selectActionId)
 
 BusinessAction* BusinessSimulation::getSelectAction()
 {
-    assert(selectActionId < BusinessAction::ACTIONS_COUNT && selectActionId >= 0);
-    return &actions[selectActionId];
+    if (selectActionId < BusinessAction::ACTIONS_COUNT && selectActionId >= 0)
+        return &actions[selectActionId];
+    return NULL;
 }
 
 void BusinessSimulation::setBusinessStateWidget(BusinessStateWidget *_bsw)
