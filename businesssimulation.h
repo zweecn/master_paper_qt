@@ -27,6 +27,10 @@ public:
     void autoRun();
     void manualRun();
 
+    void stop();
+
+    void setSleepMSecond(int _sleepMSecond);
+
     ServiceGraph* getServiceGraph();
     void setServiceGraph(ServiceGraph* _sg);
     BusinessEventWidget* getBusinessEventWidget();
@@ -53,6 +57,7 @@ public:
 signals:
     void normalEventSignal();
     void badEventSignal();
+    void stopSignal();
 
 private:
     bool init();
@@ -98,6 +103,9 @@ private:
     BusinessActionWidget* baw;
     BusinessStateWidget* bsw;
     bool isAutoRun;
+
+    bool isStop;
+    int sleepMSecond;
 };
 
 #endif // BUSINESSSIMULATION_H

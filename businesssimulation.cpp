@@ -58,6 +58,7 @@ void BusinessSimulation::clearData()
 
 void BusinessSimulation::run()
 {
+    isStop = false;
     qDebug() << "BusinessSimulation::run() begin...";
     if (isAutoRun) {
         autoRun();
@@ -65,6 +66,12 @@ void BusinessSimulation::run()
         manualRun();
     }
     qDebug() << "BusinessSimulation::run() finished.";
+    emit stopSignal();
+}
+
+void BusinessSimulation::stop()
+{
+    isStop = true;
 }
 
 void BusinessSimulation::autoRun()
@@ -77,7 +84,7 @@ void BusinessSimulation::autoRun()
     }
 
     int t = 0;
-    while (!isFinished())
+    while (!isStop && !isFinished())
     {
         emit normalEventSignal();
         qDebug() << "At t =" << t << "...";
@@ -105,13 +112,13 @@ void BusinessSimulation::autoRun()
         recovery(action);
         stateWidgetMutex.unlock();
 
-        sleep(1);
+        usleep(sleepMSecond);
         // [5] update show
         updatePainter();
         bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
-        sleep(1);
+        usleep(sleepMSecond);
 
         stateWidgetMutex.lock();
         timePassed();
@@ -135,7 +142,7 @@ void BusinessSimulation::manualRun()
     }
 
     int t = 0;
-    while (!isFinished())
+    while (!isStop && !isFinished())
     {
         emit normalEventSignal();
         qDebug() << "At t =" << t << "...";
@@ -159,6 +166,12 @@ void BusinessSimulation::manualRun()
         if (currEvent->type != BusinessEvent::NORMAIL)
         {
             emit badEventSignal();
+            if (isStop)
+            {
+                qDebug()<< "User stop BusinessSimulation.";
+                actionWidgetMutex.unlock();
+                break;
+            }
             nextStepCond.wait(&actionWidgetMutex);
         }
         actionWidgetMutex.unlock();
@@ -169,7 +182,7 @@ void BusinessSimulation::manualRun()
         stateWidgetMutex.unlock();
 
         emit normalEventSignal();
-        sleep(1);
+        usleep(sleepMSecond);
 
         // [5] update show
         updatePainter();
@@ -181,7 +194,7 @@ void BusinessSimulation::manualRun()
         timePassed();
         stateWidgetMutex.unlock();
 
-        sleep(1);
+        usleep(sleepMSecond);
         updatePainter();
         bsw->setActivities(activities);
 
@@ -527,6 +540,7 @@ void BusinessSimulation::printCurrState(int t, int flowId)
 bool BusinessSimulation::init()
 {
     qDebug() << "BusinessSimulation.init() begin...";
+    sleepMSecond = 0;
     //    connect(sg, SIGNAL(destroyed()), this, SLOT(deleteLater()));
     QFile file(start_filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -707,4 +721,9 @@ void BusinessSimulation::setSelectActionId(int _selectActionId)
 void BusinessSimulation::setBusinessStateWidget(BusinessStateWidget *_bsw)
 {
     bsw = _bsw;
+}
+
+void BusinessSimulation::setSleepMSecond(int _sleepMSecond)
+{
+    sleepMSecond = _sleepMSecond;
 }

@@ -60,10 +60,17 @@ bool WebServiceSimulation::clearData()
 
 void WebServiceSimulation::run()
 {
+    isStop = false;
     if (isAutoRun)
         autoRun();
     else
         manualRun();
+    emit stopSignal();
+}
+
+void WebServiceSimulation::stop()
+{
+    isStop = true;
 }
 
 void WebServiceSimulation::autoRun()
@@ -82,7 +89,7 @@ void WebServiceSimulation::autoRun()
 
     int t = 0;
     qDebug() << t << isFinished() ;
-    while (!isFinished())
+    while (!isStop && !isFinished())
     {
         emit normalEventSignal();
         printCurrState(t);
@@ -197,7 +204,7 @@ void WebServiceSimulation::manualRun()
 
     int t = 0;
     qDebug() << t << isFinished() ;
-    while (!isFinished())
+    while (!isStop && !isFinished())
     {
         emit normalEventSignal();
         printCurrState(t);
@@ -224,7 +231,25 @@ void WebServiceSimulation::manualRun()
         updatePainter();
 
         // [3] [4]
-        makeMarkov();
+//        makeMarkov();
+        qDebug() << "[3] Cause bad state...";
+        WebServiceAtomState state;
+        state.activityId = currEvent->a;
+        state.stateType = currEvent->type;
+        qDebug() << " State:" << state.toString();
+
+        qDebug() << "[4] Find markov solution...";
+        actionWidgetReadWriteMutex.lockForWrite();
+        markovResult = wsr->getMarkovResult(state);
+        wsaw->setMarkovResult(markovResult);
+        if (isStop)
+        {
+            qDebug()<< "User stop WebServiceSimulation.";
+            actionWidgetReadWriteMutex.unlock();
+            break;
+        }
+        nextStepCond.wait(&actionWidgetReadWriteMutex);
+        actionWidgetReadWriteMutex.unlock();
 
         // [5]
         qDebug() << "[5] GetBestMarkovResult..." ;

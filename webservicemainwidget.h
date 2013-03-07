@@ -20,7 +20,11 @@ public:
     explicit WebServiceMainWidget(QWidget *parent = 0);
     ~WebServiceMainWidget();
 
+protected:
+    void closeEvent(QCloseEvent *);
+
 signals:
+    void stopSignal();
 
 public slots:
     void autoRun();
@@ -35,6 +39,7 @@ public slots:
     void updateStateToFault();
     void updateStateToExec();
 
+    void stop();
 
 private:
     void createFlowGroupBox();

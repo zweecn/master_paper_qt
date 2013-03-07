@@ -19,13 +19,19 @@ public:
     explicit BusinessMainWidget(QWidget *parent = 0);
     ~BusinessMainWidget();
 
+protected:
+    void closeEvent(QCloseEvent *);
+
 signals:
+    void stopSignal();
 
 public slots:
     void autoRun();
 
     void manualRun();
     void nextStep();
+
+    void stop();
 
     void enableNextStepButton();
     void disableNextStepButton();
@@ -56,6 +62,8 @@ private:
     QPushButton *autoStartButton;
     QPushButton *startButton;
     QPushButton *nextStepButton;
+    QLineEdit *sleepEdit;
+    QLabel *sleepLabel;
 
     QGroupBox *rewardGroupBox;
     LineChart *rewardLineChart;

@@ -21,6 +21,7 @@ WebServiceEventWidget::WebServiceEventWidget(QWidget *parent) :
     connect(this, SIGNAL(updateHistoryEventSignal()), this, SLOT(updateHistoryEvent()));
 }
 
+
 void WebServiceEventWidget::createEventTable()
 {
     const int columnCount = 3;

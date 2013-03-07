@@ -24,6 +24,8 @@ public:
     void autoRun();
     void manualRun();
 
+    void stop();
+
     void setServiceGraph(ServiceGraph *_sg);
     void setWebServiceEventWidget(WebServiceEventWidget* _wsew);
     void setWebServiceActionWidget(WebServiceActionWidget* _wsaw);
@@ -36,6 +38,7 @@ signals:
     void normalEventSignal();
     void badEventSignal();
     void execFinishedSignal();
+    void stopSignal();
 
 private:
     bool init();
@@ -74,6 +77,8 @@ private:
     WebServiceActionWidget* wsaw;
     WebServiceFlowInfoWidget* wsfiw;
     bool isAutoRun;
+
+    bool isStop;
 };
 
 #endif // WEBSERVICESIMULATION_H

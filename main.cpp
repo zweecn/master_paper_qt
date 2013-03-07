@@ -17,6 +17,7 @@
 #include "webserviceflow.h"
 #include "test.h"
 #include "webservicemainwidget.h"
+#include "simulationmainwidget.h"
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +58,10 @@ int main(int argc, char *argv[])
 
 //    Test t;
 
-    WebServiceMainWidget w;
+//    WebServiceMainWidget w;
+//    w.show();
+
+    SimulationMainWidget w;
     w.show();
 
     return a.exec();

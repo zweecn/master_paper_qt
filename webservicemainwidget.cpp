@@ -38,11 +38,19 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     connect(wss, SIGNAL(normalEventSignal()), this, SLOT(updateStateToExec()));
     connect(wss, SIGNAL(badEventSignal()), this, SLOT(updateStateToFault()));
     connect(wss, SIGNAL(execFinishedSignal()), this, SLOT(upadteStateToFinished()));
+    connect(wss, SIGNAL(stopSignal()), this, SLOT(stop()));
 }
 
 WebServiceMainWidget::~WebServiceMainWidget()
 {
     delete wss;
+}
+
+void WebServiceMainWidget::closeEvent(QCloseEvent *)
+{
+    wss->setSleepMSecond(0);
+    wss->stop();
+    nextStepCond.wakeAll();
 }
 
 void WebServiceMainWidget::createFlowGroupBox()
@@ -187,3 +195,7 @@ void WebServiceMainWidget::updateStateToExec()
     sg->setExecState(QString("Ö´ÐÐÖÐ..."));
 }
 
+void WebServiceMainWidget::stop()
+{
+    emit stopSignal();
+}

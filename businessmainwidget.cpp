@@ -45,6 +45,13 @@ BusinessMainWidget::~BusinessMainWidget()
     delete bs;
 }
 
+void BusinessMainWidget::closeEvent(QCloseEvent *)
+{
+    bs->setSleepMSecond(0);
+    bs->stop();
+    nextStepCond.wakeAll();
+}
+
 void BusinessMainWidget::createFlowGroupBox()
 {
     flowGroupBox = new QGroupBox(tr("服务流程(Service Workflow)"));
@@ -99,8 +106,14 @@ void BusinessMainWidget::createButtonGroupBox()
     autoStartButton = new QPushButton(tr("自动仿真"));
     startButton = new QPushButton(tr("开始"));
     nextStepButton = new QPushButton(tr("下一步"));
+    sleepEdit = new QLineEdit();
+    sleepLabel = new QLabel(tr("设定间隔时间(ms)"));
+    sleepEdit->setFixedWidth(60);
+    sleepEdit->setText(tr("1000"));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(sleepLabel);
+    buttonLayout->addWidget(sleepEdit);
     buttonLayout->addWidget(autoStartButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(startButton);
@@ -140,6 +153,9 @@ void BusinessMainWidget::autoRun()
     startButton->setEnabled(false);
     nextStepButton->setEnabled(false);
 
+    int sleepMsecond = sleepEdit->text().toInt() * 1000;
+    bs->setSleepMSecond(sleepMsecond);
+    sleepEdit->setEnabled(false);
     bs->setAutoRun(true);
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
@@ -154,6 +170,9 @@ void BusinessMainWidget::manualRun()
     startButton->setEnabled(false);
     nextStepButton->setEnabled(false);
 
+    int sleepMsecond = sleepEdit->text().toInt() * 1000;
+    bs->setSleepMSecond(sleepMsecond);
+    sleepEdit->setEnabled(false);
     bs->setAutoRun(false);
     bs->setServiceGraph(sg);
     bs->setBusinessEventWidget(eventWidget);
@@ -185,4 +204,9 @@ void BusinessMainWidget::enableNextStepButton()
 void BusinessMainWidget::disableNextStepButton()
 {
     nextStepButton->setEnabled(false);
+}
+
+void BusinessMainWidget::stop()
+{
+    emit stopSignal();
 }
