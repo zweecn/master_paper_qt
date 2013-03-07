@@ -85,7 +85,6 @@ void BusinessSimulation::autoRun()
     clearData();
     for (int i = 0; i < workflowCount; i++) {
         runningActivities[i].insert(0);
-        qDebug() << runningActivities[i] << finishedActivities[i];
     }
 
     int t = 0;
@@ -111,25 +110,30 @@ void BusinessSimulation::autoRun()
         qDebug() << "[3] Find best action for event...";
         actionWidgetMutex.lock();
         BusinessAction * action = operation(*currEvent);
+        if (action == NULL)
+        {
+            qDebug() << "Action is NULL. Exit.";
+            actionWidgetMutex.unlock();
+            break;
+        }
         baw->setBusinessAction(actions);
         baw->setAutoBusinessAction(action);
         actionWidgetMutex.unlock();
 
         // [4]
-        if (action != NULL)
+
+        if (currEvent->type != BusinessEvent::NORMAIL)
         {
-            if (currEvent->type != BusinessEvent::NORMAIL)
-            {
-                emit badEventSignal(currEvent->a);
-                emit badEventSignal();
-            }
-            qDebug() << "[3.1] Update event history...";
-            eventHistoryWidgetMutex.lock();
-            eventHistoryItem->event = *currEvent;
-            eventHistoryItem->action = *action;
-            bew->addBusinessEventRecordItem(eventHistoryItem);
-            eventHistoryWidgetMutex.unlock();
+            emit badEventSignal(currEvent->a);
+            emit badEventSignal();
         }
+        qDebug() << "[3.1] Update event history...";
+        eventHistoryWidgetMutex.lock();
+        eventHistoryItem->event = *currEvent;
+        eventHistoryItem->action = *action;
+        bew->addBusinessEventRecordItem(eventHistoryItem);
+        eventHistoryWidgetMutex.unlock();
+
 
         // [4]
         qDebug() << "[4] Recovery with action...";
@@ -169,7 +173,6 @@ void BusinessSimulation::manualRun()
 
     for (int i = 0; i < workflowCount; i++) {
         runningActivities[i].insert(0);
-        qDebug() << runningActivities[i] << finishedActivities[i];
     }
 
     int t = 0;
@@ -195,6 +198,12 @@ void BusinessSimulation::manualRun()
         qDebug() << "[3] Find best action for event...";
         actionWidgetMutex.lock();
         BusinessAction * action = operation(*currEvent);
+        if (action == NULL)
+        {
+            qDebug() << "Action is NULL. Exit.";
+            actionWidgetMutex.unlock();
+            break;
+        }
         baw->setBusinessAction(actions);
         baw->setAutoBusinessAction(action);
         if (currEvent->type != BusinessEvent::NORMAIL)
@@ -211,21 +220,23 @@ void BusinessSimulation::manualRun()
         }
         actionWidgetMutex.unlock();
 
-        if (action != NULL)
-        {
             // [4]
-            qDebug() << "[4] Recovery with action...";
-            stateWidgetMutex.lock();
-            recovery(&actions[selectActionId]);
-            stateWidgetMutex.unlock();
-
-            qDebug() << "[4.1] Recovery with action...";
-            eventHistoryWidgetMutex.lock();
-            eventHistoryItem->event = *currEvent;
-            eventHistoryItem->action = *action;
-            bew->addBusinessEventRecordItem(eventHistoryItem);
-            eventHistoryWidgetMutex.unlock();
+        qDebug() << "[4] Recovery with action...";
+        if (selectActionId >= BusinessAction::ACTIONS_COUNT || selectActionId < 0)
+        {
+            qDebug() << "assert selectActionId < BusinessAction::ACTIONS_COUNT || selectActionId >= 0 failed.";
+            break;
         }
+        stateWidgetMutex.lock();
+        recovery(&actions[selectActionId]);
+        stateWidgetMutex.unlock();
+
+        qDebug() << "[4.1] Recovery with action...";
+        eventHistoryWidgetMutex.lock();
+        eventHistoryItem->event = *currEvent;
+        eventHistoryItem->action = *action;
+        bew->addBusinessEventRecordItem(eventHistoryItem);
+        eventHistoryWidgetMutex.unlock();
 
         emit normalEventSignal();
         usleep(sleepMSecond);

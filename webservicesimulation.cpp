@@ -251,7 +251,11 @@ void WebServiceSimulation::manualRun()
 
         // [5]
         qDebug() << "[5] GetBestMarkovResult..." ;
-        assert(selectActionId >=0 && selectActionId < markovResult.size());
+        if (selectActionId < 0 || selectActionId >= markovResult.size())
+        {
+            qDebug() << "assert failed. selectActionId >=0 && selectActionId < markovResult.size()";
+            break;
+        }
         currAction = &markovResult[selectActionId].action;
         MarkovResultItem resItem = markovResult[selectActionId];
         if (currAction == NULL)

@@ -65,15 +65,15 @@ public:
 
     QString toString()
     {
-        QString res = action.toString();
-        res += QString(" <p>潜在收益:%1 成功概率:%2</p>")
+        QString res(QString("<p>%1</p>").arg(action.toString()));
+        res += QString("<p>潜在收益:%1   成功概率:%2</p>")
                 .arg(potentialReward).arg(successProbility);
-        res += QString(" 可能的后续状态: ");
+        res += QString("<p>后续可能:</p><p>");
         for (int i = 0; i < suffixState.size(); i++)
         {
-            res += (suffixState[i].toString().append(QString(",%1 ").arg(suffixPosibility[i])));
+            res += (suffixState[i].toString().append(QString(",p=%1 ").arg(suffixPosibility[i])));
         }
-
+        res += "</p>";
         return res;
     }
 };

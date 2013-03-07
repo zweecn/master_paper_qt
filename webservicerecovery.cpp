@@ -74,7 +74,8 @@ QList<MarkovResultItem> WebServiceRecovery::doMarkovResult(WebServiceAtomState &
             {
                 if (actionState[actionList[j].getId()][stateList[k].getId()])
                 {
-                    double p = posibility[actionList[j].getId()][stateList[k].getId()] / MAX_POSIBILITY;
+                    double p = (double) posibility[actionList[j].getId()][stateList[k].getId()]
+                            / MAX_POSIBILITY;
                     WebServiceAtomState s = stateList[k];
                     item.suffixPosibility.append(p);
                     item.suffixState.append(s);
