@@ -114,39 +114,41 @@ void BusinessSimulation::autoRun()
         {
             qDebug() << "Action is NULL. Exit.";
             actionWidgetMutex.unlock();
-            break;
+//            break;
         }
-        baw->setBusinessAction(actions);
-        baw->setAutoBusinessAction(action);
-        actionWidgetMutex.unlock();
-
-        // [4]
-
-        if (currEvent->type != BusinessEvent::NORMAIL)
+        else
         {
-            emit badEventSignal(currEvent->a);
-            emit badEventSignal();
+            baw->setBusinessAction(actions);
+            baw->setAutoBusinessAction(action);
+            actionWidgetMutex.unlock();
+
+            // [4]
+
+            if (currEvent->type != BusinessEvent::NORMAIL)
+            {
+                emit badEventSignal(currEvent->a);
+                emit badEventSignal();
+            }
+            qDebug() << "[3.1] Update event history...";
+            eventHistoryWidgetMutex.lock();
+            eventHistoryItem->event = *currEvent;
+            eventHistoryItem->action = *action;
+            bew->addBusinessEventRecordItem(eventHistoryItem);
+            eventHistoryWidgetMutex.unlock();
+
+
+            // [4]
+            qDebug() << "[4] Recovery with action...";
+            stateWidgetMutex.lock();
+            recovery(action);
+            stateWidgetMutex.unlock();
+
+            // [5] update show
+            qDebug() << "[5] Update show when recovery is finished...";
+            usleep(sleepMSecond);
+            updatePainter();
+            bsw->setActivities(activities);
         }
-        qDebug() << "[3.1] Update event history...";
-        eventHistoryWidgetMutex.lock();
-        eventHistoryItem->event = *currEvent;
-        eventHistoryItem->action = *action;
-        bew->addBusinessEventRecordItem(eventHistoryItem);
-        eventHistoryWidgetMutex.unlock();
-
-
-        // [4]
-        qDebug() << "[4] Recovery with action...";
-        stateWidgetMutex.lock();
-        recovery(action);
-        stateWidgetMutex.unlock();
-
-        // [5] update show
-        qDebug() << "[5] Update show when recovery is finished...";
-        usleep(sleepMSecond);
-        updatePainter();
-        bsw->setActivities(activities);
-
         // [6] sleep a moment & time passed & update show
         qDebug() << "[6] One second passed...";
         usleep(sleepMSecond);
@@ -202,49 +204,52 @@ void BusinessSimulation::manualRun()
         {
             qDebug() << "Action is NULL. Exit.";
             actionWidgetMutex.unlock();
-            break;
+//            break;
         }
-        baw->setBusinessAction(actions);
-        baw->setAutoBusinessAction(action);
-        if (currEvent->type != BusinessEvent::NORMAIL)
+        else
         {
-            emit badEventSignal(currEvent->a);
-            emit badEventSignal();
-            if (isStop)
+            baw->setBusinessAction(actions);
+            baw->setAutoBusinessAction(action);
+            if (currEvent->type != BusinessEvent::NORMAIL)
             {
-                qDebug()<< "User stop BusinessSimulation.";
-                actionWidgetMutex.unlock();
-                break;
+                emit badEventSignal(currEvent->a);
+                emit badEventSignal();
+                if (isStop)
+                {
+                    qDebug()<< "User stop BusinessSimulation.";
+                    actionWidgetMutex.unlock();
+                    break;
+                }
+                nextStepCond.wait(&actionWidgetMutex);
             }
-            nextStepCond.wait(&actionWidgetMutex);
-        }
-        actionWidgetMutex.unlock();
+            actionWidgetMutex.unlock();
 
             // [4]
-        qDebug() << "[4] Recovery with action...";
-        if (selectActionId >= BusinessAction::ACTIONS_COUNT || selectActionId < 0)
-        {
-            qDebug() << "assert selectActionId < BusinessAction::ACTIONS_COUNT || selectActionId >= 0 failed.";
-            break;
+            qDebug() << "[4] Recovery with action...";
+            if (selectActionId >= BusinessAction::ACTIONS_COUNT || selectActionId < 0)
+            {
+                qDebug() << "assert selectActionId < BusinessAction::ACTIONS_COUNT || selectActionId >= 0 failed.";
+                break;
+            }
+            stateWidgetMutex.lock();
+            recovery(&actions[selectActionId]);
+            stateWidgetMutex.unlock();
+
+            qDebug() << "[4.1] Recovery with action...";
+            eventHistoryWidgetMutex.lock();
+            eventHistoryItem->event = *currEvent;
+            eventHistoryItem->action = *action;
+            bew->addBusinessEventRecordItem(eventHistoryItem);
+            eventHistoryWidgetMutex.unlock();
+
+            emit normalEventSignal();
+            usleep(sleepMSecond);
+
+            // [5] update show
+            qDebug() << "[5] Update show when recovery is finished...";
+            updatePainter();
+            bsw->setActivities(activities);
         }
-        stateWidgetMutex.lock();
-        recovery(&actions[selectActionId]);
-        stateWidgetMutex.unlock();
-
-        qDebug() << "[4.1] Recovery with action...";
-        eventHistoryWidgetMutex.lock();
-        eventHistoryItem->event = *currEvent;
-        eventHistoryItem->action = *action;
-        bew->addBusinessEventRecordItem(eventHistoryItem);
-        eventHistoryWidgetMutex.unlock();
-
-        emit normalEventSignal();
-        usleep(sleepMSecond);
-
-        // [5] update show
-        qDebug() << "[5] Update show when recovery is finished...";
-        updatePainter();
-        bsw->setActivities(activities);
 
         // [6] sleep a moment & time passed & update show
         qDebug() << "[6] One second passed...";

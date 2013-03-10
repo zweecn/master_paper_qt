@@ -57,17 +57,20 @@ void SimulationMainWidget::init()
 void SimulationMainWidget::doWebServiceSimulation()
 {
     wsw = new WebServiceMainWidget();
-    connect(wsw, SIGNAL(stopSignal()), this, SLOT(deleteWebServiceMainWidget()));
+//    connect(wsw, SIGNAL(stopSignal()), this, SLOT(deleteWebServiceMainWidget()));
+    connect(wsw, SIGNAL(deleteSignal()), this, SLOT(deleteWebServiceMainWidget()));
 }
 
 void SimulationMainWidget::doBusinessSimulation()
 {
     bw = new BusinessMainWidget();
-    connect(bw, SIGNAL(stopSignal()), this, SLOT(deleteBusinessMainWidget()));
+//    connect(bw, SIGNAL(stopSignal()), this, SLOT(deleteBusinessMainWidget()));
+    connect(bw, SIGNAL(deleteSignal()), this, SLOT(deleteBusinessMainWidget()));
 }
 
 void SimulationMainWidget::deleteWebServiceMainWidget()
 {
+    BusinessSimulation::sleepAMoment();
     if (wsw != NULL)
         delete wsw;
     wsw = NULL;
@@ -75,6 +78,7 @@ void SimulationMainWidget::deleteWebServiceMainWidget()
 
 void SimulationMainWidget::deleteBusinessMainWidget()
 {
+    BusinessSimulation::sleepAMoment();
     if (bw != bw)
         delete bw;
     bw = NULL;

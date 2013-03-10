@@ -24,6 +24,7 @@ protected:
 
 signals:
     void stopSignal();
+    void deleteSignal();
 
 public slots:
     void autoRun();

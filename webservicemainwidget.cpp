@@ -51,6 +51,7 @@ void WebServiceMainWidget::closeEvent(QCloseEvent *)
     wss->setSleepMSecond(0);
     wss->stop();
     nextStepCond.wakeAll();
+    emit deleteSignal();
 }
 
 void WebServiceMainWidget::createFlowGroupBox()

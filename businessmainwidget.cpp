@@ -54,6 +54,7 @@ void BusinessMainWidget::closeEvent(QCloseEvent *)
     bs->setSleepMSecond(0);
     bs->stop();
     nextStepCond.wakeAll();
+    emit deleteSignal();
 }
 
 void BusinessMainWidget::createFlowGroupBox()
