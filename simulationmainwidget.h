@@ -2,6 +2,7 @@
 #define SIMULATIONMAINWIDGET_H
 #include "webservicemainwidget.h"
 #include "businessmainwidget.h"
+#include "webservicesimulation.h"
 
 #include <QWidget>
 
@@ -14,23 +15,33 @@ public:
 signals:
 
 public slots:
+    void doWebServiceMatlab();
     void doWebServiceSimulation();
     void doBusinessSimulation();
+    void deleteWebServiceMatlab();
     void deleteWebServiceMainWidget();
     void deleteBusinessMainWidget();
 
 private:
     void init();
-    void createButtons();
-    void createMessages();
+    void createOpGroupBox();
+    void createWSTestGroupBox();
 
     QPushButton *webserviceButton;
     QPushButton *businessButton;
+    QGroupBox* opGroupBox;
+
+    QPushButton *wsTest1Button;
+    QPushButton *wsTest2Button;
+    QPushButton *wsTest3Button;
+    QGroupBox *wsTestGroupBox;
 
     QLabel *messageLabel;
 
     WebServiceMainWidget* wsw;
     BusinessMainWidget* bw;
+
+    WebServiceSimulation* wss;
 };
 
 #endif // SIMULATIONMAINWIDGET_H

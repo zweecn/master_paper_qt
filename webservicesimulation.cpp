@@ -40,6 +40,7 @@ bool WebServiceSimulation::init()
     bestProbility = 0;
     selectActionId = 0;
     sleepMSecond = 0;
+    isMatlabRun = false;
     eventHistoryItem = new WebServiceEventRecordItem();
     currEvent = new WebServiceEvent();
     wsr = new WebServiceRecovery();
@@ -62,17 +63,88 @@ void WebServiceSimulation::run()
 {
     qDebug() << "WebServiceSimulation::run() ...";
     isStop = false;
-    if (isAutoRun)
-        autoRun();
+    if (isMatlabRun)
+    {
+        matlabRun();
+    }
     else
-        manualRun();
-    emit stopSignal();
+    {
+        if (isAutoRun)
+            autoRun();
+        else
+            manualRun();
+    }
     qDebug() << "WebServiceSimulation::run() finished.";
+    emit stopSignal();
 }
 
 void WebServiceSimulation::stop()
 {
     isStop = true;
+}
+
+void WebServiceSimulation::matlabRun()
+{
+    qDebug() << "WebServiceSimulation::matlabRun() ...";
+
+    runningActivities.clear();
+    finishedActivities.clear();
+    bugActivities.clear();
+
+    runningActivities.insert(0);
+
+    int t = 0;
+    qDebug() << t << isFinished() ;
+    while (!isStop && !isFinished())
+    {
+        printCurrState(t);
+
+        // [1] event
+        qDebug() << "[1] Random event...";
+        *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        qDebug() << " Event:" << currEvent->toString();
+
+        // [3]
+        qDebug() << "[3] Cause bad state...";
+        WebServiceAtomState state;
+        state.activityId = currEvent->a;
+        state.stateType = currEvent->type;
+        qDebug() << " State:" << state.toString();
+
+        // [4]
+        qDebug() << "[4] Find markov solution...";
+        markovResult = wsr->getMarkovResult(state);
+
+        // [5]
+        qDebug() << "[5] GetBestMarkovResult..." ;
+        MarkovResultItem* currItem = getBestMarkovResult();
+        currAction = &(currItem->action);
+        if (currItem == NULL)
+        {
+            qDebug() << "getBestMarkovResult() failed.";
+            break;
+        }
+        qDebug() << " Action:" << currAction->toString();
+
+        // [6]
+        qDebug() << "[6] Recovery with action...";
+        wsr->recovery(currAction);
+        if (wsf->isFinished())
+        {
+            break;
+        }
+
+        // [7]
+        qDebug() << "[7] Show service flow after recovery...";
+        bugActivities.clear();
+
+        // [9]
+        qDebug() << "[9] One second passed...";
+        timePassed();
+
+        t++;
+    }
+    qDebug() << "WebServiceSimulation::matlabRun() finished.";
 }
 
 void WebServiceSimulation::autoRun()
@@ -466,6 +538,11 @@ void WebServiceSimulation::setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget*
 void WebServiceSimulation::setAutoRun(bool _isAutoRun)
 {
     isAutoRun = _isAutoRun;
+}
+
+void WebServiceSimulation::setMatlabRun(bool _isMatlabRun)
+{
+    isMatlabRun = _isMatlabRun;
 }
 
 void WebServiceSimulation::setSelectActionId(int _selectActionId)

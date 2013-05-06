@@ -21,6 +21,7 @@ public:
 
     void run();
 
+    void matlabRun();
     void autoRun();
     void manualRun();
 
@@ -30,6 +31,7 @@ public:
     void setWebServiceEventWidget(WebServiceEventWidget* _wsew);
     void setWebServiceActionWidget(WebServiceActionWidget* _wsaw);
     void setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget* _wsfiw);
+    void setMatlabRun(bool _isMatlabRun);
     void setAutoRun(bool _isAutoRun);
     void setSelectActionId(int _selectActionId);
     void setSleepMSecond(int _sleepMSecond);
@@ -78,9 +80,11 @@ private:
     WebServiceEventWidget* wsew;
     WebServiceActionWidget* wsaw;
     WebServiceFlowInfoWidget* wsfiw;
+    bool isMatlabRun;
     bool isAutoRun;
 
     bool isStop;
+
 };
 
 #endif // WEBSERVICESIMULATION_H
