@@ -7,6 +7,7 @@
 
 WebServiceEvent::WebServiceEvent()
 {
+    type = NOT_EVENT;
 }
 
 bool WebServiceEvent::operator ==(const WebServiceEvent & other) const

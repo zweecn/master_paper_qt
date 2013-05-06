@@ -87,13 +87,15 @@ void SimulationMainWidget::doWebServiceMatlab()
 {
     wsTest1Button->setEnabled(false);
     wss = new WebServiceSimulation();
-    wss->setMatlabRun(true);
+//    wss->setMatlabRun(true);
     wss->start();
     connect(wss, SIGNAL(finished()), this, SLOT(deleteWebServiceMatlab()));
 }
 
 void SimulationMainWidget::doWebServiceSimulation()
 {
+    webserviceButton->setEnabled(false);
+    businessButton->setEnabled(false);
     wsw = new WebServiceMainWidget();
 //    connect(wsw, SIGNAL(stopSignal()), this, SLOT(deleteWebServiceMainWidget()));
     connect(wsw, SIGNAL(deleteSignal()), this, SLOT(deleteWebServiceMainWidget()));
@@ -101,6 +103,8 @@ void SimulationMainWidget::doWebServiceSimulation()
 
 void SimulationMainWidget::doBusinessSimulation()
 {
+    webserviceButton->setEnabled(false);
+    businessButton->setEnabled(false);
     bw = new BusinessMainWidget();
 //    connect(bw, SIGNAL(stopSignal()), this, SLOT(deleteBusinessMainWidget()));
     connect(bw, SIGNAL(deleteSignal()), this, SLOT(deleteBusinessMainWidget()));
@@ -120,6 +124,8 @@ void SimulationMainWidget::deleteWebServiceMainWidget()
     if (wsw != NULL)
         delete wsw;
     wsw = NULL;
+    webserviceButton->setEnabled(true);
+    businessButton->setEnabled(true);
 }
 
 void SimulationMainWidget::deleteBusinessMainWidget()
@@ -128,4 +134,6 @@ void SimulationMainWidget::deleteBusinessMainWidget()
     if (bw != bw)
         delete bw;
     bw = NULL;
+    webserviceButton->setEnabled(true);
+    businessButton->setEnabled(true);
 }

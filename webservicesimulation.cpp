@@ -40,7 +40,6 @@ bool WebServiceSimulation::init()
     bestProbility = 0;
     selectActionId = 0;
     sleepMSecond = 0;
-    isMatlabRun = false;
     eventHistoryItem = new WebServiceEventRecordItem();
     currEvent = new WebServiceEvent();
     wsr = new WebServiceRecovery();
@@ -61,19 +60,26 @@ bool WebServiceSimulation::clearData()
 
 void WebServiceSimulation::run()
 {
-    qDebug() << "WebServiceSimulation::run() ...";
+    qDebug() << "WebServiceSimulation::run() ..." << runType;
+
     isStop = false;
-    if (isMatlabRun)
+    if (runType == RUNTYPE_MATLAB_MARKOV)
     {
-        matlabRun();
+        autoMarkovRun();
     }
-    else
+    else if (runType == RUNTYPE_MATLAB_GREEDY)
     {
-        if (isAutoRun)
-            autoRun();
-        else
-            manualRun();
+        autoGreedyRun();
     }
+    else if (runType == RUNTYPE_SIM_AUTO)
+    {
+        autoRun();
+    }
+    else if (runType == RUNTYPE_SIM_MANUAL)
+    {
+        manualRun();
+    }
+
     qDebug() << "WebServiceSimulation::run() finished.";
     emit stopSignal();
 }
@@ -83,15 +89,16 @@ void WebServiceSimulation::stop()
     isStop = true;
 }
 
-void WebServiceSimulation::matlabRun()
+QString WebServiceSimulation::autoMarkovRun()
 {
-    qDebug() << "WebServiceSimulation::matlabRun() ...";
-
     runningActivities.clear();
     finishedActivities.clear();
     bugActivities.clear();
 
     runningActivities.insert(0);
+
+    QList<WebServiceEvent> eventList;
+    QList<MarkovResultItem> markovItemList;
 
     int t = 0;
     qDebug() << t << isFinished() ;
@@ -104,19 +111,19 @@ void WebServiceSimulation::matlabRun()
         *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
         qDebug() << " Event:" << currEvent->toString();
 
-        // [3]
-        qDebug() << "[3] Cause bad state...";
+        // [2]
+        qDebug() << "[2] Cause bad state...";
         WebServiceAtomState state;
         state.activityId = currEvent->a;
         state.stateType = currEvent->type;
         qDebug() << " State:" << state.toString();
 
-        // [4]
-        qDebug() << "[4] Find markov solution...";
+        // [3]
+        qDebug() << "[3] Find solutions...";
         markovResult = wsr->getMarkovResult(state);
 
-        // [5]
-        qDebug() << "[5] GetBestMarkovResult..." ;
+        // [4]
+        qDebug() << "[4] GetBestMarkovResult..." ;
         MarkovResultItem* currItem = getBestMarkovResult();
         currAction = &(currItem->action);
         if (currItem == NULL)
@@ -126,8 +133,8 @@ void WebServiceSimulation::matlabRun()
         }
         qDebug() << " Action:" << currAction->toString();
 
-        // [6]
-        qDebug() << "[6] Recovery with action...";
+        // [5]
+        qDebug() << "[5] Recovery with action...";
         wsr->recovery(currAction);
         if (wsf->isFinished())
         {
@@ -135,16 +142,163 @@ void WebServiceSimulation::matlabRun()
         }
 
         // [7]
-        qDebug() << "[7] Show service flow after recovery...";
         bugActivities.clear();
 
         // [9]
-        qDebug() << "[9] One second passed...";
+        qDebug() << "[6] One second passed...";
         timePassed();
+
+        eventList.append(*currEvent);
+        markovItemList.append(*currItem);
 
         t++;
     }
-    qDebug() << "WebServiceSimulation::matlabRun() finished.";
+
+    QList<int> timeList;
+    QList<int> rewardList;
+    QList<int> costList;
+    QList<int> dtimeList;
+    for (int i = 0; i < eventList.size(); i++)
+    {
+        timeList.append(eventList[i].t);
+        rewardList.append(markovItemList[i].directReward);
+        costList.append(markovItemList[i].action.dc);
+        dtimeList.append(markovItemList[i].action.dt);
+    }
+    for (int i = 1; i < eventList.size(); i++)
+    {
+        rewardList[i] += rewardList[i-1];
+        costList[i] += costList[i-1];
+        dtimeList[i] += dtimeList[i-1];
+    }
+    QString timeCmd = "t1 = [";
+    QString rewardCmd = "r1 = [";
+    QString costCmd = "c1 = [";
+    QString dtimeCmd = "dt1 = [";
+    for (int i = 1; i < eventList.size(); i++)
+    {
+        timeCmd += QString("%1 ").arg(timeList[i]);
+        rewardCmd += QString("%1 ").arg(rewardList[i]);
+        costCmd += QString("%1 ").arg(costList[i]);
+        dtimeCmd += QString("%1 ").arg(dtimeList[i]);
+    }
+    timeCmd = timeCmd.trimmed() + "];";
+    rewardCmd = rewardCmd.trimmed() + "];";
+    costCmd = costCmd.trimmed() + "];";
+    dtimeCmd = dtimeCmd.trimmed() + "];";
+
+    QString cmd = QString("%1 %2 %3 %4")
+            .arg(timeCmd)
+            .arg(rewardCmd)
+            .arg(costCmd)
+            .arg(dtimeCmd);
+    return cmd;
+}
+
+QString WebServiceSimulation::autoGreedyRun()
+{
+    runningActivities.clear();
+    finishedActivities.clear();
+    bugActivities.clear();
+
+    runningActivities.insert(0);
+
+    QList<WebServiceEvent> eventList;
+    QList<MarkovResultItem> markovItemList;
+
+    int t = 0;
+    qDebug() << t << isFinished() ;
+    while (!isStop && !isFinished())
+    {
+        printCurrState(t);
+
+        // [1] event
+        qDebug() << "[1] Random event...";
+        *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        qDebug() << " Event:" << currEvent->toString();
+
+        // [2]
+        qDebug() << "[2] Cause bad state...";
+        WebServiceAtomState state;
+        state.activityId = currEvent->a;
+        state.stateType = currEvent->type;
+        qDebug() << " State:" << state.toString();
+
+        // [3]
+        qDebug() << "[3] Find solutions...";
+        markovResult = wsr->getMarkovResult(state);
+
+        // [4]
+        qDebug() << "[4] GetBestGreedyResult..." ;
+        MarkovResultItem* currItem = getBestGreedyResult();
+        currAction = &(currItem->action);
+        if (currItem == NULL)
+        {
+            qDebug() << "GetBestGreedyResult() failed.";
+            break;
+        }
+        qDebug() << " Action:" << currAction->toString();
+
+        // [5]
+        qDebug() << "[5] Recovery with action...";
+        wsr->recovery(currAction);
+        if (wsf->isFinished())
+        {
+            break;
+        }
+
+        // [7]
+        bugActivities.clear();
+
+        // [9]
+        qDebug() << "[6] One second passed...";
+        timePassed();
+
+        eventList.append(*currEvent);
+        markovItemList.append(*currItem);
+
+        t++;
+    }
+
+    QList<int> timeList;
+    QList<int> rewardList;
+    QList<int> costList;
+    QList<int> dtimeList;
+    for (int i = 0; i < eventList.size(); i++)
+    {
+        timeList.append(eventList[i].t);
+        rewardList.append(markovItemList[i].directReward);
+        costList.append(markovItemList[i].action.dc);
+        dtimeList.append(markovItemList[i].action.dt);
+    }
+    for (int i = 1; i < eventList.size(); i++)
+    {
+        rewardList[i] += rewardList[i-1];
+        costList[i] += costList[i-1];
+        dtimeList[i] += dtimeList[i-1];
+    }
+    QString timeCmd = "t2 = [";
+    QString rewardCmd = "r2 = [";
+    QString costCmd = "c2 = [";
+    QString dtimeCmd = "dt2 = [";
+    for (int i = 1; i < eventList.size(); i++)
+    {
+        timeCmd += QString("%1 ").arg(timeList[i]);
+        rewardCmd += QString("%1 ").arg(rewardList[i]);
+        costCmd += QString("%1 ").arg(costList[i]);
+        dtimeCmd += QString("%1 ").arg(dtimeList[i]);
+    }
+    timeCmd = timeCmd.trimmed() + "];";
+    rewardCmd = rewardCmd.trimmed() + "];";
+    costCmd = costCmd.trimmed() + "];";
+    dtimeCmd = dtimeCmd.trimmed() + "];";
+
+    QString cmd = QString("%1 %2 %3 %4")
+            .arg(timeCmd)
+            .arg(rewardCmd)
+            .arg(costCmd)
+            .arg(dtimeCmd);
+    return cmd;
 }
 
 void WebServiceSimulation::autoRun()
@@ -485,6 +639,23 @@ MarkovResultItem* WebServiceSimulation::getBestMarkovResult()
     return res;
 }
 
+MarkovResultItem* WebServiceSimulation::getBestGreedyResult()
+{
+    if (markovResult.isEmpty())
+        return NULL;
+
+    MarkovResultItem * res = NULL;
+    for (int i = 0; i < markovResult.size(); i++)
+    {
+        if (res == NULL || res->directReward < markovResult[i].directReward)
+        {
+            res = &markovResult[i];
+        }
+    }
+
+    return res;
+}
+
 void WebServiceSimulation::setServiceGraph(ServiceGraph *_sg)
 {
     sg = _sg;
@@ -535,15 +706,21 @@ void WebServiceSimulation::setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget*
     wsfiw = _wsfiw;
 }
 
-void WebServiceSimulation::setAutoRun(bool _isAutoRun)
+//void WebServiceSimulation::setAutoRun(bool _isAutoRun)
+//{
+//    isAutoRun = _isAutoRun;
+//}
+
+//void WebServiceSimulation::setMatlabRun(bool _isMatlabRun)
+//{
+//    isMatlabRun = _isMatlabRun;
+//}
+
+void WebServiceSimulation::setRunType(int _runType)
 {
-    isAutoRun = _isAutoRun;
+    runType = _runType;
 }
 
-void WebServiceSimulation::setMatlabRun(bool _isMatlabRun)
-{
-    isMatlabRun = _isMatlabRun;
-}
 
 void WebServiceSimulation::setSelectActionId(int _selectActionId)
 {

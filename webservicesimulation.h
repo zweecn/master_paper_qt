@@ -21,7 +21,8 @@ public:
 
     void run();
 
-    void matlabRun();
+    QString autoMarkovRun();
+    QString autoGreedyRun();
     void autoRun();
     void manualRun();
 
@@ -31,12 +32,21 @@ public:
     void setWebServiceEventWidget(WebServiceEventWidget* _wsew);
     void setWebServiceActionWidget(WebServiceActionWidget* _wsaw);
     void setWebServiceFlowInfoWidget(WebServiceFlowInfoWidget* _wsfiw);
-    void setMatlabRun(bool _isMatlabRun);
-    void setAutoRun(bool _isAutoRun);
+//    void setMatlabRun(bool _isMatlabRun);
+//    void setAutoRun(bool _isAutoRun);
+    void setRunType(int _runType);
     void setSelectActionId(int _selectActionId);
     void setSleepMSecond(int _sleepMSecond);
 
     MarkovResultItem* getSelectItem();
+
+    enum
+    {
+        RUNTYPE_MATLAB_MARKOV = 1,
+        RUNTYPE_MATLAB_GREEDY = 2,
+        RUNTYPE_SIM_AUTO = 3,
+        RUNTYPE_SIM_MANUAL = 4
+    };
 
 signals:
     void normalEventSignal();
@@ -51,6 +61,8 @@ private:
 
     WebServiceAction * getBestAction();
     MarkovResultItem* getBestMarkovResult();
+    MarkovResultItem* getBestGreedyResult();
+
     void timePassed();
     void printCurrState(int t);
 
@@ -80,11 +92,15 @@ private:
     WebServiceEventWidget* wsew;
     WebServiceActionWidget* wsaw;
     WebServiceFlowInfoWidget* wsfiw;
-    bool isMatlabRun;
-    bool isAutoRun;
+//    bool isMatlabRun;
+//    bool isAutoRun;
+    int runType;
 
     bool isStop;
 
+    // Below is test
+
+    QString matlabCmd;
 };
 
 #endif // WEBSERVICESIMULATION_H

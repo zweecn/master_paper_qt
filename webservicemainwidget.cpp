@@ -131,7 +131,7 @@ void WebServiceMainWidget::autoRun()
     int sleepMsecond = sleepEdit->text().toInt() * 1000;
     wss->setSleepMSecond(sleepMsecond);
     sleepEdit->setEnabled(false);
-    wss->setAutoRun(true);
+    wss->setRunType(WebServiceSimulation::RUNTYPE_SIM_AUTO);
     wss->setServiceGraph(sg);
     wss->setWebServiceEventWidget(eventWidget);
     wss->setWebServiceActionWidget(actionWidget);
@@ -148,7 +148,7 @@ void WebServiceMainWidget::manualRun()
     int sleepMsecond = sleepEdit->text().toInt() * 1000;
     wss->setSleepMSecond(sleepMsecond);
     sleepEdit->setEnabled(false);
-    wss->setAutoRun(false);
+    wss->setRunType(WebServiceSimulation::RUNTYPE_SIM_MANUAL);
     wss->setServiceGraph(sg);
     wss->setWebServiceEventWidget(eventWidget);
     wss->setWebServiceActionWidget(actionWidget);

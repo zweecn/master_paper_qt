@@ -19,6 +19,11 @@ public:
     int t;      // time
     int a;      // activity id
     int type;   // event type
+
+    enum
+    {
+        NOT_EVENT = -1
+    };
 };
 
 #endif // WEBSERVICEEVENT_H
