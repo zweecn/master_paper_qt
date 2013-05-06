@@ -63,7 +63,7 @@ signals:
 
     void badEventSignal(int _flowId);
 
-    void stopSignal();
+//    void stopSignal();
 
 
 private:

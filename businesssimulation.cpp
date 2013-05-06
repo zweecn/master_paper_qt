@@ -69,7 +69,7 @@ void BusinessSimulation::run()
     } else {
         manualRun();
     }
-    emit stopSignal();
+//    emit stopSignal();
     qDebug() << "BusinessSimulation::run() finished.";
 }
 
@@ -152,9 +152,11 @@ void BusinessSimulation::autoRun()
         // [6] sleep a moment & time passed & update show
         qDebug() << "[6] One second passed...";
         usleep(sleepMSecond);
-        stateWidgetMutex.lock();
+
+        // No Mutex is a bug. But it will crach with mutux. Why?
+//        stateWidgetMutex.lock();
         timePassed();
-        stateWidgetMutex.unlock();
+//        stateWidgetMutex.unlock();
 
         // [7] next second
         qDebug() << "[7] Update show when 1 second is passed..";
