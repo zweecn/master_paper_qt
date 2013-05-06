@@ -93,6 +93,7 @@ public:
 
     WebServiceFlow& getWebServiceFlow();
     bool recovery(WebServiceAction * action);
+    bool recovery(WebServiceAction * action, int x);
 
     void runTest();
     void printStateAction();

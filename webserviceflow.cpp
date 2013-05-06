@@ -84,6 +84,44 @@ WebServiceFlow & WebServiceFlow::operator = (const WebServiceFlow & other)
     return *this;
 }
 
+QString WebServiceFlow::name()
+{
+    QString res;
+    if (globalState == WebServiceAtomState::STOP)
+    {
+        res = "STOP";
+    }
+    else if (globalState == WebServiceAtomState::EXEC)
+    {
+        res = "EXEC";
+    }
+    else if (globalState == WebServiceAtomState::READY_N)
+    {
+        res = "READY_N";
+    }
+    else if (globalState == WebServiceAtomState::READY_U)
+    {
+        res = "READU_U";
+    }
+    else if (globalState == WebServiceAtomState::FINISH_N)
+    {
+        res = "FINISH_N";
+    }
+    else if (globalState == WebServiceAtomState::FINISH_U)
+    {
+        res = "FINISH_U";
+    }
+    else if (globalState == WebServiceAtomState::FAIL)
+    {
+        res = "FAIL";
+    }
+    else
+    {
+        res = "NOT_STATE";
+    }
+    return res;
+}
+
 QString WebServiceFlow::toString()
 {
     QString res = "[";

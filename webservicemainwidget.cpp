@@ -38,7 +38,7 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     connect(wss, SIGNAL(normalEventSignal()), this, SLOT(updateStateToExec()));
     connect(wss, SIGNAL(badEventSignal()), this, SLOT(updateStateToFault()));
     connect(wss, SIGNAL(execFinishedSignal()), this, SLOT(upadteStateToFinished()));
-    connect(wss, SIGNAL(stopSignal()), this, SLOT(stop()));
+    connect(wss, SIGNAL(finished()), this, SLOT(stop()));
 }
 
 WebServiceMainWidget::~WebServiceMainWidget()

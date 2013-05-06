@@ -14,17 +14,20 @@ SimulationMainWidget::SimulationMainWidget(QWidget *parent) :
     setLayout(mainLayout);
 
     setWindowTitle(tr("主控制面板"));
-    resize(400, 300);
+    resize(400, 200);
 
     connect(webserviceButton, SIGNAL(clicked()), this, SLOT(doWebServiceSimulation()));
     connect(businessButton, SIGNAL(clicked()), this, SLOT(doBusinessSimulation()));
 
-    connect(wsTest1Button, SIGNAL(clicked()), this, SLOT(doWebServiceMatlab()));
+//    connect(wsTest1Button, SIGNAL(clicked()), this, SLOT(doWebServiceMarkov()));
+    connect(wsTest1Button, SIGNAL(clicked()), this, SLOT(test1()));
+    connect(wsTest2Button, SIGNAL(clicked()), this, SLOT(test2()));
+    connect(wsTest3Button, SIGNAL(clicked()), this, SLOT(test3()));
 }
 
 SimulationMainWidget::~SimulationMainWidget()
 {
-
+    engClose(ep);
 }
 
 
@@ -81,15 +84,85 @@ void SimulationMainWidget::init()
     wsw = NULL;
     bw = NULL;
     wss = NULL;
+
+    ep = engOpen(NULL);
+    if (!ep)
+    {   // 定义Matlab引擎指针，启动引擎；失败则返回NULL
+        qDebug() << "Can't start Matlab engine!";
+        exit(-1);
+    }
+    engSetVisible(ep, false);
 }
 
-void SimulationMainWidget::doWebServiceMatlab()
+void SimulationMainWidget::doWebServiceMarkov()
 {
     wsTest1Button->setEnabled(false);
+    if (wss != NULL)
+        delete wss;
     wss = new WebServiceSimulation();
-//    wss->setMatlabRun(true);
+    wss->setRunType(WebServiceSimulation::RUNTYPE_MATLAB_MARKOV);
     wss->start();
-    connect(wss, SIGNAL(finished()), this, SLOT(deleteWebServiceMatlab()));
+    connect(wss, SIGNAL(finished()), this, SLOT(doWebServiceGreedy()));
+}
+
+void SimulationMainWidget::doWebServiceGreedy()
+{
+    if (wss != NULL)
+    {
+        markovCmd = wss->getMatlabCmd();
+        delete wss;
+        wss = NULL;
+    }
+    wss = new WebServiceSimulation();
+    wss->setRunType(WebServiceSimulation::RUNTYPE_MATLAB_GREEDY);
+    wss->start();
+    connect(wss, SIGNAL(finished()), this, SLOT(deleteWebServiceSim()));
+}
+
+void SimulationMainWidget::deleteWebServiceSim()
+{
+    if (wss != NULL)
+    {
+        greedCmd = wss->getMatlabCmd();
+        delete wss;
+        wss = NULL;
+    }
+    plotTest1();
+    wsTest1Button->setEnabled(true);
+}
+
+void SimulationMainWidget::plotTest1()
+{
+    matlabCmd = QString("%1 %2")
+            .arg(markovCmd)
+            .arg(greedCmd);
+    matlabCmd.append("cd E:\\Dev\\MATLAB7\\work\\webservice_uc; test1( t1, r1, c1, dt1, t2, r2, c2, dt2)");
+    qDebug() << "Exec matlab cmd:" << matlabCmd;
+    engEvalString(ep, matlabCmd.toStdString().c_str());
+}
+
+void SimulationMainWidget::test1()
+{
+    matlabCmd.clear();
+    matlabCmd.append("cd E:\\Dev\\MATLAB7\\work\\test1_good\\v02; test1_func();");
+    qDebug() << "Exec matlab cmd:" << matlabCmd;
+    engEvalString(ep, matlabCmd.toStdString().c_str());
+}
+
+void SimulationMainWidget::test2()
+{
+    matlabCmd.clear();
+    matlabCmd.append("cd E:\\Dev\\MATLAB7\\work\\test3_good\\v01; test3_func();");
+    qDebug() << "Exec matlab cmd:" << matlabCmd;
+    engEvalString(ep, matlabCmd.toStdString().c_str());
+}
+
+void SimulationMainWidget::test3()
+{
+    matlabCmd.clear();
+    matlabCmd.append("cd E:\\Dev\\MATLAB7\\work\\test4_good\\v01; test4_func();");
+    qDebug() << "Exec matlab cmd:" << matlabCmd;
+    engEvalString(ep, matlabCmd.toStdString().c_str());
 }
 
 void SimulationMainWidget::doWebServiceSimulation()
@@ -108,14 +181,6 @@ void SimulationMainWidget::doBusinessSimulation()
     bw = new BusinessMainWidget();
 //    connect(bw, SIGNAL(stopSignal()), this, SLOT(deleteBusinessMainWidget()));
     connect(bw, SIGNAL(deleteSignal()), this, SLOT(deleteBusinessMainWidget()));
-}
-
-void SimulationMainWidget::deleteWebServiceMatlab()
-{
-    if (wss != NULL)
-        delete wss;
-    wss = NULL;
-    wsTest1Button->setEnabled(true);
 }
 
 void SimulationMainWidget::deleteWebServiceMainWidget()

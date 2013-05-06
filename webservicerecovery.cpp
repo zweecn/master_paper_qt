@@ -948,6 +948,11 @@ WebServiceFlow& WebServiceRecovery::getWebServiceFlow()
 
 bool WebServiceRecovery::recovery(WebServiceAction *action)
 {
+    return recovery(action, 0);
+}
+
+bool WebServiceRecovery::recovery(WebServiceAction *action, int x)
+{
     qDebug() << "WebServiceRecovery::recovery(WebServiceAction *action) ...";
     if (action == NULL)
         return false;
@@ -970,7 +975,7 @@ bool WebServiceRecovery::recovery(WebServiceAction *action)
             AtomService* newService = & WorkFlow::Instance()->all_service[newServiceId];
             wsf.activities[activityId].blindService = newService;
             newService->free = false;
-            wsf.activities[activityId].x = 0;
+            wsf.activities[activityId].x = x;
         }
     }
     else if ( action->type == WebServiceAction::RE_COMPOSE)
@@ -982,13 +987,13 @@ bool WebServiceRecovery::recovery(WebServiceAction *action)
             AtomService* newService = & WorkFlow::Instance()->all_service[newServiceId];
             wsf.activities[activityId].blindService = newService;
             newService->free = false;
-            wsf.activities[activityId].x = 0;
+            wsf.activities[activityId].x = x;
         }
     }
     else if ( action->type == WebServiceAction::RETRY)
     {
         int activityId = action->activityId;
-        wsf.activities[activityId].x = 0;
+        wsf.activities[activityId].x = x;
     }
 
     if (wsf.globalState == WebServiceAtomState::STOP)

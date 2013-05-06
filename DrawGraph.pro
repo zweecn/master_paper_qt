@@ -98,6 +98,15 @@ HEADERS  += widget.h \
 
 FORMS    +=
 
+OTHER_FILES += \
+    data/ws_start \
+    data/services \
+    data/resource \
+    data/graph \
+    data/conf \
+    data/business_start
+
+
 
 
 

@@ -12,6 +12,8 @@ public:
     WebServiceFlow & operator = (const WebServiceFlow & other);
 
     QString toString();
+    QString name();
+
     bool isFinished();
 
     Activity* activities;

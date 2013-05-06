@@ -5,6 +5,7 @@
 #include "webservicesimulation.h"
 
 #include <QWidget>
+#include <engine.h>
 
 class SimulationMainWidget : public QWidget
 {
@@ -15,10 +16,20 @@ public:
 signals:
 
 public slots:
-    void doWebServiceMatlab();
+    // Not used
+    void doWebServiceMarkov();
+    void doWebServiceGreedy();
+    void deleteWebServiceSim();
+    void plotTest1();
+
+    // Test1 - Test3
+    void test1();
+    void test2();
+    void test3();
+
     void doWebServiceSimulation();
     void doBusinessSimulation();
-    void deleteWebServiceMatlab();
+
     void deleteWebServiceMainWidget();
     void deleteBusinessMainWidget();
 
@@ -42,6 +53,10 @@ private:
     BusinessMainWidget* bw;
 
     WebServiceSimulation* wss;
+    QString matlabCmd;
+    QString markovCmd;
+    QString greedCmd;
+    Engine *ep;
 };
 
 #endif // SIMULATIONMAINWIDGET_H

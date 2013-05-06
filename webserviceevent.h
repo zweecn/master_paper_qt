@@ -3,6 +3,9 @@
 #include <QString>
 #include <QSet>
 
+
+class Activity;
+
 class WebServiceEvent
 {
 public:
@@ -15,6 +18,10 @@ public:
 
     static WebServiceEvent random(int currTime, QSet<int>& runningActivities,
                                                    QSet<int>& finishedActivities);
+    static WebServiceEvent proRandom(int currTime,
+                                     QSet<int>& runningActivities,
+                                     QSet<int>& finishedActivities,
+                                     Activity* firstActivity);
 
     int t;      // time
     int a;      // activity id

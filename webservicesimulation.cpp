@@ -65,11 +65,11 @@ void WebServiceSimulation::run()
     isStop = false;
     if (runType == RUNTYPE_MATLAB_MARKOV)
     {
-        autoMarkovRun();
+        matlabCmd = autoMarkovRun();
     }
     else if (runType == RUNTYPE_MATLAB_GREEDY)
     {
-        autoGreedyRun();
+        matlabCmd = autoGreedyRun();
     }
     else if (runType == RUNTYPE_SIM_AUTO)
     {
@@ -81,7 +81,7 @@ void WebServiceSimulation::run()
     }
 
     qDebug() << "WebServiceSimulation::run() finished.";
-    emit stopSignal();
+//    emit stopSignal();
 }
 
 void WebServiceSimulation::stop()
@@ -108,7 +108,8 @@ QString WebServiceSimulation::autoMarkovRun()
 
         // [1] event
         qDebug() << "[1] Random event...";
-        *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        *currEvent = WebServiceEvent::proRandom(t, runningActivities, finishedActivities,
+                                                wsf->activities);
         qDebug() << " Event:" << currEvent->toString();
 
         // [2]
@@ -135,9 +136,10 @@ QString WebServiceSimulation::autoMarkovRun()
 
         // [5]
         qDebug() << "[5] Recovery with action...";
-        wsr->recovery(currAction);
+        wsr->recovery(currAction, 1);
         if (wsf->isFinished())
         {
+            qDebug() << "[5.1] is finished. break.";
             break;
         }
 
@@ -187,6 +189,11 @@ QString WebServiceSimulation::autoMarkovRun()
     costCmd = costCmd.trimmed() + "];";
     dtimeCmd = dtimeCmd.trimmed() + "];";
 
+//    for (int i = 0; i < eventList.size(); i++)
+//    {
+//        qDebug() << markovItemList[i].action.name();
+//    }
+    qDebug() << "Finished state:" << wsf->name();
     QString cmd = QString("%1 %2 %3 %4")
             .arg(timeCmd)
             .arg(rewardCmd)
@@ -214,7 +221,8 @@ QString WebServiceSimulation::autoGreedyRun()
 
         // [1] event
         qDebug() << "[1] Random event...";
-        *currEvent = WebServiceEvent::random(t, runningActivities, finishedActivities);
+        *currEvent = WebServiceEvent::proRandom(t, runningActivities, finishedActivities,
+                                                wsf->activities);
         qDebug() << " Event:" << currEvent->toString();
 
         // [2]
@@ -241,9 +249,10 @@ QString WebServiceSimulation::autoGreedyRun()
 
         // [5]
         qDebug() << "[5] Recovery with action...";
-        wsr->recovery(currAction);
+        wsr->recovery(currAction, 1);
         if (wsf->isFinished())
         {
+            qDebug() << "[5.1] is finished. break.";
             break;
         }
 
@@ -293,6 +302,11 @@ QString WebServiceSimulation::autoGreedyRun()
     costCmd = costCmd.trimmed() + "];";
     dtimeCmd = dtimeCmd.trimmed() + "];";
 
+//    for (int i = 0; i < eventList.size(); i++)
+//    {
+//        qDebug() << markovItemList[i].action.name();
+//    }
+    qDebug() << "Finished state:" << wsf->name();
     QString cmd = QString("%1 %2 %3 %4")
             .arg(timeCmd)
             .arg(rewardCmd)
@@ -739,4 +753,9 @@ MarkovResultItem* WebServiceSimulation::getSelectItem()
 void WebServiceSimulation::setSleepMSecond(int _sleepMSecond)
 {
     sleepMSecond = _sleepMSecond;
+}
+
+QString WebServiceSimulation::getMatlabCmd()
+{
+    return matlabCmd;
 }

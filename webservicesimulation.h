@@ -26,6 +26,8 @@ public:
     void autoRun();
     void manualRun();
 
+    QString getMatlabCmd();
+
     void stop();
 
     void setServiceGraph(ServiceGraph *_sg);
@@ -52,7 +54,7 @@ signals:
     void normalEventSignal();
     void badEventSignal();
     void execFinishedSignal();
-    void stopSignal();
+//    void stopSignal();
 
 private:
     bool init();
