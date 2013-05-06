@@ -9,6 +9,9 @@ QT       += core gui
 TARGET = DrawGraph
 TEMPLATE = app
 
+INCLUDEPATH += E:\Dev\MATLAB7\extern\include
+
+LIBS += -L E:\Dev\MATLAB7\extern\lib\win32\microsoft\msvc71 -llibeng -llibmat -llibmx
 
 SOURCES += main.cpp\
         widget.cpp \

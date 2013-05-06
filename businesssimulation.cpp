@@ -518,6 +518,7 @@ int BusinessSimulation::doNothing(BusinessEvent & event)
 
 void BusinessSimulation::timePassed(int flowId)
 {
+    qDebug() << "void BusinessSimulation::timePassed(int flowId) ..." << flowId;
     Activity *startActivity = activities[flowId];
     QSet<int> & runningActivity = runningActivities[flowId];
     QSet<int> & finishedActivity = finishedActivities[flowId];
@@ -548,6 +549,7 @@ void BusinessSimulation::timePassed(int flowId)
     while (it.hasNext()) {
         runningActivity.remove(it.next());
     }
+    qDebug() << "void BusinessSimulation::timePassed(int flowId) finished.";
 }
 
 void BusinessSimulation::timePassed()
