@@ -28,6 +28,7 @@ SimulationMainWidget::SimulationMainWidget(QWidget *parent) :
 SimulationMainWidget::~SimulationMainWidget()
 {
     engClose(ep);
+    ep = NULL;
 }
 
 
