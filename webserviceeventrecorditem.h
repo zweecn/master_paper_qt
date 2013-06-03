@@ -15,6 +15,7 @@ public:
 
     WebServiceEvent event;
     MarkovResultItem result;
+    QList<MarkovResultItem> validResultList;
 };
 
 #endif // WEBSERVICEEVENTRECORDITEM_H

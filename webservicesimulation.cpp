@@ -406,6 +406,7 @@ void WebServiceSimulation::autoRun()
         eventHistoryWidgetMutex.lock();
         eventHistoryItem->event = *currEvent;
         eventHistoryItem->result = *currItem;
+        eventHistoryItem->validResultList = markovResult;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 
@@ -524,6 +525,7 @@ void WebServiceSimulation::manualRun()
         eventHistoryWidgetMutex.lock();
         eventHistoryItem->event = *currEvent;
         eventHistoryItem->result = resItem;
+        eventHistoryItem->validResultList = markovResult;
         wsew->addWebServiceEventRecordItem(eventHistoryItem);
         eventHistoryWidgetMutex.unlock();
 

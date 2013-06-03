@@ -9,6 +9,7 @@ WebServiceEventRecordItem::WebServiceEventRecordItem(const WebServiceEventRecord
 {
     this->event = other.event;
     this->result = other.result;
+    this->validResultList = other.validResultList;
 }
 
 WebServiceEventRecordItem & WebServiceEventRecordItem::operator =(const WebServiceEventRecordItem& other)
@@ -17,10 +18,12 @@ WebServiceEventRecordItem & WebServiceEventRecordItem::operator =(const WebServi
         return *this;
     this->event = other.event;
     this->result = other.result;
+    this->validResultList = other.validResultList;
     return *this;
 }
 
 bool WebServiceEventRecordItem::operator ==(const WebServiceEventRecordItem& other) const
 {
-    return other.event == event && result == other.result;
+    return other.event == event && result == other.result
+            && this->validResultList == other.validResultList;
 }
