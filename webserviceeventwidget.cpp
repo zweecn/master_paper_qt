@@ -127,3 +127,8 @@ void WebServiceEventWidget::addWebServiceEventRecordItem(WebServiceEventRecordIt
     }
     emit updateHistoryEventSignal();
 }
+
+QList<WebServiceEventRecordItem> & WebServiceEventWidget::getHistoryEventList()
+{
+    return historyEventList;
+}

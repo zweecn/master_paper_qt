@@ -104,7 +104,9 @@ OTHER_FILES += \
     data/resource \
     data/graph \
     data/conf \
-    data/business_start
+    data/business_start \
+    ../DrawGraph-build-desktop/history.log
+
 
 
 

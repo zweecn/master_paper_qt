@@ -42,6 +42,8 @@ public slots:
 
     void stop();
 
+    void saveHistory();
+
 private:
     void createFlowGroupBox();
     void createFlowInfoGroupBox();
@@ -62,6 +64,7 @@ private:
 
     QGroupBox *buttonGroupBox;
     QPushButton *autoStartButton;
+    QPushButton *saveHistoryButton;
     QPushButton *startButton;
     QPushButton *nextStepButton;
     QLineEdit *sleepEdit;

@@ -761,3 +761,8 @@ QString WebServiceSimulation::getMatlabCmd()
 {
     return matlabCmd;
 }
+
+WebServiceEventWidget* WebServiceSimulation::getWebServiceEventWidget()
+{
+    return wsew;
+}

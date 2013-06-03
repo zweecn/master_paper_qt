@@ -6,6 +6,8 @@
 
 #include <QtGui>
 
+const QString historyLog = "history.log";
+
 WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     QWidget(parent)
 {
@@ -30,6 +32,7 @@ WebServiceMainWidget::WebServiceMainWidget(QWidget *parent) :
     showMaximized();
 
     connect(autoStartButton, SIGNAL(clicked()), this, SLOT(autoRun()));
+    connect(saveHistoryButton, SIGNAL(clicked()), this, SLOT(saveHistory()));
     connect(startButton, SIGNAL(clicked()), this, SLOT(manualRun()));
     connect(nextStepButton, SIGNAL(clicked()), this, SLOT(nextStep()));
     connect(wss, SIGNAL(normalEventSignal()), this, SLOT(disableNextStepButton()));
@@ -100,6 +103,7 @@ void WebServiceMainWidget::createButtonGroupBox()
 {
     buttonGroupBox = new QGroupBox(tr("操作(Operations)"));
     autoStartButton = new QPushButton(tr("自动仿真"));
+    saveHistoryButton = new QPushButton(tr("保存结果"));
     startButton = new QPushButton(tr("开始"));
     nextStepButton = new QPushButton(tr("下一步"));
     sleepEdit = new QLineEdit();
@@ -111,6 +115,7 @@ void WebServiceMainWidget::createButtonGroupBox()
     buttonLayout->addWidget(sleepLabel);
     buttonLayout->addWidget(sleepEdit);
     buttonLayout->addWidget(autoStartButton);
+    buttonLayout->addWidget(saveHistoryButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(startButton);
     buttonLayout->addWidget(nextStepButton);
@@ -214,4 +219,34 @@ void WebServiceMainWidget::updateStateToExec()
 void WebServiceMainWidget::stop()
 {
     emit stopSignal();
+}
+
+void WebServiceMainWidget::saveHistory()
+{
+    qDebug() << "WebServiceMainWidget::saveHistory()..." << __FILE__ << __LINE__;
+    QFile outFile(historyLog);
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    QList<WebServiceEventRecordItem> & historyEventList
+            = wss->getWebServiceEventWidget()->getHistoryEventList();
+    for (int i = 0; i < historyEventList.size(); i++)
+    {
+        WebServiceEventRecordItem & tmp = historyEventList[i];
+        ts << tmp.event.t << "\t"
+           << tmp.event.a << "\t"
+           << tmp.event.name() << "\t"
+           << tmp.result.action.name() << "\t"
+           << tmp.result.potentialReward << "\t"
+           << tmp.result.action.dc << "\t"
+           << tmp.result.action.dt << "\t"
+           << tmp.result.successProbility << "\t";
+        for (int j = 0; j < tmp.validResultList.size(); j++)
+        {
+            ts << tmp.validResultList[j].action.name() << ";";
+        }
+        ts << endl;
+    }
+    outFile.close();
+
+    qDebug() << "WebServiceMainWidget::saveHistory() finished." << __FILE__ << __LINE__;
 }

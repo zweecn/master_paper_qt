@@ -41,6 +41,7 @@ public:
     void setSleepMSecond(int _sleepMSecond);
 
     MarkovResultItem* getSelectItem();
+    WebServiceEventWidget* getWebServiceEventWidget();
 
     enum
     {

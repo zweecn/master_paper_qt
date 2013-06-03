@@ -24,6 +24,8 @@ public:
     void addWebServiceEventRecordItem(WebServiceEventRecordItem* _eventHistoryItem);
     WebServiceEvent * getEvent();
 
+    QList<WebServiceEventRecordItem> & getHistoryEventList();
+
 signals:
     void updateEventSignal();
     void updateHistoryEventSignal();
